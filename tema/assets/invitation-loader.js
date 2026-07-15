@@ -36,9 +36,14 @@
   // Slug adalah segment terakhir di URL path
   // Contoh: domain.com/budi-ani → slug = "budi-ani"
   // Contoh: domain.com/sakina/budi-ani → slug = "budi-ani"
+  // Juga cek ?slug= dari query param (untuk redirect dari root router)
   function getSlug() {
     console.log('[invitation] pathname:', window.location.pathname)
     console.log('[invitation] href:', window.location.href)
+    // Cek query param ?slug= dulu
+    const qs = new URLSearchParams(window.location.search).get('slug')
+    if (qs) { console.log('[invitation] slug from query:', qs); return qs }
+    // Fallback ke URL path
     const segments = window.location.pathname
       .replace(/\/$/, '')
       .split('/')

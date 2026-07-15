@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memuat Undangan...</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; background: #0D0D0D; color: #F5F0E8;
+    font-family: system-ui, sans-serif;
+  }
+  .loader { text-align: center; }
+  .spinner {
+    width: 40px; height: 40px; border: 3px solid rgba(245,240,232,.2);
+    border-top-color: #F5F0E8; border-radius: 50%;
+    animation: spin .8s linear infinite; margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error { color: #e74c3c; display: none; margin-top: 12px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="loader">
+  <div class="spinner"></div>
+  <p>Memuat undangan...</p>
+  <p class="error" id="err"></p>
+</div>
+
+<script src="/env.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  var E = window.__ENV || {};
+  var SB_URL  = E.SUPABASE_URL  || '';
+  var SB_KEY  = E.SUPABASE_KEY  || '';
+
+  // Ambil slug dari URL path
+  var slug = window.location.pathname
+    .replace(/\/$/, '')
+    .split('/')
+    .filter(Boolean)
+    .pop() || '';
+
+  // Root path → tampilkan landing atau 404
+  if (!slug) {
+    document.title = '404';
+    document.querySelector('.spinner').style.display = 'none';
+    document.querySelector('.loader p').textContent = 'Halaman tidak ditemukan';
+    return;
+  }
+
+  // Query Supabase untuk dapat theme
+  var api = SB_URL + '/rest/v1/invitations'
+    + '?slug=eq.' + encodeURIComponent(slug)
+    + '&is_published=eq.true'
+    + '&select=theme_id,themes(name)';
+
+  fetch(api, {
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    var theme = 'sakina'; // default
+    if (data && data[0] && data[0].themes && data[0].themes.name) {
+      theme = data[0].themes.name.toLowerCase();
+    }
+    // Redirect ke tema dengan slug sebagai query param
+    window.location.href = '/' + theme + '/index.html?slug=' + encodeURIComponent(slug);
+  })
+  .catch(function() {
+    // Gagal query → coba langsung ke default theme
+    window.location.href = '/sakina/index.html?slug=' + encodeURIComponent(slug);
+  });
+})();
+</script>
+</body>
+</html>

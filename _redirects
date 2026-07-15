@@ -1,0 +1,3 @@
+# Cloudflare Pages SPA mode
+# Semua route yang bukan file → serve /index.html (router)
+/*  /index.html  200
