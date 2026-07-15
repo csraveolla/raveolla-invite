@@ -1,3 +1,6 @@
+# Secrets (upload manual ke server)
+/env.js
+
 # Python
 __pycache__/
 *.py[cod]
