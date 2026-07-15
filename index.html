@@ -3,100 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Memuat Undangan...</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    display: flex; align-items: center; justify-content: center;
-    min-height: 100vh; background: #0D0D0D; color: #F5F0E8;
-    font-family: system-ui, sans-serif;
-  }
-  .loader { text-align: center; }
-  .spinner {
-    width: 40px; height: 40px; border: 3px solid rgba(245,240,232,.2);
-    border-top-color: #F5F0E8; border-radius: 50%;
-    animation: spin .8s linear infinite; margin: 0 auto 16px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .error { color: #e74c3c; display: none; margin-top: 12px; font-size: 14px; }
-</style>
+<title>Raveolla</title>
 </head>
-<body>
-
-<div class="loader" id="loader">
-  <div class="spinner"></div>
-  <p>Memuat undangan...</p>
-  <p class="error" id="err"></p>
+<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0D0D0D;color:#F5F0E8;font-family:system-ui,sans-serif">
+<div style="text-align:center">
+  <p style="font-size:48px;margin:0">404</p>
+  <p style="margin-top:8px">Halaman tidak ditemukan</p>
 </div>
-
-<script src="/env.js"></script>
-<script>
-(function() {
-  'use strict';
-
-  var E = window.__ENV || {};
-  var SB_URL = E.SUPABASE_URL || '';
-  var SB_KEY = E.SUPABASE_KEY || '';
-
-  // Ambil slug dari URL path
-  var slug = window.location.pathname
-    .replace(/\/$/, '')
-    .split('/')
-    .filter(Boolean)
-    .pop() || '';
-
-  // Root path → 404
-  if (!slug) {
-    document.title = '404';
-    document.getElementById('loader').innerHTML =
-      '<p style="font-size:48px;margin:0">404</p><p style="margin-top:8px">Halaman tidak ditemukan</p>';
-    return;
-  }
-
-  // Query Supabase untuk dapat theme
-  var api = SB_URL + '/rest/v1/invitations'
-    + '?slug=eq.' + encodeURIComponent(slug)
-    + '&is_published=eq.true'
-    + '&select=theme_id,themes(name)';
-
-  fetch(api, {
-    headers: {
-      'apikey': SB_KEY,
-      'Authorization': 'Bearer ' + SB_KEY,
-      'Content-Type': 'application/json'
-    }
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    var theme = 'sakina';
-    if (data && data[0] && data[0].themes && data[0].themes.name) {
-      theme = data[0].themes.name.toLowerCase();
-    }
-    // Fetch theme HTML dan render di tempat (tanpa redirect)
-    var themeUrl = '/' + theme + '/index.html?slug=' + encodeURIComponent(slug);
-    return fetch(themeUrl);
-  })
-  .then(function(r) { return r.text(); })
-  .then(function(html) {
-    document.open();
-    document.write(html);
-    document.close();
-  })
-  .catch(function() {
-    // Fallback: coba default theme
-    fetch('/sakina/index.html?slug=' + encodeURIComponent(slug))
-      .then(function(r) { return r.text(); })
-      .then(function(html) {
-        document.open();
-        document.write(html);
-        document.close();
-      })
-      .catch(function() {
-        document.getElementById('loader').innerHTML =
-          '<p style="color:#e74c3c">Gagal memuat undangan</p>';
-      });
-  });
-})();
-</script>
 </body>
 </html>
