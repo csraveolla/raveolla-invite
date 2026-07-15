@@ -1,0 +1,7 @@
+{
+  "name": "raveolla-invite",
+  "private": true,
+  "scripts": {
+    "build": "node build.js"
+  }
+}
