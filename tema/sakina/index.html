@@ -11,7 +11,7 @@
    RESET & BASE
    ================================================================ */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 body {
   font-family: 'Raleway', sans-serif;
   font-weight: 300;
@@ -1714,6 +1714,7 @@ body {
 <script>
 /* ----------------------------------------------------------------
    URL PARAM: nama tamu
+   Supports ?to=Nama (fallback) — database lookup handled by invitation-loader.js
    ---------------------------------------------------------------- */
 const params = new URLSearchParams(window.location.search);
 const guestName = params.get('to');

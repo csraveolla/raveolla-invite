@@ -59,13 +59,13 @@ export async function loadInvData(clientId) {
     const inv = rows[0]
     INV.invId = inv.id
 
-    const cRes  = await fetch(`${SB_URL}/rest/v1/clients?id=eq.${clientId}&select=token,pin_scanner,package_id`, { headers: authHeaders() })
+    const cRes  = await fetch(`${SB_URL}/rest/v1/clients?id=eq.${clientId}&select=token,pin_scanner,package_id,tanggal_acara`, { headers: authHeaders() })
     const cRows = cRes.ok ? await cRes.json() : []
     const clientData = cRows[0] || {}
 
     await loadInvMeta(inv)
     fillInvSettings(inv, clientData)
-    fillInvMempelai(inv)
+    fillInvMempelai(inv, clientData)
 
     const [evR, bnR, lvR, gaR] = await Promise.all([
       fetch(`${SB_URL}/rest/v1/events?invitation_id=eq.${inv.id}&select=*&order=sort_order`, { headers: authHeaders() }),
@@ -180,11 +180,13 @@ export async function createBlankInvitation() {
 
 // ── Mempelai ─────────────────────────────────────────────────
 
-function fillInvMempelai(inv) {
+function fillInvMempelai(inv, clientData) {
   INV_FIELDS.forEach(f => {
     const el = document.getElementById('inv-' + f)
     if (el) el.value = inv[f] || ''
   })
+  const tglEl = document.getElementById('inv-tanggal_acara')
+  if (tglEl) tglEl.value = clientData?.tanggal_acara || ''
   setInvPhoto('bride', inv.bride_photo_url)
   setInvPhoto('groom', inv.groom_photo_url)
 }
@@ -237,6 +239,9 @@ export async function uploadInvPhoto(person, file) {
 
 export async function saveInvMempelai() {
   const msg = document.getElementById('msg-inv-mempelai')
+  const tglEl = document.getElementById('inv-tanggal_acara')
+  if (!tglEl?.value) { invMsg(msg, 'error', '⚠️ Tanggal Pernikahan wajib diisi.'); return }
+
   const p = {}
   INV_FIELDS.forEach(f => {
     const el = document.getElementById('inv-' + f)
@@ -247,6 +252,12 @@ export async function saveInvMempelai() {
       method: 'PATCH', headers: authHeaders(), body: JSON.stringify(p)
     })
     if (!res.ok) throw new Error(await res.text())
+
+    await fetch(`${SB_URL}/rest/v1/clients?id=eq.${INV.clientId}`, {
+      method: 'PATCH', headers: authHeaders(),
+      body: JSON.stringify({ tanggal_acara: tglEl.value || null })
+    })
+
     invMsg(msg, 'success', '✓ Data mempelai tersimpan.')
   } catch (e) {
     invMsg(msg, 'error', 'Gagal: ' + e.message)

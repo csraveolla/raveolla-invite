@@ -53,21 +53,75 @@
   }
 
   // ── AMBIL NAMA TAMU DARI QUERY STRING ──────────────────────────
-  // Contoh: domain.com/budi-ani?to=Pak+Budi
-  function getGuestName() {
+  // Support ?tamu={id} (dari DB) atau ?to={nama} (fallback)
+  let _guestName = 'Tamu Undangan'
+  let _guestId   = null
+
+  function getGuestId() {
+    return new URLSearchParams(window.location.search).get('tamu') || null
+  }
+
+  function getGuestNameLocal() {
     return new URLSearchParams(window.location.search).get('to') || 'Tamu Undangan'
+  }
+
+  async function resolveGuestName() {
+    _guestId = getGuestId()
+    console.log('[nikahin] tamu ID dari URL:', _guestId)
+    
+    if (_guestId) {
+      try {
+        const rows = await sbFetch('tamu_undangan', `?id=eq.${encodeURIComponent(_guestId)}&select=nama`)
+        console.log('[nikahin] hasil query tamu_undangan:', rows)
+        
+        if (rows && rows.length && rows[0].nama) {
+          _guestName = rows[0].nama
+          console.log('[nikahin] nama tamu ditemukan:', _guestName)
+          
+          // Tandai status_buka = true
+          fetch(`${SUPABASE_URL}/rest/v1/tamu_undangan?id=eq.${encodeURIComponent(_guestId)}`, {
+            method: 'PATCH',
+            headers: {
+              'apikey': SUPABASE_ANON,
+              'Authorization': `Bearer ${SUPABASE_ANON}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status_buka: true })
+          }).catch(err => console.warn('[nikahin] gagal update status_buka:', err))
+          
+          return
+        } else {
+          console.warn('[nikahin] tamu tidak ditemukan atau nama kosong untuk ID:', _guestId)
+        }
+      } catch (e) {
+        console.error('[nikahin] error fetch tamu:', e.message || e)
+      }
+    }
+    
+    // Fallback ke ?to= atau default
+    _guestName = getGuestNameLocal()
+    console.log('[nikahin] menggunakan fallback guest name:', _guestName)
   }
 
   // ── SUPABASE FETCH HELPER ───────────────────────────────────────
   async function sbFetch(path, params = '') {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}${params}`, {
+    const url = `${SUPABASE_URL}/rest/v1/${path}${params}`
+    console.log('[nikahin] sbFetch:', url)
+    
+    const res = await fetch(url, {
       headers: {
         'apikey': SUPABASE_ANON,
         'Authorization': `Bearer ${SUPABASE_ANON}`,
         'Content-Type': 'application/json',
       }
     })
-    if (!res.ok) throw new Error(`Supabase error: ${res.status}`)
+    
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '')
+      console.error('[nikahin] sbFetch error:', res.status, errText)
+      throw new Error(`Supabase error: ${res.status}`)
+    }
+    
     return res.json()
   }
 
@@ -211,11 +265,12 @@
     if (!container || !galleries.length) return
 
     container.innerHTML = galleries.map((g, i) => `
-      <img class="gallery-img reveal" 
-           src="${escHtml(g.file_url)}" 
-           alt="${escHtml(g.caption || '')}" 
-           loading="lazy"
-           onload="this.classList.add(this.naturalWidth > this.naturalHeight ? 'landscape' : this.naturalWidth < this.naturalHeight ? 'portrait' : 'square')">
+      <div class="${i % 3 === 0 ? 'tall reveal-up' : 'reveal'}">
+        <img class="gallery-img" 
+             src="${escHtml(g.file_url)}" 
+             alt="${escHtml(g.caption || '')}" 
+             loading="lazy">
+      </div>
     `).join('')
   }
 
@@ -225,15 +280,42 @@
     const coverPhotos = galleries.filter(g => g.is_cover).slice(0, 1)
       .concat(galleries.filter(g => !g.is_cover)).slice(0, 3)
 
+    // Gradient overlay sesuai CSS theme
+    const gradient = 'linear-gradient(180deg, rgba(0,0,0,.3) 0%, rgba(10,8,6,.6) 50%, rgba(16,14,10,.85) 100%)'
+
     const slideIds = ['slide0', 'slide1', 'slide2']
     coverPhotos.forEach((g, i) => {
       const slide = document.getElementById(slideIds[i])
       if (slide && g.file_url) {
-        slide.style.backgroundImage = `url('${g.file_url}')`
+        slide.style.backgroundImage = `${gradient}, url('${g.file_url}')`
         slide.style.backgroundSize = 'cover'
-        slide.style.backgroundPosition = 'center'
+        slide.style.backgroundPosition = 'center top'
       }
     })
+  }
+
+  // ── FILL MINI GALLERY CAROUSEL (cover) ──────────────────────────
+  function fillMiniGallery(galleries) {
+    const track = document.getElementById('miniGalleryTrack')
+    if (!track || !galleries.length) return
+
+    // Ambil max 4 foto pertama
+    const photos = galleries.slice(0, 4)
+    if (!photos.length) return
+
+    // Buat items + duplikat untuk infinite loop
+    const items = photos.map(g => `
+      <div class="mini-gallery-item">
+        <img src="${escHtml(g.file_url)}" alt="${escHtml(g.caption || '')}" loading="lazy">
+      </div>
+    `).join('')
+    const duplicates = photos.map(g => `
+      <div class="mini-gallery-item" aria-hidden="true">
+        <img src="${escHtml(g.file_url)}" alt="" loading="lazy">
+      </div>
+    `).join('')
+
+    track.innerHTML = items + duplicates
   }
 
   // ── FILL MUSIK ──────────────────────────────────────────────────
@@ -290,19 +372,25 @@
     if (!container || !accounts.length) return
 
     container.innerHTML = accounts.map(a => {
-      if (a.type === 'qris' && a.qris_image_url) return `
-        <div class="kado-card">
-          <p class="kado-bank">QRIS</p>
-          <img src="${escHtml(a.qris_image_url)}" alt="QRIS" style="width:160px;margin:8px auto;display:block;border-radius:8px">
-          <p class="kado-name">${escHtml(a.account_name || '')}</p>
+      if (a.type === 'qris' && a.account_number) return `
+        <div class="gift-card">
+          <div class="gift-bank-logo">QRIS</div>
+          <div>
+            <p class="gift-bank-name">QRIS</p>
+            <img src="${escHtml(a.account_number)}" alt="QRIS" style="width:160px;margin:8px 0;display:block;border-radius:8px">
+            <p class="gift-account-name">${escHtml(a.account_name || '')}</p>
+          </div>
         </div>`
 
       return `
-        <div class="kado-card">
-          <p class="kado-bank">${escHtml(a.bank_name || a.type)}</p>
-          <p class="kado-number" id="kado-${a.id}">${escHtml(a.account_number || '')}</p>
-          <p class="kado-name">${escHtml(a.account_name || '')}</p>
-          <button class="btn-copy" onclick="window._nikahinCopy('kado-${a.id}')">Salin Nomor</button>
+        <div class="gift-card">
+          <div class="gift-bank-logo">${escHtml((a.bank_name || a.type || '').substring(0, 6))}</div>
+          <div>
+            <p class="gift-bank-name">${escHtml(a.bank_name || a.type)}</p>
+            <p class="gift-account-num" id="kado-${a.id}">${escHtml(a.account_number || '')}</p>
+            <p class="gift-account-name">${escHtml(a.account_name || '')}</p>
+          </div>
+          <button class="btn-copy" onclick="window._nikahinCopy('kado-${a.id}')">⧉</button>
         </div>`
     }).join('')
   }
@@ -392,11 +480,11 @@
 
   window.submitRSVP = async function() {
     const invId = window._nikahinInvitationId
+    const clientId = window._nikahinClientId
     if (!invId) return
 
     const name     = document.getElementById('rsvpName')?.value?.trim()
     const status   = window._rsvpStatus || document.querySelector('.rsvp-status.selected')?.dataset?.status
-    const guests   = parseInt(document.getElementById('rsvpJumlah')?.value) || 1
     const phone    = document.getElementById('rsvpPhone')?.value?.trim() || ''
     const wishes   = document.getElementById('rsvpWishes')?.value?.trim() || ''
     const errEl    = document.getElementById('rsvpError')
@@ -408,13 +496,12 @@
 
     if (btn) { btn.disabled = true; btn.textContent = 'Mengirim...' }
 
-    const ok = await sbPost('rsvps', {
-      invitation_id: invId,
-      guest_name:    name,
-      status,
-      total_guests:  guests,
-      guest_phone:   phone,
-      wishes,
+    const ok = await sbPost('rsvp_tamu', {
+      client_id: clientId,
+      nama:      name,
+      kehadiran: status,
+      telpon:    phone,
+      pesan:     wishes,
     })
 
     if (btn) { btn.disabled = false; btn.textContent = 'Kirim' }
@@ -428,19 +515,19 @@
           <p style="font-size:14px;opacity:.7;margin-top:6px">RSVP kamu telah kami terima.</p>
         </div>`
       // Reload ucapan setelah submit
-      loadUcapan(invId)
+      loadUcapan(window._nikahinClientId)
     } else {
       if (errEl) errEl.textContent = 'Gagal mengirim, coba lagi.'
     }
   }
 
   // ── LOAD & RENDER UCAPAN ────────────────────────────────────────
-  async function loadUcapan(invId) {
+  async function loadUcapan(clientId) {
     const list = document.getElementById('ucapanList')
     if (!list) return
 
-    const data = await sbFetch('rsvps',
-      `?invitation_id=eq.${invId}&wishes=neq.&order=created_at.desc&limit=20&select=guest_name,wishes,status,created_at`
+    const data = await sbFetch('rsvp_tamu',
+      `?client_id=eq.${clientId}&pesan=neq.&order=created_at.desc&limit=20&select=nama,pesan,kehadiran,created_at`
     ).catch(() => [])
 
     if (!data.length) {
@@ -451,12 +538,12 @@
     list.innerHTML = data.map(r => `
       <div class="ucapan-item">
         <div class="ucapan-header">
-          <span class="ucapan-name">${escHtml(r.guest_name)}</span>
-          <span class="ucapan-badge ${r.status === 'Hadir' ? 'hadir' : r.status === 'Tidak Hadir' ? 'tidak' : 'ragu'}">
-            ${r.status === 'Hadir' ? '✓ Hadir' : r.status === 'Tidak Hadir' ? '✗ Tidak Hadir' : '? Ragu-ragu'}
+          <span class="ucapan-name">${escHtml(r.nama)}</span>
+          <span class="ucapan-badge ${r.kehadiran === 'Hadir' ? 'hadir' : r.kehadiran === 'Tidak Hadir' ? 'tidak' : 'ragu'}">
+            ${r.kehadiran === 'Hadir' ? '✓ Hadir' : r.kehadiran === 'Tidak Hadir' ? '✗ Tidak Hadir' : '? Ragu-ragu'}
           </span>
         </div>
-        <p class="ucapan-text">${escHtml(r.wishes)}</p>
+        <p class="ucapan-text">${escHtml(r.pesan)}</p>
       </div>
     `).join('')
   }
@@ -472,14 +559,7 @@
 
   // ── LOG VIEW ────────────────────────────────────────────────────
   async function logView(invId) {
-    const guestName = getGuestName()
-    await sbPost('invitation_views', {
-      invitation_id: invId,
-      guest_name:    guestName !== 'Tamu Undangan' ? guestName : null,
-      referer:       document.referrer || null,
-    }).catch(() => {})
-
-    // Increment view_count
+    // Increment view_count via RPC
     await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_view_count`, {
       method: 'POST',
       headers: {
@@ -493,6 +573,10 @@
 
   // ── MAIN: LOAD SEMUA DATA ───────────────────────────────────────
   async function loadInvitation() {
+    // Log config untuk debugging
+    console.log('[nikahin] SUPABASE_URL:', SUPABASE_URL ? '✓ ada' : '✗ kosong')
+    console.log('[nikahin] SUPABASE_ANON:', SUPABASE_ANON ? '✓ ada' : '✗ kosong')
+    
     const slug = getSlug()
     console.log('[nikahin] slug:', slug)
     if (!slug) { console.warn('[nikahin] Slug tidak ditemukan di URL'); return }
@@ -527,10 +611,11 @@
 
     const inv = invitations[0]
     window._nikahinInvitationId = inv.id
+    window._nikahinClientId = inv.client_id
 
-    // 2. Isi nama tamu dari URL
-    const guestName = getGuestName()
-    setText('#guestNameDisplay', guestName)
+    // 2. Resolve nama tamu (?tamu={id} dari DB, atau ?to={nama} fallback)
+    await resolveGuestName()
+    setText('#guestNameDisplay', _guestName)
 
     // 3. Ambil data terkait secara paralel
     const [events, galleries, accounts, stories, clients] = await Promise.all([
@@ -538,7 +623,7 @@
       sbFetch('galleries',     `?invitation_id=eq.${inv.id}&order=sort_order`).catch(() => []),
       sbFetch('bank_accounts', `?invitation_id=eq.${inv.id}&order=sort_order`).catch(() => []),
       sbFetch('love_stories',  `?invitation_id=eq.${inv.id}&order=sort_order`).catch(() => []),
-      sbFetch('clients',       `?invitation_id=eq.${inv.id}&select=tanggal_acara`).catch(() => []),
+      sbFetch('clients',       `?id=eq.${inv.client_id}&select=tanggal_acara`).catch(() => []),
     ])
 
     // Simpan tanggal_acara global untuk fillCover
@@ -551,6 +636,7 @@
     fillProfiles(inv)
     fillEvents(events)
     fillGallery(galleries)
+    fillMiniGallery(galleries)
     fillSlides(galleries)
     fillMusic(inv)
     fillQuoteHashtag(inv)
@@ -559,7 +645,7 @@
     startCountdown(events)
 
     // 5. Load ucapan
-    await loadUcapan(inv.id)
+    await loadUcapan(inv.client_id)
 
     // 6. Log view (tidak bloking)
     logView(inv.id)

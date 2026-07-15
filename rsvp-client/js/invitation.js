@@ -180,7 +180,7 @@ function fillStatusSidebar(inv) {
 
   if (temaEl)  temaEl.textContent  = inv.themes?.name || '—';
   if (tokenEl) tokenEl.textContent = clientData.token || '—';
-  if (pinEl)   pinEl.textContent   = clientData.scanner_pin  || '—';
+  if (pinEl)   pinEl.textContent   = clientData.pin_scanner  || '—';
 }
 
 function initCopyButtons() {
