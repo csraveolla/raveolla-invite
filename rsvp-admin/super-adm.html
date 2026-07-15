@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel RSVP</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-label">Admin Panel</div>
+      <div class="login-title">RSVP Admin</div>
+      <div class="login-sub">Masuk dengan akun administrator</div>
+    </div>
+    <div class="login-body">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="admin@email.com"
+          onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <div class="form-group" style="margin-top:14px">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••"
+          onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <button class="login-btn" id="login-btn" onclick="doLogin()">Masuk →</button>
+      <div class="login-msg" id="login-msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD SCREEN ===== -->
+<div id="dashboard-screen">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-dot">⚡</div>
+      <div>
+        <div class="brand-name">RSVP Admin</div>
+        <div class="brand-sub">Panel Utama</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="theme-toggle" onclick="toggleTheme()" title="Ganti tema"><div class="slider"></div></div>
+      <span class="admin-email" id="admin-email"></span>
+      <button class="btn-logout" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="admin-tabs">
+    <div class="admin-tab active" onclick="switchAdminTab('clients')">Daftar Client</div>
+    <div class="admin-tab" onclick="switchAdminTab('setting')">⚙ Setting</div>
+  </div>
+
+  <div class="main">
+  <div id="tab-clients">
+    <div class="stats-mini">
+      <div class="stat-mini">
+        <div class="stat-mini-label">Total Client</div>
+        <div class="stat-mini-val" id="s-client">—</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-mini-label">Total RSVP</div>
+        <div class="stat-mini-val" id="s-rsvp">—</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-mini-label">Total Hadir</div>
+        <div class="stat-mini-val" id="s-hadir" style="color:var(--success)">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">Tambah Client Baru</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div class="form-group">
+            <label>Nama Acara / Pasangan</label>
+            <input type="text" id="inp-nama" placeholder="Cth: Pernikahan Budi & Siti">
+          </div>
+          <div class="form-group">
+            <label>URL Halaman Undangan</label>
+            <input type="url" id="inp-url" placeholder="Cth: https://domain.com/budi-siti">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+          <div class="form-group">
+            <label>Token Login (unik)</label>
+            <input type="text" id="inp-token" placeholder="Cth: BUDI2025" oninput="this.value=this.value.toUpperCase()">
+          </div>
+          <div class="form-group">
+            <label>PIN Scanner (6 digit)</label>
+            <input type="text" id="inp-pin" placeholder="Cth: 123456" maxlength="6" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          </div>
+          <div class="form-group">
+            <label>Paket Layanan</label>
+            <select id="inp-paket">
+              <option value="lite">Lite (100 tamu, 50 WA)</option>
+              <option value="pro">Pro (250 tamu, 100 WA)</option>
+              <option value="premium">Premium (500 tamu, 300 WA)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Mode Kirim WA</label>
+            <div class="wa-mode-wrap">
+              <button class="wa-mode-btn active" id="wa-mode-admin" onclick="setWaMode('admin')">Admin</button>
+              <button class="wa-mode-btn" id="wa-mode-client" onclick="setWaMode('client')">Client</button>
+            </div>
+            <input type="hidden" id="inp-wa-mode" value="admin">
+          </div>
+        </div>
+        <div id="wa-client-fields" style="display:none;margin-bottom:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group">
+              <label>Nomor WA Client (628xxx)</label>
+              <input type="text" id="inp-wa-nomor" placeholder="6281234567890">
+            </div>
+            <div class="form-group">
+              <label>API Key Fonnte Client</label>
+              <div class="api-key-wrap">
+                <input type="password" id="inp-wa-apikey" placeholder="Token Fonnte client">
+                <button class="api-key-toggle" onclick="toggleApiKey('inp-wa-apikey')">👁</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="tambahClient()">+ Tambah Client</button>
+          <button class="btn btn-outline" onclick="generateToken()">⟳ Generate Token & PIN</button>
+        </div>
+        <div class="msg" id="msg-client"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Daftar Client</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" class="search-input" id="search-client" placeholder="🔍 Cari nama acara..." oninput="filterClients()">
+          <button class="btn btn-outline btn-sm" onclick="loadData()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <div id="client-table">
+          <div class="state-box"><div class="spinner"></div>Memuat data...</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end tab-clients -->
+
+  <!-- TAB SETTING -->
+  <div id="tab-setting" style="display:none">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Konfigurasi WhatsApp Admin</div></div>
+      <div class="card-body">
+        <div class="setting-section">
+          <div class="setting-section-title">Fonnte — Nomor Admin</div>
+          <div class="setting-row">
+            <div class="form-group">
+              <label>Nomor WA Admin</label>
+              <input type="text" id="set-admin-nomor" placeholder="628xxxxxxxxx">
+            </div>
+            <div class="form-group">
+              <label>API Key Fonnte Admin</label>
+              <div class="api-key-wrap">
+                <input type="password" id="set-admin-apikey" placeholder="Token Fonnte admin">
+                <button class="api-key-toggle" onclick="toggleApiKey('set-admin-apikey')">👁</button>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-gold" onclick="simpanSettingAdmin()">Simpan</button>
+            <button class="test-btn" onclick="testWA('admin')">⚡ Test Kirim</button>
+            <div class="test-result" id="test-admin-result"></div>
+          </div>
+          <div class="msg" id="msg-setting-admin"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">Provider WhatsApp</div></div>
+      <div class="card-body">
+        <div class="setting-section">
+          <div class="setting-section-title">Pilih Provider</div>
+          <div class="setting-row">
+            <div class="form-group">
+              <label>Provider Aktif</label>
+              <select id="set-provider" onchange="toggleCustomUrl()">
+                <option value="fonnte">Fonnte</option>
+                <option value="wablas">Wablas</option>
+                <option value="waha">Waha (Self-hosted)</option>
+              </select>
+            </div>
+            <div class="form-group" id="set-custom-url-wrap" style="display:none">
+              <label>URL API (Self-hosted)</label>
+              <input type="url" id="set-custom-url" placeholder="https://your-vps.com/api">
+            </div>
+          </div>
+          <button class="btn btn-gold" onclick="simpanProvider()">Simpan Provider</button>
+          <div class="msg" id="msg-setting-provider"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Media & Mode WA per Client</div>
+        <span style="font-size:12px;color:var(--text-muted)">Atur nomor pengirim & URL media tiap client</span>
+      </div>
+      <div class="table-scroll">
+        <div id="wa-client-table"><div class="state-box"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+  </div><!-- end tab-setting -->
+  </div><!-- end .main -->
+</div><!-- end dashboard-screen -->
+
+<!-- ===== DETAIL RSVP SCREEN ===== -->
+<div id="detail-screen">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-dot">⚡</div>
+      <div>
+        <div class="brand-name" id="detail-acara">Detail RSVP</div>
+        <div class="brand-sub">Data Tamu</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-outline btn-sm" onclick="backToMain()">← Kembali</button>
+      <button class="btn btn-sm btn-gold" onclick="exportDetailCSV()">↓ CSV</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="detail-stats">
+      <div class="detail-stat"><div class="detail-stat-label">Total RSVP</div><div class="detail-stat-val" id="ds-total">0</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">Konfirmasi Hadir</div><div class="detail-stat-val" id="ds-hadir" style="color:var(--success)">0</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">Check-in Fisik</div><div class="detail-stat-val" id="ds-checkin" style="color:var(--warning)">0</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">Tidak Hadir</div><div class="detail-stat-val" id="ds-tidak" style="color:var(--danger)">0</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Data Tamu</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:nowrap">
+          <input type="text" class="search-input" id="f-detail-cari" placeholder="🔍 Cari nama / telpon..." oninput="filterDetail()" style="width:180px">
+          <select id="f-detail-kehadiran" onchange="filterDetail()" style="padding:7px 12px;border:none;border-radius:50px;background:var(--bg-surface);box-shadow:var(--neu-in);font-family:Jost,sans-serif;font-size:12px;color:var(--text-main);outline:none">
+            <option value="">Semua Status</option>
+            <option value="Hadir">Hadir</option>
+            <option value="Tidak Hadir">Tidak Hadir</option>
+          </select>
+          <select id="f-detail-checkin" onchange="filterDetail()" style="padding:7px 12px;border:none;border-radius:50px;background:var(--bg-surface);box-shadow:var(--neu-in);font-family:Jost,sans-serif;font-size:12px;color:var(--text-main);outline:none">
+            <option value="">Semua Check-in</option>
+            <option value="sudah">Sudah Check-in</option>
+            <option value="belum">Belum Check-in</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="loadDetail(currentClientId)">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <div id="detail-table"><div class="state-box"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DATA UNDANGAN SCREEN ===== -->
+<div id="invitation-screen">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-dot">📋</div>
+      <div>
+        <div class="brand-name" id="inv-acara-nama">Data Undangan</div>
+        <div class="brand-sub">Edit Konten Undangan Client</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-outline btn-sm" onclick="backFromInvitation()">← Kembali</button>
+    </div>
+  </div>
+  <div class="main">
+    <div id="inv-loading" class="state-box"><div class="spinner"></div>Memuat data undangan...</div>
+    <div id="inv-notfound" class="state-box" style="display:none">
+      <div style="margin-bottom:12px">Client ini belum punya data undangan.</div>
+      <div class="form-group" style="max-width:320px;margin:0 auto 14px;text-align:left">
+        <label>Slug URL</label><input type="text" id="inv-create-slug" placeholder="budi-siti" readonly style="opacity:.7;cursor:not-allowed">
+      </div>
+      <button class="btn btn-gold" onclick="createBlankInvitation()">+ Buat Data Undangan</button>
+      <div class="msg" id="msg-inv-create"></div>
+    </div>
+    <div id="inv-wrap" style="display:none">
+      <div class="inv-subtabs">
+        <button class="inv-subtab active" onclick="switchInvTab(this,'mempelai')">👰 Mempelai</button>
+        <button class="inv-subtab" onclick="switchInvTab(this,'acara')">📅 Acara</button>
+        <button class="inv-subtab" onclick="switchInvTab(this,'galeri')">🖼 Galeri</button>
+        <button class="inv-subtab" onclick="switchInvTab(this,'kado')">💝 Kado</button>
+        <button class="inv-subtab" onclick="switchInvTab(this,'lovestory')">💌 Love Story</button>
+      </div>
+
+      <div class="inv-tabs-layout">
+        <!-- KIRI: Tab Contents -->
+        <div class="inv-tabs-main">
+
+          <!-- MEMPELAI -->
+          <div class="inv-subtab-content active" id="inv-sub-mempelai">
+            <div class="card"><div class="card-header"><div class="card-title">Data Mempelai</div></div><div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+                <div>
+                  <div class="inv-section-label" style="color:var(--primary)">Mempelai Wanita</div>
+                  <div class="form-group" style="margin-bottom:10px"><label>Nama Lengkap</label><input type="text" id="inv-bride_name"></div>
+                  <div class="form-group" style="margin-bottom:10px"><label>Nama Panggilan</label><input type="text" id="inv-bride_nickname"></div>
+                  <div class="form-group" style="margin-bottom:10px"><label>Nama Ayah</label><input type="text" id="inv-bride_father"></div>
+                  <div class="form-group" style="margin-bottom:10px"><label>Nama Ibu</label><input type="text" id="inv-bride_mother"></div>
+                  <div class="form-group" style="margin-bottom:10px"><label>Instagram</label><input type="text" id="inv-bride_instagram"></div>
+                  <div class="form-group"><label>Foto Profil</label>
+                    <div class="inv-photo-upload" onclick="document.getElementById('inv-bride-file').click()">
+                      <div id="inv-bride-preview" class="inv-photo-circle" style="background:linear-gradient(135deg,#C9A96E,#8B5E3C)">A</div>
+                      <div class="inv-photo-label" id="inv-bride-lbl">Pilih Foto</div>
+                    </div>
+                    <input type="file" id="inv-bride-file" accept="image/*" style="display:none" onchange="uploadInvPhoto('bride',this.files[0])">
+                  </div>
+                </div>
+                <div>
+                  <div class="inv-section-label" style="color:var(--info)">Mempelai Pria</div>
+                  <div class="form-group" style="margin-bottom:10px"><label>Nama Lengkap</label><input type="text" id="inv-groom_name"></div>
+                  <div class="form-group" style="margin-bottom:10px"><label>Nama Panggilan</label><input type="text" id="inv-groom_nickname"></div>
+                  <div class="form-group" style="margin-bottom:10px"><label>Nama Ayah</label><input type="text" id="inv-groom_father"></div>
+                  <div class="form-group" style="margin-bottom:10px"><label>Nama Ibu</label><input type="text" id="inv-groom_mother"></div>
+                  <div class="form-group" style="margin-bottom:10px"><label>Instagram</label><input type="text" id="inv-groom_instagram"></div>
+                  <div class="form-group"><label>Foto Profil</label>
+                    <div class="inv-photo-upload" onclick="document.getElementById('inv-groom-file').click()">
+                      <div id="inv-groom-preview" class="inv-photo-circle" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">B</div>
+                      <div class="inv-photo-label" id="inv-groom-lbl">Pilih Foto</div>
+                    </div>
+                    <input type="file" id="inv-groom-file" accept="image/*" style="display:none" onchange="uploadInvPhoto('groom',this.files[0])">
+                  </div>
+                </div>
+              </div>
+              <div class="form-group" style="margin-top:18px"><label>Kutipan / Quote</label><textarea id="inv-quote" rows="3"></textarea></div>
+              <div class="form-group" style="margin-top:10px"><label>Hashtag</label><input type="text" id="inv-hashtag"></div>
+              <button class="btn btn-gold" style="margin-top:16px" onclick="saveInvMempelai()">💾 Simpan Mempelai</button>
+              <div class="msg" id="msg-inv-mempelai"></div>
+            </div></div>
+          </div>
+
+          <!-- ACARA -->
+          <div class="inv-subtab-content" id="inv-sub-acara">
+        <div class="card"><div class="card-header"><div class="card-title">Jadwal Acara</div></div><div class="card-body">
+          <div id="inv-events-wrap"></div>
+          <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:8px" onclick="addInvEvent()">+ Tambah Acara</button>
+          <button class="btn btn-gold" style="margin-top:16px" onclick="saveInvEvents()">💾 Simpan Acara</button>
+          <div class="msg" id="msg-inv-acara"></div>
+        </div></div>
+      </div>
+
+      <!-- GALERI -->
+      <div class="inv-subtab-content" id="inv-sub-galeri">
+        <div class="card"><div class="card-header"><div class="card-title">Foto Galeri</div><span style="font-size:11px;color:var(--text-muted)" id="inv-gal-count">0 foto</span></div><div class="card-body">
+          <div class="inv-dropzone" id="inv-gal-drop" onclick="document.getElementById('inv-gal-file').click()"
+            ondragover="event.preventDefault();this.classList.add('drag')"
+            ondragleave="this.classList.remove('drag')"
+            ondrop="event.preventDefault();this.classList.remove('drag');uploadInvGallery(event.dataTransfer.files)">
+            <div id="inv-gal-grid" class="inv-gallery-grid"></div>
+            <div id="inv-gal-hint" style="text-align:center;padding:16px;color:var(--text-muted);font-size:12px">Klik atau drop foto di sini (maks 30)</div>
+          </div>
+          <input type="file" id="inv-gal-file" multiple accept="image/*" style="display:none" onchange="uploadInvGallery(this.files)">
+          <div class="msg" id="msg-inv-galeri"></div>
+        </div></div>
+      </div>
+
+      <!-- KADO -->
+      <div class="inv-subtab-content" id="inv-sub-kado">
+        <div class="card"><div class="card-header"><div class="card-title">Info Kado / Rekening</div></div><div class="card-body">
+          <div id="inv-bank-wrap"></div>
+          <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:8px" onclick="addInvBank()">+ Tambah Rekening</button>
+          <button class="btn btn-gold" style="margin-top:16px" onclick="saveInvBank()">💾 Simpan Kado</button>
+          <div class="msg" id="msg-inv-kado"></div>
+        </div></div>
+      </div>
+
+      <!-- LOVE STORY -->
+      <div class="inv-subtab-content" id="inv-sub-lovestory">
+        <div class="card"><div class="card-header"><div class="card-title">Kisah Cinta</div></div><div class="card-body">
+          <div id="inv-love-wrap"></div>
+          <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:8px" onclick="addInvLove()">+ Tambah Momen</button>
+          <button class="btn btn-gold" style="margin-top:16px" onclick="saveInvLove()">💾 Simpan Love Story</button>
+          <div class="msg" id="msg-inv-lovestory"></div>
+        </div></div>
+      </div>
+        </div><!-- end inv-tabs-main -->
+
+        <!-- KANAN: Sidebar Pengaturan (always visible) -->
+        <div class="inv-tabs-sidebar">
+          <div class="card"><div class="card-header"><div class="card-title">⚙ Pengaturan</div></div><div class="card-body">
+            <div id="inv-pub-toggle" class="pub-toggle" onclick="togglePublish()" style="margin-bottom:16px">
+              <span class="pub-toggle-label">Publish Undangan</span>
+              <div class="pub-toggle-track"><div class="pub-dot"></div></div>
+            </div>
+            <div class="form-group" style="margin-bottom:12px"><label>Slug URL</label><input type="text" id="inv-slug" readonly style="opacity:.7;cursor:not-allowed"></div>
+            <div class="form-group" style="margin-bottom:12px"><label>Tema</label><select id="inv-theme-sel"></select></div>
+            <div class="form-group" style="margin-bottom:12px"><label>Paket</label><select id="inv-package-sel" disabled style="opacity:.7"></select></div>
+            <div class="form-group" style="margin-bottom:12px"><label>Masa Aktif Hingga</label><input type="date" id="inv-expired"></div>
+            <div class="form-group" style="margin-bottom:12px"><label>Token Login</label><div class="token-box"><span class="token-text" id="inv-token-display"></span></div></div>
+            <div class="form-group" style="margin-bottom:14px"><label>PIN Scanner</label><div class="token-box"><span class="token-text" id="inv-pin-display"></span></div></div>
+            <button class="btn btn-gold btn-sm" style="width:100%;justify-content:center" onclick="saveInvSettings()">💾 Simpan Pengaturan</button>
+            <div class="msg" id="msg-inv-pengaturan"></div>
+          </div></div>
+        </div>
+      </div><!-- end inv-tabs-layout -->
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT CLIENT -->
+<div class="modal-overlay" id="modal-edit-client">
+  <div class="modal-box" style="max-width:540px;width:100%">
+    <div class="modal-title">Edit Data Client</div>
+    <div style="padding:16px 24px 0">
+      <input type="hidden" id="ec-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="form-group"><label>Nama Acara / Pasangan</label><input type="text" id="ec-nama"></div>
+        <div class="form-group"><label>URL Halaman Undangan</label><input type="url" id="ec-url"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="form-group"><label>Token Login 🔒</label><input type="text" id="ec-token" readonly></div>
+        <div class="form-group"><label>PIN Scanner 🔒</label><input type="text" id="ec-pin" readonly></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="form-group">
+          <label>Paket</label>
+          <select id="ec-paket" onchange="ecUpdateMaxFromPaket()">
+            <option value="lite">Lite</option>
+            <option value="pro">Pro</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Maks Tamu</label><input type="number" id="ec-max-tamu"></div>
+        <div class="form-group"><label>Maks WA</label><input type="number" id="ec-max-wa"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Mode Kirim WA</label>
+        <div class="wa-mode-wrap" style="max-width:260px">
+          <button class="wa-mode-btn active" id="ec-wa-admin" onclick="setEcWaMode('admin')">Nomor Admin</button>
+          <button class="wa-mode-btn" id="ec-wa-client" onclick="setEcWaMode('client')">Nomor Client</button>
+        </div>
+        <input type="hidden" id="ec-wa-mode" value="admin">
+      </div>
+      <div id="ec-wa-fields" style="display:none;margin-bottom:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group"><label>Nomor WA Client</label><input type="text" id="ec-wa-nomor" placeholder="628xxx"></div>
+          <div class="form-group"><label>API Key Fonnte</label>
+            <div class="api-key-wrap"><input type="password" id="ec-wa-apikey"><button class="api-key-toggle" onclick="toggleApiKey('ec-wa-apikey')">👁</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-edit-client')">Batal</button>
+      <button class="btn btn-gold" onclick="simpanEditClient()">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL WA CLIENT -->
+<div class="modal-overlay" id="modal-wa-client">
+  <div class="modal-box" style="max-width:480px;width:100%">
+    <div class="modal-title">Konfigurasi WA & Media</div>
+    <div style="font-size:12px;color:var(--text-muted);padding:4px 24px 0;font-weight:300" id="ewm-nama"></div>
+    <div style="padding:16px 24px 0">
+      <input type="hidden" id="ewm-id">
+      <div id="ewm-admin-mode-notice" style="display:none;font-size:11px;color:var(--text-muted);background:var(--bg-surface);box-shadow:var(--neu-in);padding:8px 14px;margin-bottom:14px;line-height:1.5;border-radius:var(--radius-sm)">
+        🔒 Mode WA menggunakan <strong>Nomor Admin</strong>.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="form-group"><label>Nomor WA Client (628xxx)</label><input type="text" id="ewm-nomor" placeholder="6281234567890"></div>
+        <div class="form-group"><label>API Key Fonnte Client</label>
+          <div class="api-key-wrap"><input type="password" id="ewm-apikey"><button class="api-key-toggle" onclick="toggleApiKey('ewm-apikey')" id="ewm-apikey-toggle">👁</button></div>
+        </div>
+      </div>
+      <div id="ewm-media-wrap">
+        <div class="setting-section-title" style="margin-bottom:12px">Media Lampiran WA <span style="font-size:9px;background:var(--info-bg);color:var(--info);padding:2px 8px;border:1px solid var(--info-b);border-radius:50px;margin-left:6px">Pro / Premium</span></div>
+        <div class="form-group" style="margin-bottom:10px"><label>Nama File</label><input type="text" id="ewm-media-nama" placeholder="Cth: e-flyer pernikahan"></div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label>URL File Publik</label>
+          <div style="display:flex;gap:8px">
+            <input type="url" id="ewm-media-url" placeholder="https://drive.google.com/..." style="flex:1">
+            <button class="btn btn-outline btn-sm" onclick="previewMedia()">👁</button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);background:var(--bg-surface);box-shadow:var(--neu-in);padding:10px 14px;line-height:1.6;border-radius:var(--radius-sm)">
+          💡 Upload ke Google Drive / Imgur → copy link publik → paste di sini.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="margin-top:18px">
+      <button class="btn btn-outline" onclick="closeModal('modal-wa-client')">Batal</button>
+      <button class="btn btn-gold" onclick="simpanWaClient()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DELETE -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal-box">
+    <div class="modal-title">Hapus Data?</div>
+    <div class="modal-msg" id="modal-msg">Data tamu ini akan dihapus permanen.</div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

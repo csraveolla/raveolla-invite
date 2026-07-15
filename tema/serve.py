@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+"""
+serve.py — Local Development Server with Multi-Theme Routing
+Queries Supabase to determine theme, serves correct theme HTML.
+"""
+import http.server
+import os
+import json
+import urllib.request
+import urllib.parse
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+
+# Supabase config — use environment variables or fallback to defaults
+SUPABASE_URL  = os.environ.get('SUPABASE_URL',  'https://qyaxacjktcuyvkcrnofc.supabase.co')
+SUPABASE_KEY  = os.environ.get('SUPABASE_KEY',  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5YXhhY2prdGN1eXZrY3Jub2ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3OTY3NjYsImV4cCI6MjA5ODM3Mjc2Nn0.p1-9aFY_WZ4aVGg3D8Mx_4NUdqp8RZkXil6sX2-VA70')
+DEFAULT_THEME = os.environ.get('DEFAULT_THEME', 'sakina')
+
+
+def get_theme_for_slug(slug):
+    """Query Supabase to get theme name for a given slug."""
+    if not slug:
+        return DEFAULT_THEME
+
+    api_url = (
+        f"{SUPABASE_URL}/rest/v1/invitations"
+        f"?slug=eq.{urllib.parse.quote(slug)}"
+        f"&is_published=eq.true"
+        f"&select=theme_id,themes(name)"
+    )
+
+    req = urllib.request.Request(api_url)
+    req.add_header('apikey', SUPABASE_KEY)
+    req.add_header('Authorization', f'Bearer {SUPABASE_KEY}')
+    req.add_header('Content-Type', 'application/json')
+
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode())
+            if data and data[0].get('themes', {}).get('name'):
+                return data[0]['themes']['name'].lower()
+    except Exception as e:
+        print(f"[SPA] Supabase query error: {e}")
+
+    return DEFAULT_THEME
+
+
+class SPAHandler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=ROOT, **kwargs)
+
+    def do_GET(self):
+        path = os.path.join(ROOT, self.path.lstrip('/'))
+
+        # If file exists, serve it directly
+        if os.path.exists(path) and not (os.path.isdir(path) and not os.path.exists(os.path.join(path, 'index.html'))):
+            return super().do_GET()
+
+        # Extract slug from path (last segment)
+        parts = [p for p in self.path.strip('/').split('/') if p]
+        slug = parts[-1] if parts else ''
+
+        # Skip admin paths
+        if slug.lower() == 'admin':
+            admin_path = os.path.join(ROOT, 'admin', 'index.html')
+            if os.path.exists(admin_path):
+                self.path = '/admin/index.html'
+                return super().do_GET()
+
+        # Query Supabase for theme
+        theme = get_theme_for_slug(slug)
+        theme_path = os.path.join(ROOT, theme, 'index.html')
+
+        # Case-insensitive fallback: find matching directory
+        if not os.path.exists(theme_path):
+            for entry in os.listdir(ROOT):
+                if entry.lower() == theme.lower() and os.path.isdir(os.path.join(ROOT, entry)):
+                    theme = entry
+                    theme_path = os.path.join(ROOT, theme, 'index.html')
+                    break
+
+        # Fallback to default theme
+        if not os.path.exists(theme_path):
+            theme = DEFAULT_THEME
+            theme_path = os.path.join(ROOT, theme, 'index.html')
+
+        if os.path.exists(theme_path):
+            self.path = f'/{theme}/index.html'
+            return super().do_GET()
+
+        # Final fallback
+        self.path = '/index.html'
+        return super().do_GET()
+
+    def log_message(self, format, *args):
+        print(f"[SPA] {args[0]}")
+
+
+if __name__ == '__main__':
+    server = http.server.HTTPServer(('0.0.0.0', 8080), SPAHandler)
+    print('SPA server running on http://localhost:8080')
+    print('Theme routing via Supabase: enabled')
+    server.serve_forever()

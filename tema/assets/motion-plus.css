@@ -1,0 +1,1200 @@
+/* ================================================================
+   motion-plus.css — 63 Wedding Animation Classes
+   Dipakai oleh semua tema undangan
+   ================================================================ */
+
+/* ======================================================
+   BASE STATE — SEMUA ANIMASI
+   ====================================================== */
+
+.ani-container [class*="-dreamy"] {
+  opacity: 0;
+  will-change: transform, opacity;
+  animation-fill-mode: both; 
+}
+
+/* ======================================================
+   GROUP 1: TRANSITION-BASED (FADE / SLIDE / ZOOM)
+   ====================================================== */
+
+.ani-container .fade-in-dreamy,
+.ani-container .fade-in-down-dreamy,
+.ani-container .fade-in-left-dreamy,
+.ani-container .fade-in-right-dreamy,
+.ani-container .fade-in-up-dreamy,
+.ani-container .fade-up-dreamy,
+.ani-container .zoom-dreamy,
+.ani-container .slide-left-dreamy,
+.ani-container .slide-right-dreamy {
+  transition:
+    opacity 2.5s cubic-bezier(0.16,1,0.3,1),
+    transform 2.5s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* Posisi Awal Transition */
+.ani-container .fade-in-dreamy        { transform: scale(1); }
+.ani-container .fade-in-down-dreamy   { transform: translateY(-70px); }
+.ani-container .fade-in-left-dreamy   { transform: translateX(-70px); }
+.ani-container .fade-in-right-dreamy  { transform: translateX(70px); }
+.ani-container .fade-in-up-dreamy     { transform: translateY(100px); }
+.ani-container .fade-up-dreamy        { transform: translateY(100px) scale(1.3); }
+.ani-container .zoom-dreamy           { transform: scale(0.5); }
+.ani-container .slide-left-dreamy     { transform: translateX(100%) scale(1.5); }
+.ani-container .slide-right-dreamy    { transform: translateX(-100%) scale(1.5); }
+
+/* Active State Transition */
+.ani-container.active .fade-in-dreamy.active,
+.ani-container.active .fade-in-down-dreamy.active,
+.ani-container.active .fade-in-left-dreamy.active,
+.ani-container.active .fade-in-right-dreamy.active,
+.ani-container.active .fade-in-up-dreamy.active,
+.ani-container.active .fade-up-dreamy.active,
+.ani-container.active .zoom-dreamy.active,
+.ani-container.active .slide-left-dreamy.active,
+.ani-container.active .slide-right-dreamy.active {
+  opacity: 1;
+  transform: translate(0,0) scale(1);
+}
+
+/* ======================================================
+   GROUP 2: BOUNCE ANIMATIONS
+   ====================================================== */
+   
+/* Posisi Awal Bounce */
+.ani-container .bounce-in-up-dreamy     { transform: translateY(120px); }
+.ani-container .bounce-in-down-dreamy   { transform: translateY(-120px); }
+.ani-container .bounce-in-left-dreamy   { transform: translateX(-140px); }
+.ani-container .bounce-in-right-dreamy  { transform: translateX(140px); }
+
+/* Trigger Keyframes Saat Active */
+.ani-container.active .bounce-in-up-dreamy.active     { animation-name: bounceInUpDreamy; animation-duration: 1.5s; }
+.ani-container.active .bounce-in-down-dreamy.active   { animation-name: bounceInDownDreamy; animation-duration: 1.5s; }
+.ani-container.active .bounce-in-left-dreamy.active   { animation-name: bounceInLeftDreamy; animation-duration: 1.5s; }
+.ani-container.active .bounce-in-right-dreamy.active  { animation-name: bounceInRightDreamy; animation-duration: 1.5s; }
+
+/* ======================================================
+   BOUNCE KEYFRAMES
+   ====================================================== */
+
+@keyframes bounceInUpDreamy {
+  0% { 
+    opacity: 0; 
+    transform: translateY(600px) scale(0.6); 
+  }
+  50% { 
+    opacity: 0.4; 
+    transform: translateY(-80px) scale(1.08); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+@keyframes bounceInDownDreamy {
+  0% { 
+    opacity: 0; 
+    transform: translateY(-600px) scale(0.6); 
+  }
+  50% { 
+    opacity: 0.4; 
+    transform: translateY(80px) scale(1.08); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+@keyframes bounceInLeftDreamy {
+  0% { 
+    opacity: 0; 
+    transform: translateX(-600px) scale(0.6); 
+  }
+  50% { 
+    opacity: 0.4; 
+    transform: translateX(80px) scale(1.08); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateX(0) scale(1); 
+  }
+}
+
+@keyframes bounceInRightDreamy {
+  0% { 
+    opacity: 0; 
+    transform: translateX(600px) scale(0.6); 
+  }
+  50% { 
+    opacity: 0.4; 
+    transform: translateX(-80px) scale(1.08); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateX(0) scale(1); 
+  }
+}
+
+/* ======================================================
+   GROUP 3: ROTATE ANIMATIONS
+   ====================================================== */
+
+/* Posisi Awal Rotate */
+.ani-container .rotate-in-dreamy            { transform: rotate(-200deg) scale(0.7); }
+.ani-container .rotate-in-down-left-dreamy  { transform: rotate(-45deg) translate(-60%, 60%) scale(0.8); }
+.ani-container .rotate-in-down-right-dreamy { transform: rotate(45deg)  translate(60%, 60%)  scale(0.8); }
+.ani-container .rotate-in-up-left-dreamy    { transform: rotate(45deg)  translate(-60%, -60%) scale(0.8); }
+.ani-container .rotate-in-up-right-dreamy   { transform: rotate(-45deg) translate(60%, -60%)  scale(0.8); }
+
+/* Trigger Keyframes Rotate */
+.ani-container.active .rotate-in-dreamy.active            { animation-name: rotateInDreamy; animation-duration: 1.5s; }
+.ani-container.active .rotate-in-down-left-dreamy.active  { animation-name: rotateInDownLeftDreamy; animation-duration: 1.5s; }
+.ani-container.active .rotate-in-down-right-dreamy.active { animation-name: rotateInDownRightDreamy; animation-duration: 1.5s; }
+.ani-container.active .rotate-in-up-left-dreamy.active    { animation-name: rotateInUpLeftDreamy; animation-duration: 1.5s; }
+.ani-container.active .rotate-in-up-right-dreamy.active   { animation-name: rotateInUpRightDreamy; animation-duration: 1.5s; }
+
+/* ======================================================
+   ROTATE KEYFRAMES
+   ====================================================== */
+
+@keyframes rotateInDreamy {
+  0% { 
+    opacity: 0; 
+    transform: rotate(-200deg) scale(0.7); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: rotate(0deg) scale(1); 
+  }
+}
+
+@keyframes rotateInDownLeftDreamy {
+  0% { 
+    opacity: 0; 
+    transform-origin: left bottom; 
+    transform: rotate(-45deg) translate(-60%, 60%) scale(0.8); 
+  }
+  100% { 
+    opacity: 1; 
+    transform-origin: left bottom; 
+    transform: rotate(0deg) scale(1); 
+  }
+}
+
+@keyframes rotateInDownRightDreamy {
+  0% { 
+    opacity: 0; 
+    transform-origin: right bottom; 
+    transform: rotate(45deg) translate(60%, 60%) scale(0.8); 
+  }
+  100% { 
+    opacity: 1; 
+    transform-origin: right bottom; 
+    transform: rotate(0deg) scale(1); 
+  }
+}
+
+@keyframes rotateInUpLeftDreamy {
+  0% { 
+    opacity: 0; 
+    transform-origin: left top; 
+    transform: rotate(45deg) translate(-60%, -60%) scale(0.8); 
+  }
+  100% { 
+    opacity: 1; 
+    transform-origin: left top; 
+    transform: rotate(0deg) scale(1); 
+  }
+}
+
+@keyframes rotateInUpRightDreamy {
+  0% { 
+    opacity: 0; 
+    transform-origin: right top; 
+    transform: rotate(-45deg) translate(60%, -60%) scale(0.8); 
+  }
+  100% { 
+    opacity: 1; 
+    transform-origin: right top; 
+    transform: rotate(0deg) scale(1); 
+  }
+}
+
+/* ======================================================
+   GROUP 4: ATTENTION & ENTRANCE ANIMATIONS
+   ====================================================== */
+
+.ani-container .pulse-dreamy,
+.ani-container .shake-dreamy,
+.ani-container .jello-dreamy,
+.ani-container .wobble-dreamy,
+.ani-container .rubberband-dreamy,
+.ani-container .flash-dreamy,
+.ani-container .swing-dreamy,
+.ani-container .roll-in-dreamy,
+.ani-container .light-speed-dreamy {
+  animation-fill-mode: both;
+}
+
+@keyframes pulseDreamy {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shakeDreamy {
+  0%  { transform: translateX(0); }
+  20% { transform: translateX(-20px); }
+  40% { transform: translateX(20px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes jelloDreamy {
+  0%, 11.1%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  22.2% {
+    transform: skewX(-12.5deg) skewY(-12.5deg);
+  }
+  33.3% {
+    transform: skewX(6.25deg) skewY(6.25deg);
+  }
+  44.4% {
+    transform: skewX(-3.125deg) skewY(-3.125deg);
+  }
+  55.5% {
+    transform: skewX(1.5625deg) skewY(1.5625deg);
+  }
+  66.6% {
+    transform: skewX(-0.78125deg) skewY(-0.78125deg);
+  }
+  77.7% {
+    transform: skewX(0.390625deg) skewY(0.390625deg);
+  }
+  88.8% {
+    transform: skewX(-0.1953125deg) skewY(-0.1953125deg);
+  }
+  100% { 
+    transform: scale3d(1,1,1); 
+    opacity: 1; 
+  }
+}
+
+@keyframes wobbleDreamy {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  15% {
+    transform: translate3d(-25%, 0, 0) rotate3d(0, 0, 1, -5deg);
+  }
+  30% {
+    transform: translate3d(20%, 0, 0) rotate3d(0, 0, 1, 3deg);
+  }
+  45% {
+    transform: translate3d(-15%, 0, 0) rotate3d(0, 0, 1, -3deg);
+  }
+  60% {
+    transform: translate3d(10%, 0, 0) rotate3d(0, 0, 1, 2deg);
+  }
+  75% {
+    transform: translate3d(-5%, 0, 0) rotate3d(0, 0, 1, -1deg);
+  }
+  100% { 
+    transform: translateX(0); 
+    opacity: 1; 
+  }
+}
+
+@keyframes rubberBandDreamy {
+  0% { transform: scale3d(1,1,1); }
+  30% { transform: scale3d(1.25,.75,1); }
+  40% { transform: scale3d(.75,1.25,1); }
+  50% { transform: scale3d(1.15,.85,1); }
+  65% { transform: scale3d(.95,1.05,1); }
+  100% { 
+    transform: scale3d(1,1,1); 
+    opacity: 1; 
+  }
+}
+
+@keyframes flashDreamy {
+  0%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0; }
+}
+
+@keyframes swingDreamy {
+  20% { transform: rotate(15deg); }
+  40% { transform: rotate(-10deg); }
+  60% { transform: rotate(5deg); }
+  80% { transform: rotate(-5deg); }
+  100% { 
+    transform: rotate(0deg); 
+    opacity: 1; 
+  }
+}
+
+@keyframes rollInDreamy {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%) rotate(-120deg);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(0) rotate(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+@keyframes lightSpeedDreamy {
+  0% {
+    opacity: 0;
+    transform: translateX(100%) skewX(-30deg);
+  }
+  60% {
+    opacity: 1;
+    transform: skewX(20deg);
+  }
+  80% {
+    transform: skewX(-5deg);
+  }
+  100% {
+    transform: translateX(0) skewX(0);
+    opacity: 1;
+  }
+}
+
+.ani-container.active .pulse-dreamy.active       { animation: pulseDreamy       1.6s ease-in-out both; }
+.ani-container.active .shake-dreamy.active       { animation: shakeDreamy       1.2s ease-in-out both; }
+.ani-container.active .jello-dreamy.active       { animation: jelloDreamy       1.8s ease-in-out both; }
+.ani-container.active .wobble-dreamy.active      { animation: wobbleDreamy      1.6s ease-in-out both; }
+.ani-container.active .rubberband-dreamy.active  { animation: rubberBandDreamy  1.5s ease-in-out both; }
+.ani-container.active .flash-dreamy.active       { animation: flashDreamy       1.4s linear both; }
+.ani-container.active .swing-dreamy.active       { animation: swingDreamy       1.5s ease-in-out both; }
+.ani-container.active .roll-in-dreamy.active     { animation: rollInDreamy      1.6s ease-in-out both; }
+.ani-container.active .light-speed-dreamy.active { animation: lightSpeedDreamy  1.4s ease-out both; }
+
+/* ======================================================
+   GROUP 5: 3D SPECIAL EFFECTS
+   ====================================================== */
+
+/* ======================================
+   ORBIT REVEAL TOP — BASE STATE
+   ====================================== */
+
+.ani-container .orbit-reveal-top-dreamy {
+  opacity: 0;
+  transform:
+    rotateZ(-90deg)
+    rotateY(90deg)
+    translateZ(300px);
+  will-change: transform, opacity;
+  animation-fill-mode: both;
+  animation-delay: inherit;
+}
+
+@keyframes orbitRevealTopDreamy {
+  0% {
+    opacity: 0;
+    transform:
+      rotateZ(-90deg)
+      rotateY(90deg)
+      translateZ(300px);
+  }
+  60% {
+    opacity: 0.6;
+    transform:
+      rotateZ(10deg)
+      rotateY(-15deg)
+      translateZ(-30px);
+  }
+  80% {
+    opacity: 0.9;
+    transform:
+      rotateZ(-5deg)
+      rotateY(5deg)
+      translateZ(10px);
+  }
+  100% {
+    opacity: 1;
+    transform:
+      rotateZ(0deg)
+      rotateY(0deg)
+      translateZ(0);
+  }
+}
+
+.ani-container.active .orbit-reveal-top-dreamy.active {
+  animation: orbitRevealTopDreamy 2s
+    cubic-bezier(0.175, 0.885, 0.32, 1.275)
+    both;
+}
+
+/* ======================================
+   SWING IN TOP — BASE STATE
+   ====================================== */
+
+.ani-container .swing-in-top-dreamy {
+  opacity: 0;
+  transform: matrix(3, 0, 0, 3, 0, -800);
+  will-change: transform, opacity;
+  animation-fill-mode: both;
+  animation-delay: inherit;
+}
+
+@keyframes swingInTopDreamy {
+  0% {
+    opacity: 0;
+    transform: matrix(3, 0, 0, 3, 0, -800) scale(1.5);
+  }
+  50% {
+    opacity: 0.9;
+    transform: matrix(1.3, 0, 0, 1.3, 0, 20) scale(0.8);
+  }
+  75% {
+    transform: matrix(0.95, 0, 0, 0.95, 0, -10) scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: matrix(1, 0, 0, 1, 0, 0) scale(1);
+  }
+}
+
+.ani-container.active .swing-in-top-dreamy.active {
+  animation: swingInTopDreamy 2.5s
+    cubic-bezier(0.175, 0.885, 0.32, 1.275)
+    both;
+}
+
+/* ======================================================
+   FLIP TWIST — BASE STATE
+   ====================================================== */
+
+.ani-container .flip-twist-right-dreamy,
+.ani-container .flip-twist-pop-dreamy,
+.ani-container .flip-twist-slam-dreamy {
+  opacity: 0;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  animation-fill-mode: both;
+  animation-delay: inherit;
+}
+
+.ani-container .flip-twist-right-dreamy {
+  transform: perspective(1000px) rotateY(90deg) rotateZ(-25deg);
+}
+
+.ani-container .flip-twist-pop-dreamy {
+  transform: perspective(600px) rotateY(60deg) rotateZ(-10deg) scale(0.8);
+}
+
+.ani-container .flip-twist-slam-dreamy {
+  transform: perspective(800px) rotateY(-120deg) rotateZ(20deg);
+}
+
+@keyframes flipTwistRightDreamy {
+  0% {
+    opacity: 0;
+    transform: perspective(1000px) rotateY(90deg) rotateZ(-25deg);
+  }
+  60% {
+    opacity: 1;
+    transform: perspective(1000px) rotateY(-10deg) rotateZ(5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1000px) rotateY(0deg) rotateZ(0deg);
+  }
+}
+
+@keyframes flipTwistPopDreamy {
+  0% {
+    opacity: 0;
+    transform: perspective(600px) rotateY(90deg) rotateZ(-30deg) scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: perspective(600px) rotateY(-10deg) rotateZ(5deg) scale(1.5);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(600px) rotateY(0deg) rotateZ(0deg) scale(1);
+  }
+}
+
+@keyframes flipTwistSlamDreamy {
+  0% {
+    opacity: 0;
+    transform: perspective(800px) rotateY(-120deg) rotateZ(20deg);
+  }
+  70% {
+    opacity: 1;
+    transform: perspective(800px) rotateY(15deg) rotateZ(-10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(800px) rotateY(0deg) rotateZ(0deg);
+  }
+}
+
+.ani-container.active .flip-twist-right-dreamy.active {
+  animation: flipTwistRightDreamy 1.5s
+    cubic-bezier(0.175, 0.885, 0.32, 1.275)
+    both;
+}
+
+.ani-container.active .flip-twist-pop-dreamy.active {
+  animation: flipTwistPopDreamy 1.5s
+    cubic-bezier(0.175, 0.885, 0.32, 1.275)
+    both;
+}
+
+.ani-container.active .flip-twist-slam-dreamy.active {
+  animation: flipTwistSlamDreamy 1.2s
+    cubic-bezier(0.3, 1.5, 0.4, 1)
+    both;
+}
+
+/* ======================================================
+   GROUP 6: ORBIT REVEAL ANIMATIONS (NEW)
+   ====================================================== */
+
+/* Orbit Reveal Left */
+.ani-container .orbit-reveal-left-dreamy {
+  opacity: 0;
+  transform: rotateY(-90deg) translateX(-300px) translateY(-100px) translateZ(-200px) scale(1.3);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-reveal-left-dreamy.active {
+  animation: orbitRevealLeft 1.2s ease-out forwards;
+}
+@keyframes orbitRevealLeft {
+  0% {
+    transform: rotateY(-90deg) translateX(-300px) translateY(-100px) translateZ(-200px) scale(1.3);
+    opacity: 0.3;
+  }
+  100% {
+    transform: rotateY(0deg) translateX(0) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Exit Left */
+.ani-container .orbit-exit-left-dreamy {
+  opacity: 1;
+  transform: rotateY(0deg) translateX(0) translateZ(0);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-exit-left-dreamy.active {
+  animation: orbitExitLeft 1s ease-in forwards;
+}
+@keyframes orbitExitLeft {
+  0% {
+    transform: rotateY(0deg) translateX(0) translateZ(0);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateY(-90deg) translateX(-300px) translateZ(-200px);
+    opacity: 0;
+  }
+}
+
+/* Orbit Reveal Right */
+.ani-container .orbit-reveal-right-dreamy {
+  opacity: 0;
+  transform: rotateY(90deg) translateX(300px) translateY(-100px) translateZ(-200px) scale(1.3);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-reveal-right-dreamy.active {
+  animation: orbitRevealRight 1.2s ease-out forwards;
+}
+@keyframes orbitRevealRight {
+  0% {
+    transform: rotateY(90deg) translateX(300px) translateY(-100px) translateZ(-200px) scale(1.3);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateY(0deg) translateX(0) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Exit Right */
+.ani-container .orbit-exit-right-dreamy {
+  opacity: 1;
+  transform: rotateY(0deg) translateX(0) translateZ(0);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-exit-right-dreamy.active {
+  animation: orbitExitRight 1s ease-in forwards;
+}
+@keyframes orbitExitRight {
+  0% {
+    transform: rotateY(0deg) translateX(0) translateZ(0);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateY(90deg) translateX(300px) translateZ(-200px);
+    opacity: 0;
+  }
+}
+
+/* Orbit Reveal Bottom */
+.ani-container .orbit-reveal-bottom-dreamy {
+  opacity: 0;
+  transform: rotateZ(90deg) rotateY(-90deg) translateZ(-300px) scale(5);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-reveal-bottom-dreamy.active {
+  animation: orbitRevealBottom 1.2s ease-out forwards;
+}
+@keyframes orbitRevealBottom {
+  0% {
+    transform: rotateZ(90deg) rotateY(-90deg) translateZ(-300px) scale(5);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateZ(0deg) rotateY(0deg) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Reveal 3 */
+.ani-container .orbit-reveal-3-dreamy {
+  opacity: 0;
+  transform: rotateZ(-90deg) rotateY(90deg) translateX(300px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-reveal-3-dreamy.active {
+  animation: orbitReveal3 1.5s ease-out forwards;
+}
+@keyframes orbitReveal3 {
+  0% {
+    transform: rotateZ(-90deg) rotateY(90deg) translateX(300px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateZ(0deg) rotateY(0deg) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Reveal 4 */
+.ani-container .orbit-reveal-4-dreamy {
+  opacity: 0;
+  transform: rotateZ(90deg) rotateY(-90deg) translateX(-300px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-reveal-4-dreamy.active {
+  animation: orbitReveal4 2.2s ease-out forwards;
+}
+@keyframes orbitReveal4 {
+  0% {
+    transform: rotateZ(90deg) rotateY(-90deg) translateX(-300px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateZ(0deg) rotateY(0deg) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Reveal Diagonal Left */
+.ani-container .orbit-reveal-diagonal-left-dreamy {
+  opacity: 0;
+  transform: rotateX(-45deg) rotateY(-45deg) translate(-100px, -100px) translateZ(-200px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-reveal-diagonal-left-dreamy.active {
+  animation: orbitRevealDiagonalLeft 1.2s ease-out forwards;
+}
+@keyframes orbitRevealDiagonalLeft {
+  0% {
+    transform: rotateX(-45deg) rotateY(-45deg) translate(-100px, -100px) translateZ(-200px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0) rotateY(0) translate(0, 0) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Exit Diagonal Left */
+.ani-container .orbit-exit-diagonal-left-dreamy {
+  opacity: 1;
+  transform: rotateX(0) rotateY(0) translate(0, 0) translateZ(0);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-exit-diagonal-left-dreamy.active {
+  animation: orbitExitDiagonalLeft 1s ease-in forwards;
+}
+@keyframes orbitExitDiagonalLeft {
+  0% {
+    transform: rotateX(0) rotateY(0) translate(0, 0) translateZ(0);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateX(-45deg) rotateY(-45deg) translate(-300px, -300px) translateZ(-200px);
+    opacity: 0;
+  }
+}
+
+/* Orbit Reveal Diagonal Right */
+.ani-container .orbit-reveal-diagonal-right-dreamy {
+  opacity: 0;
+  transform: rotateX(45deg) rotateY(45deg) translate(100px, 100px) translateZ(-200px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-reveal-diagonal-right-dreamy.active {
+  animation: orbitRevealDiagonalRight 1.2s ease-out forwards;
+}
+@keyframes orbitRevealDiagonalRight {
+  0% {
+    transform: rotateX(45deg) rotateY(45deg) translate(100px, 100px) translateZ(-200px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0) rotateY(0) translate(0, 0) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Exit Diagonal Right */
+.ani-container .orbit-exit-diagonal-right-dreamy {
+  opacity: 1;
+  transform: rotateX(0) rotateY(0) translate(0, 0) translateZ(0);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-exit-diagonal-right-dreamy.active {
+  animation: orbitExitDiagonalRight 1s ease-in forwards;
+}
+@keyframes orbitExitDiagonalRight {
+  0% {
+    transform: rotateX(0) rotateY(0) translate(0, 0) translateZ(0);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateX(45deg) rotateY(45deg) translate(300px, 300px) translateZ(-200px);
+    opacity: 0;
+  }
+}
+
+/* Orbit Reveal From Top Right */
+.ani-container .orbit-reveal-from-top-right-dreamy {
+  opacity: 0;
+  transform: rotateZ(-90deg) rotateY(90deg) translateZ(300px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-reveal-from-top-right-dreamy.active {
+  animation: orbitRevealFromTopRight 1.2s ease-out forwards;
+}
+@keyframes orbitRevealFromTopRight {
+  0% {
+    transform: rotateZ(-90deg) rotateY(90deg) translateZ(300px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateZ(0deg) rotateY(0deg) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Reveal From Top Left */
+.ani-container .orbit-reveal-from-top-left-dreamy {
+  opacity: 0;
+  transform: rotateZ(90deg) rotateY(-90deg) translateZ(300px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-reveal-from-top-left-dreamy.active {
+  animation: orbitRevealFromTopLeft 1.2s ease-out forwards;
+}
+@keyframes orbitRevealFromTopLeft {
+  0% {
+    transform: rotateZ(90deg) rotateY(-90deg) translateZ(300px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateZ(0deg) rotateY(0deg) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Reveal From Bottom Left */
+.ani-container .orbit-reveal-from-bottom-left-dreamy {
+  opacity: 0;
+  transform: rotateZ(-90deg) rotateY(-90deg) translateZ(300px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-reveal-from-bottom-left-dreamy.active {
+  animation: orbitRevealFromBottomLeft 1.2s ease-out forwards;
+}
+@keyframes orbitRevealFromBottomLeft {
+  0% {
+    transform: rotateZ(-90deg) rotateY(-90deg) translateZ(300px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateZ(0deg) rotateY(0deg) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Reveal From Bottom Right */
+.ani-container .orbit-reveal-from-bottom-right-dreamy {
+  opacity: 0;
+  transform: rotateZ(90deg) rotateY(90deg) translateZ(300px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-reveal-from-bottom-right-dreamy.active {
+  animation: orbitRevealFromBottomRight 1.2s ease-out forwards;
+}
+@keyframes orbitRevealFromBottomRight {
+  0% {
+    transform: rotateZ(90deg) rotateY(90deg) translateZ(300px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateZ(0deg) rotateY(0deg) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Swing From Top Right */
+.ani-container .orbit-swing-from-top-right-dreamy {
+  opacity: 0;
+  transform: rotateX(-90deg) rotateY(90deg) translateX(500px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-swing-from-top-right-dreamy.active {
+  animation: orbitSwingFromTopRight 1.2s ease-out forwards;
+}
+@keyframes orbitSwingFromTopRight {
+  0% {
+    transform: rotateX(-90deg) rotateY(90deg) translateX(500px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0deg) rotateY(0deg) translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Swing From Top Left */
+.ani-container .orbit-swing-from-top-left-dreamy {
+  opacity: 0;
+  transform: rotateX(90deg) rotateY(90deg) translateX(-500px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-swing-from-top-left-dreamy.active {
+  animation: orbitSwingFromTopLeft 1.2s ease-out forwards;
+}
+@keyframes orbitSwingFromTopLeft {
+  0% {
+    transform: rotateX(90deg) rotateY(90deg) translateX(-500px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0deg) rotateY(0deg) translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Swing From Bottom Left */
+.ani-container .orbit-swing-from-bottom-left-dreamy {
+  opacity: 0;
+  transform: rotateX(-90deg) rotateY(90deg) translateX(-500px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-swing-from-bottom-left-dreamy.active {
+  animation: orbitSwingFromBottomLeft 1.2s ease-out forwards;
+}
+@keyframes orbitSwingFromBottomLeft {
+  0% {
+    transform: rotateX(-90deg) rotateY(90deg) translateX(-500px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0deg) rotateY(0deg) translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Swing From Bottom Right */
+.ani-container .orbit-swing-from-bottom-right-dreamy {
+  opacity: 0;
+  transform: rotateX(90deg) rotateY(90deg) translateX(500px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-swing-from-bottom-right-dreamy.active {
+  animation: orbitSwingFromBottomRight 1.2s ease-out forwards;
+}
+@keyframes orbitSwingFromBottomRight {
+  0% {
+    transform: rotateX(90deg) rotateY(90deg) translateX(500px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0deg) rotateY(0deg) translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Spiral In */
+.ani-container .orbit-spiral-in-dreamy {
+  opacity: 0;
+  transform: rotateY(520deg) rotateX(180deg) scale(0) translateZ(-600px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-spiral-in-dreamy.active {
+  animation: orbitSpiralIn 2s cubic-bezier(0.5, 1.5, 0.4, 1) forwards;
+}
+@keyframes orbitSpiralIn {
+  0% {
+    transform: rotateY(520deg) rotateX(180deg) scale(0) translateZ(-600px);
+    opacity: 0.3;
+  }
+  100% {
+    transform: rotateY(0) rotateX(0) scale(1) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Pop Twist In */
+.ani-container .orbit-pop-twist-in-dreamy {
+  opacity: 0;
+  transform: scale(0.4) rotateX(-180deg) rotateY(-180deg) translateZ(-300px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-pop-twist-in-dreamy.active {
+  animation: orbitPopTwistIn 2s ease-out forwards;
+}
+@keyframes orbitPopTwistIn {
+  0% {
+    transform: scale(0.4) rotateX(-180deg) rotateY(-180deg) translateZ(-300px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) rotateX(0) rotateY(0) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Swing Flip In */
+.ani-container .orbit-swing-flip-in-dreamy {
+  opacity: 0;
+  transform: rotateY(-120deg) translateX(-200px) scale(0.8);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-swing-flip-in-dreamy.active {
+  animation: orbitSwingFlipIn 1.8s ease-out forwards;
+}
+@keyframes orbitSwingFlipIn {
+  0% {
+    transform: rotateY(-120deg) translateX(-200px) scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateY(0deg) translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Orbit Swing Flip Out */
+.ani-container .orbit-swing-flip-out-dreamy {
+  opacity: 1;
+  transform: rotateY(0deg) translateX(0) scale(1);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-swing-flip-out-dreamy.active {
+  animation: orbitSwingFlipOut 1s ease-out forwards;
+}
+@keyframes orbitSwingFlipOut {
+  0% {
+    transform: rotateY(0deg) translateX(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateY(120deg) translateX(200px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Orbit Swirl Reveal */
+.ani-container .orbit-swirl-reveal-dreamy {
+  opacity: 0;
+  transform: rotateZ(-360deg) scale(0) translateZ(-400px);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-swirl-reveal-dreamy.active {
+  animation: orbitSwirlReveal 2s ease-out forwards;
+}
+@keyframes orbitSwirlReveal {
+  0% {
+    transform: rotateZ(-360deg) scale(0) translateZ(-400px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateZ(0deg) scale(1) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* Orbit Swirl Exit */
+.ani-container .orbit-swirl-exit-dreamy {
+  opacity: 1;
+  transform: rotateZ(0deg) scale(1) translateZ(0);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-swirl-exit-dreamy.active {
+  animation: orbitSwirlExit 2s ease-out forwards;
+}
+@keyframes orbitSwirlExit {
+  0% {
+    transform: rotateZ(0deg) scale(1) translateZ(0);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateZ(360deg) scale(0) translateZ(-400px);
+    opacity: 0;
+  }
+}
+
+/* Orbit Roll In 3D */
+.ani-container .orbit-roll-in-3d-dreamy {
+  opacity: 0;
+  transform: rotateX(-360deg) translateY(-200px) scale(0.7);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-roll-in-3d-dreamy.active {
+  animation: orbitRollIn3D 1s ease-out forwards;
+}
+@keyframes orbitRollIn3D {
+  0% {
+    transform: rotateX(-360deg) translateY(-200px) scale(0.7);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0deg) translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Orbit Roll Out 3D */
+.ani-container .orbit-roll-out-3d-dreamy {
+  opacity: 1;
+  transform: rotateX(0deg) translateY(0) scale(1);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-roll-out-3d-dreamy.active {
+  animation: orbitRollOut3D 2s ease-out forwards;
+}
+@keyframes orbitRollOut3D {
+  0% {
+    transform: rotateX(0deg) translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateX(360deg) translateY(-200px) scale(0.7);
+    opacity: 0;
+  }
+}
+
+/* Orbit Tilt Reveal */
+.ani-container .orbit-tilt-reveal-dreamy {
+  opacity: 0;
+  transform: translateX(-150px) rotateZ(-15deg) rotateY(45deg) scale(0.85);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-tilt-reveal-dreamy.active {
+  animation: orbitTiltReveal 2s ease-out forwards;
+}
+@keyframes orbitTiltReveal {
+  0% {
+    transform: translateX(-150px) rotateZ(-15deg) rotateY(45deg) scale(0.85);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) rotateZ(0) rotateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Orbit Tilt Exit */
+.ani-container .orbit-tilt-exit-dreamy {
+  opacity: 1;
+  transform: translateX(0) rotateZ(0) rotateY(0) scale(1);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-tilt-exit-dreamy.active {
+  animation: orbitTiltExit 1s ease-out forwards;
+}
+@keyframes orbitTiltExit {
+  0% {
+    transform: translateX(0) rotateZ(0) rotateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-150px) rotateZ(-15deg) rotateY(45deg) scale(0.85);
+    opacity: 0;
+  }
+}
+
+/* Orbit Helix Rise */
+.ani-container .orbit-helix-rise-dreamy {
+  opacity: 0;
+  transform: rotateY(360deg) rotateZ(180deg) translateY(200px) scale(0.4);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-helix-rise-dreamy.active {
+  animation: orbitHelixRise 1.9s ease-out forwards;
+}
+@keyframes orbitHelixRise {
+  0% {
+    transform: rotateY(360deg) rotateZ(180deg) translateY(200px) scale(0.4);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateY(0deg) rotateZ(0deg) translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Orbit Helix Fall */
+.ani-container .orbit-helix-fall-dreamy {
+  opacity: 0;
+  transform: rotateY(0deg) rotateZ(0deg) translateY(0) scale(1);
+  animation-fill-mode: both;
+}
+.ani-container.active .orbit-helix-fall-dreamy.active {
+  animation: orbitHelixFall 1.9s ease-in forwards;
+}
+@keyframes orbitHelixFall {
+  0% {
+    transform: rotateY(0deg) rotateZ(0deg) translateY(0) scale(1);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateY(-360deg) rotateZ(-180deg) translateY(200px) scale(0.4);
+    opacity: 1;
+  }
+}
+
+/* ======================================================
+   FORCE VISIBLE DI ELEMENTOR EDITOR
+   ====================================================== */
+
+body.elementor-editor-active .ani-container {
+  opacity: 1 !important;
+}
+
+body.elementor-editor-active .ani-container [class*="-dreamy"] {
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+  transition: none !important;
+}

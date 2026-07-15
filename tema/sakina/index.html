@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Anissa & Budi — Undangan Pernikahan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Raleway:wght@200;300;400;500&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ================================================================
+   RESET & BASE
+   ================================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 300;
+  background: #0D0D0D;
+  color: #F5F0E8;
+  overflow-x: hidden;
+}
+
+/* ================================================================
+   CSS TOKENS
+   ================================================================ */
+:root {
+  --gold: #C9A96E;
+  --gold-light: #E8D5A3;
+  --gold-dim: rgba(201,169,110,0.3);
+  --cream: #F5F0E8;
+  --dark: #0D0D0D;
+  --dark-2: #111111;
+  --green-deep: #1A2E1A;
+  --white: #ffffff;
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'Raleway', sans-serif;
+  --font-arabic: 'Amiri', serif;
+}
+
+/* ================================================================
+   SHIMMER BACKGROUND (Cover)
+   ================================================================ */
+.shimmer-container {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: -1;
+  background: #050505;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 1s ease;
+}
+/* BG tetap tampil di seluruh halaman setelah buka undangan */
+.shimmer-container.hidden { opacity: 1; pointer-events: none; }
+
+.glow-slide {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center top;
+  opacity: 0;
+  transform: scale(1.08);
+  transition: opacity 2.5s ease-in-out, transform 8s cubic-bezier(0.1,0,0.3,1);
+}
+.s-1 { background-image: linear-gradient(180deg,rgba(0,0,0,.3) 0%,rgba(0,0,0,.65) 100%), url('https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=900&q=85'); }
+.s-2 { background-image: linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,.6) 100%), url('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900&q=85'); }
+.s-3 { background-image: linear-gradient(180deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.7) 100%), url('https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=900&q=85'); }
+
+.glow-slide.visible { opacity: 1; transform: scale(1); }
+.glow-slide.exiting { opacity: 0; transform: scale(1.12); }
+
+.bloom-overlay {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, rgba(201,169,110,.25) 0%, transparent 65%);
+  opacity: 0; z-index: 2; pointer-events: none;
+}
+@keyframes bloom { 0%{opacity:0} 35%{opacity:1} 100%{opacity:0} }
+.do-bloom .bloom-overlay { animation: bloom 2s ease-in-out forwards; }
+
+/* ================================================================
+   COVER SCREEN
+   ================================================================ */
+#cover {
+  position: relative;
+  height: 100vh; min-height: 600px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  z-index: 10;
+}
+
+.cover-corner {
+  position: absolute;
+  width: 70px; opacity: .4;
+}
+.cover-corner.tl { top: 1.5rem; left: 1.5rem; }
+.cover-corner.tr { top: 1.5rem; right: 1.5rem; transform: scaleX(-1); }
+.cover-corner.bl { bottom: 1.5rem; left: 1.5rem; transform: scaleY(-1); }
+.cover-corner.br { bottom: 1.5rem; right: 1.5rem; transform: scale(-1,-1); }
+
+.bismillah {
+  font-family: var(--font-arabic);
+  font-size: 1.6rem;
+  color: var(--gold);
+  opacity: .75;
+  letter-spacing: .05em;
+  margin-bottom: 2rem;
+  animation: fadeInDown 1.2s ease .3s both;
+}
+
+.kepada-label {
+  font-size: .65rem;
+  letter-spacing: .35em;
+  text-transform: uppercase;
+  color: rgba(201,169,110,.6);
+  animation: fadeInDown 1.2s ease .5s both;
+}
+.kepada-name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--gold-light);
+  margin: .3rem 0 2.5rem;
+  animation: fadeInDown 1.2s ease .7s both;
+}
+
+.wedding-eyebrow {
+  font-size: .6rem;
+  letter-spacing: .5em;
+  text-transform: uppercase;
+  color: rgba(201,169,110,.5);
+  animation: fadeInUp 1.2s ease .9s both;
+}
+.couple {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.05;
+  color: var(--white);
+  text-shadow: 0 2px 40px rgba(0,0,0,.5);
+  animation: fadeInUp 1.2s ease 1.1s both;
+}
+.couple .name-bride { font-size: clamp(2.4rem,9vw,4rem); display: block; }
+.couple .amp {
+  display: block;
+  font-size: clamp(1rem,4vw,1.5rem);
+  color: var(--gold);
+  letter-spacing: .2em;
+  margin: .2em 0;
+}
+.couple .name-groom { font-size: clamp(2.4rem,9vw,4rem); display: block; }
+
+.cover-divider {
+  width: 1px; height: 50px;
+  background: linear-gradient(to bottom, transparent, var(--gold-dim), transparent);
+  margin: 1.8rem auto;
+  animation: fadeIn 1.5s ease 1.4s both;
+}
+
+.cover-date {
+  font-size: .7rem;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: rgba(245,240,232,.55);
+  line-height: 2;
+  animation: fadeInUp 1.2s ease 1.4s both;
+}
+
+.btn-open {
+  margin-top: 2.5rem;
+  padding: .85rem 2.8rem;
+  border: 1px solid rgba(201,169,110,.45);
+  background: transparent;
+  color: var(--gold-light);
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: .65rem;
+  letter-spacing: .45em;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .4s, color .4s, box-shadow .4s;
+  animation: fadeInUp 1.2s ease 1.7s both;
+}
+.btn-open::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(201,169,110,.08);
+  transform: translateX(-100%);
+  transition: transform .4s ease;
+}
+.btn-open:hover::after { transform: translateX(0); }
+.btn-open:hover {
+  border-color: var(--gold);
+  color: var(--white);
+  box-shadow: 0 0 25px rgba(201,169,110,.15);
+}
+
+.slide-dots {
+  position: fixed; bottom: 1.5rem; left: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: .4rem; z-index: 20;
+}
+.dot { width: 18px; height: 1px; background: rgba(255,255,255,.25); transition: all .5s; }
+.dot.on { width: 36px; background: var(--gold); }
+
+/* ================================================================
+   MAIN CONTENT (setelah buka undangan)
+   ================================================================ */
+#main-content {
+  display: none;
+  position: relative;
+  background: transparent;
+  
+}
+#main-content.open { display: block; }
+
+/* Overlay gelap semi-transparan di atas BG foto — agar teks tetap terbaca */
+#main-content::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 6, 4, 0.32);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Floating music control */
+.music-btn {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--gold-dim);
+  background: rgba(13,13,13,.85);
+  backdrop-filter: blur(10px);
+  color: var(--gold);
+  font-size: .9rem;
+  cursor: pointer;
+  z-index: 100;
+  display: none;
+  align-items: center; justify-content: center;
+  transition: all .3s;
+}
+.music-btn.show { display: flex; }
+.music-btn:hover { border-color: var(--gold); background: rgba(201,169,110,.1); }
+.music-btn.playing { animation: pulse-ring 2s ease infinite; }
+@keyframes pulse-ring {
+  0%,100% { box-shadow: 0 0 0 0 rgba(201,169,110,.3); }
+  50% { box-shadow: 0 0 0 8px rgba(201,169,110,0); }
+}
+
+/* ================================================================
+   SECTION BASE
+   ================================================================ */
+.section {
+  padding: 5rem 1.5rem;
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+}
+
+.section-eyebrow {
+  font-size: .6rem;
+  letter-spacing: .5em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: .7;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(2rem, 7vw, 2.8rem);
+  color: var(--cream);
+  line-height: 1.15;
+  margin-bottom: 1.5rem;
+}
+
+.gold-line {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+  margin: 0 auto 3rem;
+}
+
+/* ================================================================
+   ARABESQUE DIVIDER (Signature Element)
+   ================================================================ */
+.arabesque-divider {
+  display: flex; align-items: center; justify-content: center;
+  gap: 1rem;
+  padding: 2.5rem 0;
+  opacity: .5;
+}
+.arabesque-divider .line {
+  flex: 1; height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-dim));
+}
+.arabesque-divider .line.r {
+  background: linear-gradient(to left, transparent, var(--gold-dim));
+}
+.arabesque-divider svg {
+  width: 40px; height: 40px;
+  animation: spin-slow 20s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+
+/* ================================================================
+   PROFIL MEMPELAI
+   ================================================================ */
+.couple-profiles {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.profile-card {
+  position: relative;
+  padding: 2rem 1.5rem;
+  border: 1px solid var(--gold-dim);
+  background: rgba(8,6,4,0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.profile-card::before {
+  content: '';
+  position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
+  background: var(--gold);
+}
+
+.profile-photo {
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gold-dim);
+  margin: 0 auto 1.2rem;
+  display: block;
+  filter: grayscale(20%) sepia(10%);
+}
+
+.profile-name-display {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 2rem;
+  color: var(--cream);
+  margin-bottom: .3rem;
+}
+.profile-name-full {
+  font-size: .7rem;
+  letter-spacing: .15em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.profile-parents {
+  font-size: .75rem;
+  color: rgba(245,240,232,.5);
+  line-height: 2;
+}
+.profile-parents strong { color: rgba(245,240,232,.75); font-weight: 400; }
+.profile-ig {
+  display: inline-flex; align-items: center; gap: .4rem;
+  margin-top: 1rem;
+  font-size: .65rem;
+  letter-spacing: .1em;
+  color: var(--gold);
+  opacity: .6;
+  text-decoration: none;
+  transition: opacity .3s;
+}
+.profile-ig:hover { opacity: 1; }
+
+/* ================================================================
+   ACARA
+   ================================================================ */
+.event-cards { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.event-card {
+  border: 1px solid var(--gold-dim);
+  padding: 2rem 1.5rem;
+  position: relative;
+  text-align: center;
+  background: rgba(8,6,4,0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.event-card::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 25%; right: 25%; height: 1px;
+  background: var(--gold);
+}
+
+.event-type {
+  font-size: .6rem;
+  letter-spacing: .5em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .8rem;
+}
+.event-name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.8rem;
+  color: var(--cream);
+  margin-bottom: 1.2rem;
+}
+.event-time {
+  font-size: 1.4rem;
+  font-weight: 200;
+  color: var(--white);
+  margin-bottom: .3rem;
+}
+.event-date-text {
+  font-size: .7rem;
+  letter-spacing: .15em;
+  color: rgba(245,240,232,.5);
+  text-transform: uppercase;
+  margin-bottom: 1.2rem;
+}
+.event-loc {
+  font-size: .8rem;
+  color: rgba(245,240,232,.65);
+  line-height: 1.8;
+  margin-bottom: 1.2rem;
+}
+.btn-maps {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .55rem 1.5rem;
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+  font-size: .6rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all .3s;
+}
+.btn-maps:hover { border-color: var(--gold); color: var(--white); }
+
+/* COUNTDOWN */
+.countdown {
+  display: flex; justify-content: center; gap: 1.5rem;
+  margin: 3rem 0 0;
+}
+.countdown-item { text-align: center; }
+.countdown-num {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+  display: block;
+}
+.countdown-label {
+  font-size: .55rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: rgba(245,240,232,.4);
+  margin-top: .3rem;
+  display: block;
+}
+.countdown-sep {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--gold-dim);
+  align-self: flex-start;
+  padding-top: .1rem;
+}
+
+/* ================================================================
+   GALERI
+   ================================================================ */
+.gallery-grid {
+  columns: 2;
+  column-gap: .5rem;
+  margin-top: 1.5rem;
+}
+
+.gallery-img {
+  width: 100%;
+  display: block;
+  margin-bottom: .5rem;
+  object-fit: cover;
+  filter: grayscale(15%) sepia(8%);
+  transition: filter .5s, transform .5s;
+  cursor: pointer;
+  break-inside: avoid;
+}
+.gallery-img:hover { filter: grayscale(0%) sepia(0%); transform: scale(1.02); }
+
+@media (min-width: 480px) {
+  .gallery-grid {
+    columns: 2;
+    column-gap: .75rem;
+  }
+  .gallery-img {
+    margin-bottom: .75rem;
+  }
+}
+
+/* ================================================================
+   LOVE STORY
+   ================================================================ */
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+  text-align: left;
+}
+.timeline::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--gold-dim) 20%, var(--gold-dim) 80%, transparent);
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 2.5rem;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute; left: -2.35rem; top: .35rem;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  background: var(--dark-2);
+}
+
+.timeline-date {
+  font-size: .6rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: .7;
+  margin-bottom: .4rem;
+}
+.timeline-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.3rem;
+  color: var(--cream);
+  margin-bottom: .5rem;
+}
+.timeline-text {
+  font-size: .78rem;
+  color: rgba(245,240,232,.5);
+  line-height: 1.8;
+}
+.timeline-photo {
+  width: 100%;
+  max-width: 220px;
+  border-radius: 8px;
+  margin-top: .75rem;
+  display: block;
+  border: 1px solid rgba(201,169,110,.25);
+}
+
+/* ================================================================
+   RSVP & BUKU TAMU
+   ================================================================ */
+.rsvp-form { text-align: left; }
+
+.form-group { margin-bottom: 1.2rem; }
+.form-label {
+  display: block;
+  font-size: .6rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: .7;
+  margin-bottom: .5rem;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: rgba(201,169,110,.04);
+  border: 1px solid var(--gold-dim);
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: .8rem;
+  font-weight: 300;
+  padding: .75rem 1rem;
+  outline: none;
+  transition: border-color .3s;
+  appearance: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--gold);
+}
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-select option { background: #1a1a1a; }
+
+.radio-group {
+  display: flex; gap: 1rem; flex-wrap: wrap;
+}
+.radio-option {
+  flex: 1; min-width: 100px;
+  border: 1px solid var(--gold-dim);
+  padding: .7rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all .3s;
+  font-size: .7rem;
+  letter-spacing: .1em;
+  color: rgba(245,240,232,.5);
+}
+.radio-option.selected {
+  border-color: var(--gold);
+  background: rgba(201,169,110,.1);
+  color: var(--gold);
+}
+
+.btn-submit {
+  width: 100%;
+  padding: .9rem;
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold-light);
+  font-family: var(--font-body);
+  font-size: .65rem;
+  letter-spacing: .4em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .4s;
+  margin-top: .5rem;
+}
+.btn-submit:hover {
+  background: rgba(201,169,110,.1);
+  color: var(--white);
+}
+
+/* Ucapan stream */
+.ucapan-list {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: left;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.ucapan-list::-webkit-scrollbar { width: 2px; }
+.ucapan-list::-webkit-scrollbar-track { background: transparent; }
+.ucapan-list::-webkit-scrollbar-thumb { background: var(--gold-dim); }
+
+.ucapan-item {
+  border-left: 2px solid var(--gold-dim);
+  padding: .75rem 1rem;
+  background: rgba(8,6,4,0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.ucapan-name {
+  font-size: .65rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .3rem;
+}
+.ucapan-status {
+  font-size: .55rem;
+  color: rgba(245,240,232,.3);
+  margin-bottom: .5rem;
+}
+.ucapan-text {
+  font-size: .78rem;
+  color: rgba(245,240,232,.6);
+  line-height: 1.7;
+  font-style: italic;
+}
+
+/* ================================================================
+   ANGPAO / KADO DIGITAL
+   ================================================================ */
+.gift-cards { display: flex; flex-direction: column; gap: 1rem; }
+
+.gift-card {
+  border: 1px solid var(--gold-dim);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+  background: rgba(8,6,4,0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.gift-bank-logo {
+  width: 48px; height: 48px;
+  border-radius: 4px;
+  border: 1px solid var(--gold-dim);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: .7rem;
+  color: var(--gold);
+  letter-spacing: .05em;
+}
+.gift-bank-name {
+  font-size: .6rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: .7;
+  margin-bottom: .3rem;
+}
+.gift-account-num {
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: var(--cream);
+  letter-spacing: .1em;
+  margin-bottom: .2rem;
+}
+.gift-account-name {
+  font-size: .7rem;
+  color: rgba(245,240,232,.4);
+}
+.btn-copy {
+  margin-left: auto;
+  width: 36px; height: 36px;
+  border: 1px solid var(--gold-dim);
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  font-size: .9rem;
+  flex-shrink: 0;
+  transition: all .3s;
+}
+.btn-copy:hover { border-color: var(--gold); background: rgba(201,169,110,.1); }
+.btn-copy.copied { border-color: #4CAF50; color: #4CAF50; }
+
+/* ================================================================
+   PENUTUP / FOOTER
+   ================================================================ */
+.footer-section {
+  padding: 5rem 1.5rem 4rem;
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.footer-quote {
+  font-family: var(--font-arabic);
+  font-size: 1.4rem;
+  color: var(--gold);
+  opacity: .7;
+  line-height: 1.8;
+  margin-bottom: .8rem;
+}
+.footer-quote-trans {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: .85rem;
+  color: rgba(245,240,232,.4);
+  line-height: 1.8;
+  margin-bottom: 2.5rem;
+}
+
+.footer-names {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1.8rem,6vw,2.5rem);
+  color: var(--cream);
+  margin-bottom: .5rem;
+}
+.footer-names .amp { color: var(--gold); }
+
+.footer-vendor-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 2rem;
+  color: var(--gold);
+}
+.footer-vendor-name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  letter-spacing: .1em;
+  color: var(--gold-light);
+  opacity: .85;
+}
+
+.footer-social {
+  display: flex;
+  justify-content: center;
+  gap: .9rem;
+  margin-bottom: 1.6rem;
+}
+.footer-social-icon {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--gold-dim);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold);
+  opacity: .75;
+  transition: all .3s;
+}
+.footer-social-icon:hover {
+  border-color: var(--gold);
+  color: var(--white);
+  background: rgba(201,169,110,.1);
+  opacity: 1;
+}
+
+.footer-hashtag {
+  font-size: .65rem;
+  letter-spacing: .3em;
+  color: var(--gold);
+  opacity: .5;
+  margin-bottom: 3rem;
+}
+
+.footer-meta {
+  font-size: .55rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(245,240,232,.2);
+}
+.footer-meta a {
+  color: var(--gold);
+  opacity: .5;
+  text-decoration: none;
+}
+
+/* ================================================================
+   KELOPAK BUNGA — CANVAS
+   ================================================================ */
+#petal-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 1s;
+}
+#petal-canvas.show { opacity: 1; }
+
+/* ================================================================
+   MOTION PRO — Animasi Widget
+   ================================================================ */
+.fade, .slide-left, .slide-right, .zoom, .fadeIn-Up, .fadeIn-Down,
+.zoom-in, .zoom-in-up, .zoom-in-down, .reveal, .reveal-right, .reveal-up,
+.reveal-center, .flipTwistRight, .flipTwistLeft, .flipTwistPop, .flipTwistCombo,
+.swingIn, .swingDrop, .swingDropSoft, .swingDropElastic, .swingDropBounce,
+.orbitRevealLeft, .orbitRevealRight, .orbitSpiralIn, .orbitPopTwistIn,
+.orbitTiltReveal, .orbitHelixRise, .orbitSwirlReveal {
+  opacity: 0;
+  transition: opacity .6s ease, transform 1s ease, clip-path .8s ease;
+  will-change: opacity, transform, clip-path;
+}
+
+.fadeIn-Up { transform: translateY(50px); }
+.fadeIn-Up.active { opacity:1; transform:translateY(0); transition: opacity .9s ease-out, transform 2s cubic-bezier(.25,1,.5,1); }
+
+.fadeIn-Down { transform: translateY(-50px); }
+.fadeIn-Down.active { opacity:1; transform:translateY(0); transition: opacity .9s ease-out, transform 2s cubic-bezier(.25,1,.5,1); }
+
+.fade.active { opacity:1; transition: opacity 1s ease-in; }
+
+.zoom-in { transform: scale(.75); }
+.zoom-in.active { opacity:1; transform:scale(1); transition: opacity .8s, transform 1.2s cubic-bezier(.25,1,.5,1); }
+
+.zoom-in-up { transform: scale(.6) translateY(60px); }
+.zoom-in-up.active { opacity:1; transform:scale(1) translateY(0); transition: opacity .9s ease-out, transform 1.6s cubic-bezier(.25,1,.5,1); }
+
+.reveal { clip-path: inset(0 100% 0 0); }
+.reveal.active { opacity:1; clip-path:inset(0 0 0 0); transition: opacity 1.4s, clip-path 1.8s cubic-bezier(.25,1,.5,1); }
+
+.reveal-up { clip-path: inset(100% 0 0 0); }
+.reveal-up.active { opacity:1; clip-path:inset(0 0 0 0); transition: opacity 1.4s, clip-path 1.8s cubic-bezier(.25,1,.5,1); }
+
+.swingIn.active { animation: swingIn 1s ease-out forwards; }
+@keyframes swingIn { 0%{transform:rotate(40deg);opacity:0} 50%{transform:rotate(-15deg);opacity:1} 75%{transform:rotate(8deg)} 90%{transform:rotate(-3deg)} 100%{transform:rotate(0);opacity:1} }
+
+.swingDrop.active { animation: swingDrop 1.2s ease-out forwards; }
+@keyframes swingDrop { 0%{transform:translateY(-80%) rotate(18deg);opacity:0} 40%{transform:translateY(40%) rotate(-12deg);opacity:1} 70%{transform:translateY(-5%) rotate(4deg)} 100%{transform:translateY(0) rotate(0);opacity:1} }
+
+.swingDropElastic.active { animation: swingDropElastic 1.3s cubic-bezier(.25,1.5,.5,1) forwards; }
+@keyframes swingDropElastic { 0%{transform:translateY(-100%) rotate(22deg);opacity:0} 30%{transform:translateY(12%) rotate(-16deg);opacity:1} 55%{transform:translateY(-6%) rotate(8deg)} 75%{transform:translateY(2%) rotate(-3deg)} 100%{transform:translateY(0) rotate(0);opacity:1} }
+
+.swingDropBounce.active { animation: swingDropBounce 1.3s ease-out forwards; }
+@keyframes swingDropBounce { 0%{transform:translateY(-100%) rotate(15deg);opacity:0} 50%{transform:translateY(8%) rotate(-8deg);opacity:1} 70%{transform:translateY(-4%) rotate(3deg)} 85%{transform:translateY(2%) rotate(-1deg)} 100%{transform:translateY(0) rotate(0);opacity:1} }
+
+.flipTwistPop.active { animation: flipTwistPop 1s ease-out forwards; }
+@keyframes flipTwistPop { 0%{transform:perspective(700px) rotateY(55deg) rotateZ(-8deg) scale(.85);opacity:0} 60%{transform:perspective(700px) rotateY(-8deg) rotateZ(4deg) scale(1.04);opacity:1} 100%{transform:perspective(700px) rotateY(0) rotateZ(0) scale(1);opacity:1} }
+
+.orbitSpiralIn.active { animation: orbitSpiralIn 2s cubic-bezier(.5,1.5,.4,1) forwards; }
+@keyframes orbitSpiralIn { 0%{transform:rotateY(480deg) rotateX(160deg) scale(0) translateZ(-500px);opacity:.3} 100%{transform:rotateY(0) rotateX(0) scale(1) translateZ(0);opacity:1} }
+
+.orbitTiltReveal.active { animation: orbitTiltReveal 1.8s ease-out forwards; }
+@keyframes orbitTiltReveal { 0%{transform:translateX(-120px) rotateZ(-12deg) rotateY(40deg) scale(.88);opacity:0} 100%{transform:translateX(0) rotateZ(0) rotateY(0) scale(1);opacity:1} }
+
+.orbitHelixRise.active { animation: orbitHelixRise 1.8s ease-out forwards; }
+@keyframes orbitHelixRise { 0%{transform:rotateY(320deg) rotateZ(160deg) translateY(180px) scale(.45);opacity:0} 100%{transform:rotateY(0) rotateZ(0) translateY(0) scale(1);opacity:1} }
+
+.orbitSwirlReveal.active { animation: orbitSwirlReveal 2s ease-out forwards; }
+@keyframes orbitSwirlReveal { 0%{transform:rotateZ(-340deg) scale(0) translateZ(-350px);opacity:0} 100%{transform:rotateZ(0) scale(1) translateZ(0);opacity:1} }
+
+/* ================================================================
+   KEYFRAMES UMUM
+   ================================================================ */
+@keyframes fadeInUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeInDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+/* ================================================================
+   REVEAL OVERLAY (saat buka undangan)
+   ================================================================ */
+.reveal-overlay {
+  position: fixed; inset: 0;
+  background: #0D0D0D;
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .8s ease;
+}
+.reveal-overlay.show { opacity: 1; pointer-events: all; }
+.reveal-overlay-text {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.4rem;
+  color: var(--gold);
+  opacity: .8;
+  letter-spacing: .1em;
+}
+
+/* ================================================================
+   UTILITY
+   ================================================================ */
+.text-gold { color: var(--gold); }
+.mt-1 { margin-top: 1rem; }
+.mt-2 { margin-top: 2rem; }
+
+/* ================================================================
+   MINI GALLERY / SAVE THE DATE
+   ================================================================ */
+.section-mini-gallery {
+  text-align: center;
+  padding-top: 3rem;
+}
+.mini-gallery-initals {
+  font-size: 3rem;
+  font-weight: 300;
+  color: var(--gold);
+  letter-spacing: .5rem;
+  margin: 1rem 0;
+  font-family: 'Cormorant Garamond', serif;
+}
+.mini-gallery-countdown {
+  display: flex;
+  justify-content: center;
+  gap: .8rem;
+  margin: 1.5rem 0;
+}
+.countdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 50px;
+}
+.countdown-num {
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: var(--gold);
+  font-family: 'Cormorant Garamond', serif;
+}
+.countdown-label {
+  font-size: .6rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(245,240,232,.4);
+  margin-top: 4px;
+}
+.countdown-sep {
+  font-size: 1.5rem;
+  color: var(--gold);
+  opacity: .5;
+  align-self: flex-start;
+  padding-top: 4px;
+}
+.mini-gallery-carousel {
+  overflow: hidden;
+  width: 100%;
+  max-width: 480px;
+  margin: 2rem auto 0;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+.mini-gallery-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  gap: 1.1rem;
+  animation: miniCarousel 16s linear infinite;
+}
+.mini-gallery-item {
+  flex-shrink: 0;
+  width: clamp(70px, 22vw, 96px);
+  height: clamp(70px, 22vw, 96px);
+  display: block;
+  padding: 0;
+}
+.mini-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid rgba(201,169,110,.35);
+  box-shadow: 0 0 20px rgba(201,169,110,.18);
+}
+@keyframes miniCarousel {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ================================================================
+   QUOTES SECTION
+   ================================================================ */
+.section-quotes {
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+.quotes-content {
+  max-width: 420px;
+  margin: 0 auto;
+}
+.quotes-mark {
+  font-size: 4rem;
+  color: var(--gold);
+  opacity: .3;
+  line-height: 1;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* ================================================================
+   BACK COVER
+   ================================================================ */
+.section-backcover {
+  text-align: center;
+  padding: 4rem 1.5rem;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.backcover-thankyou {
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--gold);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  font-family: 'Cormorant Garamond', serif;
+  margin-bottom: 1.5rem;
+}
+.backcover-names {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--gold);
+  font-family: 'Cormorant Garamond', serif;
+  margin-bottom: 1rem;
+}
+.backcover-bride, .backcover-groom {
+  display: inline-block;
+}
+.backcover-sub {
+  font-size: .75rem;
+  color: rgba(245,240,232,.4);
+  letter-spacing: 1px;
+}
+
+/* ================================================================
+   STICKY NAV MENU
+   ================================================================ */
+.sticky-nav {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  justify-content: space-around;
+  align-items: center;
+  background: rgba(13,13,13,.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(201,169,110,.2);
+  border-radius: 50px;
+  padding: 8px 20px;
+  z-index: 200;
+  width: auto;
+  max-width: 50%;
+}
+.sticky-nav.show { display: flex; }
+.sticky-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: rgba(245,240,232,.4);
+  transition: all .2s;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.sticky-nav-item:hover,
+.sticky-nav-item.active {
+  color: var(--gold);
+  background: rgba(201,169,110,.15);
+}
+
+@media (max-width: 480px) {
+  .sticky-nav {
+    left: 0;
+    right: 0;
+    transform: none;
+    max-width: 100%;
+    width: 100%;
+    bottom: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    padding: 10px 16px;
+    justify-content: space-evenly;
+  }
+  .sticky-nav-item {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ================================================================
+   RESPONSIVE TWEAK
+   ================================================================ */
+@media (min-width: 480px) {
+  .section, .footer-section { padding-left: 2rem; padding-right: 2rem; }
+}
+</style>
+  <!-- Motion Plus & Invitation Loader — shared untuk semua tema -->
+  <link rel="stylesheet" href="/assets/motion-plus.css">
+  <script src="/assets/env.js"></script>
+  <script src="/assets/motion-plus.js" defer></script>
+  <script src="/assets/invitation-loader.js" defer></script>
+</head>
+<body>
+
+<!-- ================================================================
+     CANVAS KELOPAK BUNGA
+     ================================================================ -->
+<canvas id="petal-canvas"></canvas>
+
+<!-- ================================================================
+     REVEAL OVERLAY
+     ================================================================ -->
+<div class="reveal-overlay" id="revealOverlay">
+  <span class="reveal-overlay-text">Membuka Undangan...</span>
+</div>
+
+<!-- ================================================================
+     SHIMMER BACKGROUND
+     ================================================================ -->
+<div class="shimmer-container" id="shimmerBg">
+  <div class="glow-slide s-1 visible" id="slide0"></div>
+  <div class="glow-slide s-2" id="slide1"></div>
+  <div class="glow-slide s-3" id="slide2"></div>
+  <div class="bloom-overlay"></div>
+</div>
+
+<!-- ================================================================
+     COVER
+     ================================================================ -->
+<section id="cover">
+  <!-- Ornamen sudut -->
+  <svg class="cover-corner tl" viewBox="0 0 80 80" fill="none">
+    <path d="M5 5 L5 35" stroke="rgba(201,169,110,.6)" stroke-width=".75"/>
+    <path d="M5 5 L35 5" stroke="rgba(201,169,110,.6)" stroke-width=".75"/>
+    <circle cx="5" cy="5" r="2" fill="rgba(201,169,110,.5)"/>
+    <path d="M2 2 L2 40 Q2 2 40 2 Z" stroke="rgba(201,169,110,.2)" stroke-width=".5" fill="none"/>
+  </svg>
+  <svg class="cover-corner tr" viewBox="0 0 80 80" fill="none">
+    <path d="M5 5 L5 35" stroke="rgba(201,169,110,.6)" stroke-width=".75"/>
+    <path d="M5 5 L35 5" stroke="rgba(201,169,110,.6)" stroke-width=".75"/>
+    <circle cx="5" cy="5" r="2" fill="rgba(201,169,110,.5)"/>
+    <path d="M2 2 L2 40 Q2 2 40 2 Z" stroke="rgba(201,169,110,.2)" stroke-width=".5" fill="none"/>
+  </svg>
+  <svg class="cover-corner bl" viewBox="0 0 80 80" fill="none">
+    <path d="M5 5 L5 35" stroke="rgba(201,169,110,.6)" stroke-width=".75"/>
+    <path d="M5 5 L35 5" stroke="rgba(201,169,110,.6)" stroke-width=".75"/>
+    <circle cx="5" cy="5" r="2" fill="rgba(201,169,110,.5)"/>
+    <path d="M2 2 L2 40 Q2 2 40 2 Z" stroke="rgba(201,169,110,.2)" stroke-width=".5" fill="none"/>
+  </svg>
+  <svg class="cover-corner br" viewBox="0 0 80 80" fill="none">
+    <path d="M5 5 L5 35" stroke="rgba(201,169,110,.6)" stroke-width=".75"/>
+    <path d="M5 5 L35 5" stroke="rgba(201,169,110,.6)" stroke-width=".75"/>
+    <circle cx="5" cy="5" r="2" fill="rgba(201,169,110,.5)"/>
+    <path d="M2 2 L2 40 Q2 2 40 2 Z" stroke="rgba(201,169,110,.2)" stroke-width=".5" fill="none"/>
+  </svg>
+
+  <p class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
+
+  <p class="kepada-label">Kepada Yth.</p>
+  <p class="kepada-name" id="guestNameDisplay">Tamu Undangan</p>
+
+  <p class="wedding-eyebrow">The Wedding Of</p>
+
+  <div class="couple">
+    <span class="name-bride">—</span>
+    <span class="amp">&</span>
+    <span class="name-groom">—</span>
+  </div>
+
+  <div class="cover-divider"></div>
+
+  <div class="cover-date" id="coverDate">—</div>
+
+  <button class="btn-open" id="btnOpen" onclick="openInvitation()">
+    ✦ &nbsp; Buka Undangan &nbsp; ✦
+  </button>
+</section>
+
+<!-- Slide indicators -->
+<div class="slide-dots" id="slideDots">
+  <div class="dot on" id="dot0"></div>
+  <div class="dot" id="dot1"></div>
+  <div class="dot" id="dot2"></div>
+</div>
+
+<!-- ================================================================
+     MAIN CONTENT
+     ================================================================ -->
+<div id="main-content">
+
+  <!-- Music floating button -->
+  <button class="music-btn" id="musicBtn" onclick="toggleMusic()">♪</button>
+  <audio id="bgMusic" loop>
+    <source src="" type="audio/mpeg">
+  </audio>
+  <div id="ytMusicPlayer" style="position:fixed;bottom:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none"></div>
+
+  <!-- ---- MINI GALLERY / SAVE THE DATE ---- -->
+  <section class="section section-mini-gallery" id="sectionHome">
+    <p class="section-eyebrow swingDropSoft">Save The Date</p>
+    <div class="mini-gallery-initals" id="miniGalleryInitials">—</div>
+    <div class="mini-gallery-countdown" id="countdown">
+      <div class="countdown-item">
+        <span class="countdown-num" id="cd-h">00</span>
+        <span class="countdown-label">Hari</span>
+      </div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-item">
+        <span class="countdown-num" id="cd-j">00</span>
+        <span class="countdown-label">Jam</span>
+      </div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-item">
+        <span class="countdown-num" id="cd-m">00</span>
+        <span class="countdown-label">Menit</span>
+      </div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-item">
+        <span class="countdown-num" id="cd-s">00</span>
+        <span class="countdown-label">Detik</span>
+      </div>
+    </div>
+    <div class="mini-gallery-carousel" id="miniGalleryCarousel">
+      <div class="mini-gallery-track" id="miniGalleryTrack">
+        <div class="mini-gallery-item"><img src="https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=400&h=400&fit=crop&q=80" alt=""></div>
+        <div class="mini-gallery-item"><img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=400&fit=crop&q=80" alt=""></div>
+        <div class="mini-gallery-item"><img src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&h=400&fit=crop&q=80" alt=""></div>
+        <div class="mini-gallery-item"><img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&h=400&fit=crop&q=80" alt=""></div>
+        <!-- duplikat untuk loop infinite tanpa jeda -->
+        <div class="mini-gallery-item" aria-hidden="true"><img src="https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=400&h=400&fit=crop&q=80" alt=""></div>
+        <div class="mini-gallery-item" aria-hidden="true"><img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=400&fit=crop&q=80" alt=""></div>
+        <div class="mini-gallery-item" aria-hidden="true"><img src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&h=400&fit=crop&q=80" alt=""></div>
+        <div class="mini-gallery-item" aria-hidden="true"><img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&h=400&fit=crop&q=80" alt=""></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- PROFIL MEMPELAI ---- -->
+  <section class="section" id="sectionCouple">
+    <div class="arabesque-divider fadeIn-Up">
+      <div class="line"></div>
+      <svg viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="8" stroke="rgba(201,169,110,.7)" stroke-width=".8"/>
+        <circle cx="20" cy="20" r="14" stroke="rgba(201,169,110,.35)" stroke-width=".5"/>
+        <line x1="20" y1="0" x2="20" y2="8" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="20" y1="32" x2="20" y2="40" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="0" y1="20" x2="8" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="32" y1="20" x2="40" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <circle cx="20" cy="5" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="20" cy="35" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="5" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="35" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+      </svg>
+      <div class="line r"></div>
+    </div>
+
+    <p class="section-eyebrow swingDropSoft">Mempelai</p>
+    <h2 class="section-title fadeIn-Up">Dua Jiwa,<br>Satu Ikatan</h2>
+    <div class="gold-line"></div>
+
+    <div class="couple-profiles">
+      <!-- Mempelai Wanita -->
+      <div class="profile-card zoom-in-up">
+        <img class="profile-photo profile-bride-photo zoom-in-up" src="https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=200&h=200&fit=crop&q=80" alt="Anissa">
+        <p class="profile-name-display profile-bride-nickname zoom-in-up">Anissa</p>
+        <p class="profile-name-full profile-bride-name zoom-in-up">Anissa Rahma Putri</p>
+        <p class="profile-parents profile-bride-parents zoom-in-up">
+          Putri dari<br>
+          <strong>Bapak H. Rahmat Hidayat</strong><br>
+          & <strong>Ibu Hj. Sari Dewi</strong>
+        </p>
+        <a href="#" class="profile-ig profile-bride-ig"><span>♡</span> <span class="profile-bride-ig-text">@anissarahma_</span></a>
+      </div>
+
+      <div class="arabesque-divider" style="padding:1rem 0">
+        <div class="line"></div>
+        <svg viewBox="0 0 20 20" fill="none" style="width:20px;animation:spin-slow 15s linear infinite">
+          <circle cx="10" cy="10" r="4" stroke="rgba(201,169,110,.6)" stroke-width=".8"/>
+          <line x1="10" y1="0" x2="10" y2="4" stroke="rgba(201,169,110,.4)" stroke-width=".6"/>
+          <line x1="10" y1="16" x2="10" y2="20" stroke="rgba(201,169,110,.4)" stroke-width=".6"/>
+          <line x1="0" y1="10" x2="4" y2="10" stroke="rgba(201,169,110,.4)" stroke-width=".6"/>
+          <line x1="16" y1="10" x2="20" y2="10" stroke="rgba(201,169,110,.4)" stroke-width=".6"/>
+        </svg>
+        <div class="line r"></div>
+      </div>
+
+      <!-- Mempelai Pria -->
+      <div class="profile-card zoom-in-up">
+        <img class="profile-photo profile-groom-photo zoom-in-up" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&q=80" alt="Budi">
+        <p class="profile-name-display profile-groom-nickname zoom-in-up">Budi</p>
+        <p class="profile-name-full profile-groom-name zoom-in-up">Budi Santoso, S.T.</p>
+        <p class="profile-parents profile-groom-parents zoom-in-up">
+          Putra dari<br>
+          <strong>Bapak Hendra Kusuma</strong><br>
+          & <strong>Ibu Wulan Sari</strong>
+        </p>
+        <a href="#" class="profile-ig profile-groom-ig"><span>♡</span> <span class="profile-groom-ig-text">@budi.snt</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- QUOTES ---- -->
+  <section class="section section-quotes">
+    <div class="quotes-content fadeIn-Up">
+      <div class="quotes-mark">"</div>
+      <p class="footer-quote">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا</p>
+      <p class="footer-quote-trans">
+        "Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan<br>pasangan-pasangan untukmu dari jenismu sendiri"<br>
+        <span style="opacity:.6;font-size:.75rem">— QS. Ar-Rum: 21</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ---- LOVE STORY ---- -->
+  <section class="section">
+    <div class="arabesque-divider fadeIn-Up">
+      <div class="line"></div>
+      <svg viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="8" stroke="rgba(201,169,110,.7)" stroke-width=".8"/>
+        <circle cx="20" cy="20" r="14" stroke="rgba(201,169,110,.35)" stroke-width=".5"/>
+        <line x1="20" y1="0" x2="20" y2="8" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="20" y1="32" x2="20" y2="40" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="0" y1="20" x2="8" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="32" y1="20" x2="40" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <circle cx="20" cy="5" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="20" cy="35" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="5" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="35" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+      </svg>
+      <div class="line r"></div>
+    </div>
+
+    <p class="section-eyebrow swingDropSoft">Perjalanan Kami</p>
+    <h2 class="section-title fadeIn-Up">Cerita<br>Cinta</h2>
+    <div class="gold-line"></div>
+
+    <div class="timeline">
+      <div class="timeline-item fadeIn-Up">
+        <p class="timeline-date">Maret 2021</p>
+        <h3 class="timeline-title">Pertemuan Pertama</h3>
+        <p class="timeline-text">Takdir mempertemukan kami di sebuah kajian ilmu. Sebuah senyum sederhana yang ternyata menjadi awal dari segalanya.</p>
+      </div>
+      <div class="timeline-item fadeIn-Up">
+        <p class="timeline-date">Agustus 2022</p>
+        <h3 class="timeline-title">Saling Mengenal</h3>
+        <p class="timeline-text">Dua tahun berbincang, berdiskusi, dan saling mengenal. Kami menemukan kecocokan yang tak kami sangka sebelumnya.</p>
+      </div>
+      <div class="timeline-item fadeIn-Up">
+        <p class="timeline-date">Desember 2024</p>
+        <h3 class="timeline-title">Lamaran</h3>
+        <p class="timeline-text">Dengan restu kedua orang tua, sebuah cincin sederhana menjadi tanda kesungguhan hati untuk melangkah lebih jauh.</p>
+      </div>
+      <div class="timeline-item fadeIn-Up">
+        <p class="timeline-date">September 2026</p>
+        <h3 class="timeline-title">Pernikahan ✦</h3>
+        <p class="timeline-text">Akhirnya, dengan bismillah dan doa dari orang-orang tercinta, kami melangkah menuju babak baru kehidupan bersama.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- DETAIL ACARA ---- -->
+  <section class="section" id="sectionEvent">
+    <div class="arabesque-divider fadeIn-Up">
+      <div class="line"></div>
+      <svg viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="8" stroke="rgba(201,169,110,.7)" stroke-width=".8"/>
+        <circle cx="20" cy="20" r="14" stroke="rgba(201,169,110,.35)" stroke-width=".5"/>
+        <line x1="20" y1="0" x2="20" y2="8" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="20" y1="32" x2="20" y2="40" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="0" y1="20" x2="8" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="32" y1="20" x2="40" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <circle cx="20" cy="5" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="20" cy="35" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="5" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="35" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+      </svg>
+      <div class="line r"></div>
+    </div>
+
+    <p class="section-eyebrow swingDropSoft">Hari Bahagia</p>
+    <h2 class="section-title fadeIn-Up">Rangkaian<br>Acara</h2>
+    <div class="gold-line"></div>
+
+    <div class="event-cards" id="eventCardsContainer">
+      <div class="event-card orbitTiltReveal">
+        <p class="event-type fadeIn-Up">Prosesi Pertama</p>
+        <h3 class="event-name fadeIn-Up">Akad Nikah</h3>
+        <p class="event-time fadeIn-Up">08.00 — 10.00 WIB</p>
+        <p class="event-date-text fadeIn-Up">Ahad, 20 September 2026</p>
+        <p class="event-loc fadeIn-Up">Masjid Al-Ikhlas<br>Jl. Mawar No. 12, Kediri, Jawa Timur</p>
+        <a href="https://maps.google.com" target="_blank" class="btn-maps fadeIn-Up">
+          ⌖ &nbsp; Buka Peta
+        </a>
+      </div>
+
+      <div class="event-card orbitTiltReveal">
+        <p class="event-type fadeIn-Up">Prosesi Kedua</p>
+        <h3 class="event-name fadeIn-Up">Resepsi</h3>
+        <p class="event-time fadeIn-Up">11.00 — 14.00 WIB</p>
+        <p class="event-date-text fadeIn-Up">Ahad, 20 September 2026</p>
+        <p class="event-loc fadeIn-Up">Gedung Serbaguna Kota<br>Jl. Melati No. 5, Kediri, Jawa Timur</p>
+        <a href="https://maps.google.com" target="_blank" class="btn-maps fadeIn-Up">
+          ⌖ &nbsp; Buka Peta
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- RSVP ---- -->
+  <section class="section" id="sectionRsvp">
+    <div class="arabesque-divider fadeIn-Up">
+      <div class="line"></div>
+      <svg viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="8" stroke="rgba(201,169,110,.7)" stroke-width=".8"/>
+        <circle cx="20" cy="20" r="14" stroke="rgba(201,169,110,.35)" stroke-width=".5"/>
+        <line x1="20" y1="0" x2="20" y2="8" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="20" y1="32" x2="20" y2="40" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="0" y1="20" x2="8" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="32" y1="20" x2="40" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <circle cx="20" cy="5" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="20" cy="35" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="5" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="35" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+      </svg>
+      <div class="line r"></div>
+    </div>
+
+    <p class="section-eyebrow swingDropSoft">Konfirmasi Kehadiran</p>
+    <h2 class="section-title fadeIn-Up">RSVP<br>Kehadiran</h2>
+    <div class="gold-line"></div>
+
+    <div class="rsvp-form zoom-in-up">
+      <div class="form-group">
+        <label class="form-label">Nama Lengkap</label>
+        <input type="text" class="form-input" placeholder="Nama kamu..." id="rsvpName">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Kehadiran</label>
+        <div class="radio-group">
+          <div class="radio-option selected" onclick="selectStatus(this,'Hadir')">✓ Hadir</div>
+          <div class="radio-option" onclick="selectStatus(this,'Tidak Hadir')">✗ Tidak Hadir</div>
+          <div class="radio-option" onclick="selectStatus(this,'Ragu')">? Masih Ragu</div>
+        </div>
+      </div>
+      <div class="form-group" id="jumlahGroup">
+        <label class="form-label">Jumlah Tamu</label>
+        <select class="form-select" id="rsvpJumlah">
+          <option>1 orang</option>
+          <option>2 orang</option>
+          <option>3 orang</option>
+          <option>4 orang</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ucapan & Doa</label>
+        <textarea class="form-textarea" id="rsvpWishes" placeholder="Tulis ucapan dan doa terbaik kamu..."></textarea>
+      </div>
+      <button class="btn-submit" onclick="submitRSVP()">✦ &nbsp; Kirim &nbsp; ✦</button>
+    </div>
+  </section>
+
+  <!-- ---- KADO DIGITAL ---- -->
+  <section class="section">
+    <div class="arabesque-divider fadeIn-Up">
+      <div class="line"></div>
+      <svg viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="8" stroke="rgba(201,169,110,.7)" stroke-width=".8"/>
+        <circle cx="20" cy="20" r="14" stroke="rgba(201,169,110,.35)" stroke-width=".5"/>
+        <line x1="20" y1="0" x2="20" y2="8" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="20" y1="32" x2="20" y2="40" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="0" y1="20" x2="8" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="32" y1="20" x2="40" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <circle cx="20" cy="5" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="20" cy="35" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="5" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="35" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+      </svg>
+      <div class="line r"></div>
+    </div>
+
+    <p class="section-eyebrow swingDropSoft">Hadiah Pernikahan</p>
+    <h2 class="section-title fadeIn-Up">Kado<br>Digital</h2>
+    <div class="gold-line"></div>
+    <p class="fade" style="font-size:.78rem;color:rgba(245,240,232,.45);margin-bottom:1.5rem;line-height:1.8">
+      Doa dan kehadiran kalian adalah hadiah terbaik. Namun bagi yang ingin memberikan tanda kasih, berikut nomor rekening kami.
+    </p>
+
+    <div class="gift-cards zoom-in-up" id="kadoContainer">
+      <!-- Diisi dinamis oleh fillKado() di invitation-loader.js dari tabel bank_accounts.
+           Kartu demo di bawah cuma tampil selama belum ada data bank_accounts
+           untuk invitation ini (fillKado() no-op kalau accounts.length === 0). -->
+      <div class="gift-card">
+        <div class="gift-bank-logo">BCA</div>
+        <div>
+          <p class="gift-bank-name">Bank BCA</p>
+          <p class="gift-account-num">1234 5678 90</p>
+          <p class="gift-account-name">a.n. Anissa Rahma Putri</p>
+        </div>
+        <button class="btn-copy" onclick="copyText('1234567890', this)">⧉</button>
+      </div>
+      <div class="gift-card">
+        <div class="gift-bank-logo">MNR</div>
+        <div>
+          <p class="gift-bank-name">Bank Mandiri</p>
+          <p class="gift-account-num">0987 6543 21</p>
+          <p class="gift-account-name">a.n. Budi Santoso</p>
+        </div>
+        <button class="btn-copy" onclick="copyText('0987654321', this)">⧉</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- GALERI ---- -->
+  <section class="section" id="sectionGallery">
+    <div class="arabesque-divider fadeIn-Up">
+      <div class="line"></div>
+      <svg viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="8" stroke="rgba(201,169,110,.7)" stroke-width=".8"/>
+        <circle cx="20" cy="20" r="14" stroke="rgba(201,169,110,.35)" stroke-width=".5"/>
+        <line x1="20" y1="0" x2="20" y2="8" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="20" y1="32" x2="20" y2="40" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="0" y1="20" x2="8" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="32" y1="20" x2="40" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <circle cx="20" cy="5" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="20" cy="35" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="5" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="35" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+      </svg>
+      <div class="line r"></div>
+    </div>
+
+    <p class="section-eyebrow swingDropSoft">Momen Kami</p>
+    <h2 class="section-title fadeIn-Up">Galeri<br>Pre-Wedding</h2>
+    <div class="gold-line"></div>
+
+    <div class="gallery-grid" id="galleryContainer">
+      <div class="tall reveal-up">
+        <img class="gallery-img tall" src="https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=400&h=600&fit=crop&q=80" alt="">
+      </div>
+      <div>
+        <img class="gallery-img reveal" src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&h=300&fit=crop&q=80" alt="">
+      </div>
+      <div>
+        <img class="gallery-img reveal" src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=300&fit=crop&q=80" alt="">
+      </div>
+      <div style="grid-column:span 2">
+        <img class="gallery-img reveal" style="aspect-ratio:2;height:auto;width:100%" src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&h=300&fit=crop&q=80" alt="">
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- WISH / UCAPAN ---- -->
+  <section class="section" id="sectionWish">
+    <div class="arabesque-divider fadeIn-Up">
+      <div class="line"></div>
+      <svg viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="8" stroke="rgba(201,169,110,.7)" stroke-width=".8"/>
+        <circle cx="20" cy="20" r="14" stroke="rgba(201,169,110,.35)" stroke-width=".5"/>
+        <line x1="20" y1="0" x2="20" y2="8" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="20" y1="32" x2="20" y2="40" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="0" y1="20" x2="8" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="32" y1="20" x2="40" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <circle cx="20" cy="5" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="20" cy="35" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="5" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="35" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+      </svg>
+      <div class="line r"></div>
+    </div>
+
+    <p class="section-eyebrow swingDropSoft">Doa & Restu</p>
+    <h2 class="section-title fadeIn-Up">Ucapan<br>Tamu</h2>
+    <div class="gold-line"></div>
+
+    <div class="ucapan-list" id="ucapanList">
+      <div class="ucapan-item">
+        <p class="ucapan-name">Randi Pratama</p>
+        <p class="ucapan-status">Hadir · 2 orang</p>
+        <p class="ucapan-text">Barakallahu laka wa baraka alaika wa jama'a bainakuma fi khair. Semoga menjadi keluarga yang sakinah, mawaddah, warahmah. 🤍</p>
+      </div>
+      <div class="ucapan-item">
+        <p class="ucapan-name">Siti Nurhaliza</p>
+        <p class="ucapan-status">Hadir · 3 orang</p>
+        <p class="ucapan-text">Selamat menempuh hidup baru! Semoga Allah senantiasa memberkahi keluarga kecil kalian.</p>
+      </div>
+      <div class="ucapan-item">
+        <p class="ucapan-name">Ahmad Fauzi</p>
+        <p class="ucapan-status">Tidak Hadir</p>
+        <p class="ucapan-text">Tidak bisa hadir tapi doa selalu menyertai. Semoga langgeng hingga akhir hayat, Aamiin.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- BACK COVER ---- -->
+  <section class="section section-backcover">
+    <p class="backcover-thankyou fadeIn-Up">Thank You</p>
+    <div class="backcover-names orbitSpiralIn">
+      <span class="backcover-bride">—</span>
+      <span class="amp">&</span>
+      <span class="backcover-groom">—</span>
+    </div>
+    <p class="backcover-sub fadeIn-Up">Atas kehadiran dan doa restu Anda</p>
+  </section>
+
+  <!-- ---- FOOTER ---- -->
+  <footer class="footer-section">
+    <div class="footer-vendor-logo fadeIn-Up">
+      <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="8" stroke="rgba(201,169,110,.7)" stroke-width=".8"/>
+        <circle cx="20" cy="20" r="14" stroke="rgba(201,169,110,.35)" stroke-width=".5"/>
+        <line x1="20" y1="0" x2="20" y2="8" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="20" y1="32" x2="20" y2="40" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="0" y1="20" x2="8" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="32" y1="20" x2="40" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+      </svg>
+      <p class="footer-vendor-name">raveolla</p>
+    </div>
+
+    <div class="footer-social fadeIn-Up">
+      <a href="#" class="footer-social-icon" aria-label="WhatsApp" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.6.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.3-.4.1-.2 0-.4 0-.5s-.6-1.5-.9-2c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.5 1.1 2.7c.1.2 2 3 4.8 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.3.2-.6.2-1.2.2-1.3-.1-.1-.3-.2-.5-.3z"/><path d="M12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.7 1.5 5.2L2 22l4.9-1.3c1.5.8 3.2 1.3 5.1 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.3c-1.7 0-3.4-.5-4.8-1.3l-.3-.2-3.4.9.9-3.3-.2-.4C3.5 14.6 3 13.3 3 12c0-5 4-9 9-9s9 4 9 9-4 9-9 9z"/></svg>
+      </a>
+      <a href="#" class="footer-social-icon" aria-label="Instagram" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+      </a>
+      <a href="#" class="footer-social-icon" aria-label="TikTok" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.8a4.4 4.4 0 0 1-3.1-1.3v9.4a4.9 4.9 0 1 1-4.9-4.9c.3 0 .5 0 .8.1v2.5a2.4 2.4 0 1 0 1.7 2.3V2h2.4a4.4 4.4 0 0 0 3.1 3.8v2z"/></svg>
+      </a>
+    </div>
+
+    <p class="footer-hashtag fadeIn-Up">#raveolla2026</p>
+
+    <p class="footer-meta">
+      Dibuat dengan ♡ oleh <a href="#" id="footer-domain">raveolla.my.id</a>
+    </p>
+  </footer>
+
+
+  <!-- ---- STICKY NAV MENU ---- -->
+  <nav class="sticky-nav" id="stickyNav">
+    <a href="#sectionHome" class="sticky-nav-item active" data-section="sectionHome">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </a>
+    <a href="#sectionCouple" class="sticky-nav-item" data-section="sectionCouple">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </a>
+    <a href="#sectionEvent" class="sticky-nav-item" data-section="sectionEvent">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </a>
+    <a href="#sectionRsvp" class="sticky-nav-item" data-section="sectionRsvp">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    </a>
+    <a href="#sectionGallery" class="sticky-nav-item" data-section="sectionGallery">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    </a>
+  </nav>
+
+</div><!-- end main-content -->
+
+<!-- ================================================================
+     SCRIPTS
+     ================================================================ -->
+<script>
+/* ----------------------------------------------------------------
+   URL PARAM: nama tamu
+   ---------------------------------------------------------------- */
+const params = new URLSearchParams(window.location.search);
+const guestName = params.get('to');
+if (guestName) {
+  document.getElementById('guestNameDisplay').textContent =
+    decodeURIComponent(guestName);
+}
+
+/* ----------------------------------------------------------------
+   SHIMMER BACKGROUND SLIDESHOW
+   ---------------------------------------------------------------- */
+(function() {
+  const bg = document.getElementById('shimmerBg');
+  const slides = [
+    document.getElementById('slide0'),
+    document.getElementById('slide1'),
+    document.getElementById('slide2')
+  ];
+  const dots = [
+    document.getElementById('dot0'),
+    document.getElementById('dot1'),
+    document.getElementById('dot2')
+  ];
+  let cur = 0;
+
+  function next() {
+    bg.classList.add('do-sweep','do-bloom');
+    setTimeout(() => {
+      slides[cur].classList.remove('visible');
+      slides[cur].classList.add('exiting');
+      cur = (cur + 1) % slides.length;
+      slides[cur].classList.remove('exiting');
+      slides[cur].classList.add('visible');
+      dots.forEach((d,i) => d.classList.toggle('on', i === cur));
+      setTimeout(() => {
+        slides.forEach(s => s.classList.remove('exiting'));
+      }, 2600);
+    }, 700);
+    setTimeout(() => bg.classList.remove('do-sweep','do-bloom'), 2200);
+    setTimeout(next, 6000);
+  }
+  setTimeout(next, 4500);
+})();
+
+/* ----------------------------------------------------------------
+   BUKA UNDANGAN
+   ---------------------------------------------------------------- */
+function openInvitation() {
+  const overlay = document.getElementById('revealOverlay');
+  overlay.classList.add('show');
+
+  // PENTING: play() harus dipanggil SYNCHRONOUS di sini, langsung di dalam
+  // click handler "Buka Undangan" — kalau dipindah ke dalam setTimeout di
+  // bawah, browser sudah nggak anggap ini hasil klik user lagi, jadi
+  // autoplay-nya di-block diam-diam (music.play() gagal tanpa error).
+  if (getMusicMode() === 'youtube') {
+    if (ytPlayer && ytPlayer.playVideo) { ytPlayer.playVideo(); }
+    document.getElementById('musicBtn').classList.add('playing');
+  } else {
+    const music = document.getElementById('bgMusic');
+    music.volume = 0.4;
+    music.play().catch(()=>{});
+    document.getElementById('musicBtn').classList.add('playing');
+  }
+
+  setTimeout(() => {
+    // Sembunyikan cover & BG
+    document.getElementById('cover').style.display = 'none';
+    document.getElementById('slideDots').style.display = 'none';
+    document.getElementById('shimmerBg').classList.add('hidden');
+
+    // Tampilkan konten utama
+    document.getElementById('main-content').classList.add('open');
+    document.getElementById('musicBtn').classList.add('show');
+    document.getElementById('stickyNav').classList.add('show');
+
+    // Tampilkan kelopak
+    document.getElementById('petal-canvas').classList.add('show');
+
+    // Scroll ke atas
+    window.scrollTo(0,0);
+
+    // Fade out overlay
+    setTimeout(() => overlay.classList.remove('show'), 500);
+
+    // Init animasi scroll
+    setTimeout(initScrollAnimations, 800);
+    setTimeout(runPetals, 1000);
+    setTimeout(initStickyNav, 500);
+  }, 1200);
+}
+
+/* ----------------------------------------------------------------
+   MOTION PRO — IntersectionObserver trigger (REPEAT on scroll)
+   ---------------------------------------------------------------- */
+function initScrollAnimations() {
+  const animClasses = [
+    'fade','fadeIn-Up','fadeIn-Down','zoom-in','zoom-in-up',
+    'reveal','reveal-up','swingIn','swingDrop','swingDropElastic',
+    'swingDropBounce','swingDropSoft','flipTwistPop','orbitSpiralIn',
+    'orbitTiltReveal','orbitHelixRise','orbitSwirlReveal'
+  ];
+  const selector = animClasses.map(c => `.${c}`).join(',');
+  const els = document.querySelectorAll(selector);
+
+  // Animasi berbasis @keyframes perlu clone trick untuk repeat
+  const keyframeClasses = [
+    'swingIn','swingDrop','swingDropElastic','swingDropBounce',
+    'swingDropSoft','flipTwistPop','orbitSpiralIn','orbitTiltReveal',
+    'orbitHelixRise','orbitSwirlReveal'
+  ];
+
+  function getDelay(el) {
+    const siblings = el.parentElement
+      ? Array.from(el.parentElement.children).filter(c =>
+          animClasses.some(ac => c.classList.contains(ac))
+        )
+      : [];
+    const idx = siblings.indexOf(el);
+    return Math.min(idx * 0.13, 0.6);
+  }
+
+  function triggerIn(el) {
+    const delay = getDelay(el);
+    const isKeyframe = keyframeClasses.some(c => el.classList.contains(c));
+
+    if (isKeyframe) {
+      // Reset animasi dengan clone trick
+      el.classList.remove('active');
+      el.style.animationDelay = `${delay}s`;
+      // Force reflow
+      void el.offsetWidth;
+      el.classList.add('active');
+    } else {
+      el.classList.remove('active');
+      el.style.transitionDelay = `${delay}s`;
+      void el.offsetWidth;
+      el.classList.add('active');
+    }
+  }
+
+  function triggerOut(el) {
+    const isKeyframe = keyframeClasses.some(c => el.classList.contains(c));
+    if (isKeyframe) {
+      // Reset langsung — animasi akan main ulang saat masuk lagi
+      el.style.animationDelay = '0s';
+      el.classList.remove('active');
+    } else {
+      el.style.transitionDelay = '0s';
+      el.classList.remove('active');
+    }
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        triggerIn(e.target);
+      } else {
+        // Keluar dari viewport → reset supaya bisa main lagi
+        triggerOut(e.target);
+      }
+    });
+  }, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  });
+
+  els.forEach(el => observer.observe(el));
+
+  // Trigger elemen yang sudah terlihat saat pertama buka
+  setTimeout(() => {
+    els.forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 60) {
+        triggerIn(el);
+      }
+    });
+  }, 400);
+}
+
+/* ----------------------------------------------------------------
+   STICKY NAV — smooth scroll + active state
+   ---------------------------------------------------------------- */
+function initStickyNav() {
+  const nav = document.getElementById('stickyNav');
+  if (!nav) return;
+
+  // Smooth scroll on click
+  nav.querySelectorAll('.sticky-nav-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetId = this.getAttribute('href').substring(1);
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Active state with IntersectionObserver
+  const sections = ['sectionHome', 'sectionCouple', 'sectionEvent', 'sectionRsvp', 'sectionGallery'];
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        nav.querySelectorAll('.sticky-nav-item').forEach(item => {
+          item.classList.toggle('active', item.dataset.section === id);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+}
+
+/* ----------------------------------------------------------------
+   COUNTDOWN TIMER
+   Dihapus dari sini — countdown-nya sekarang SEPENUHNYA ditangani oleh
+   startCountdown() di /assets/invitation-loader.js, yang ambil tanggal
+   acara asli dari database (bukan tanggal demo hardcoded). Dulu ada dua
+   fungsi countdown jalan bersamaan (yang ini + yang di loader), keduanya
+   nulis ke elemen cd-h/cd-j/cd-m/cd-s yang sama tiap detik — race
+   condition inilah salah satu penyebab angka countdown jadi acak/NaN.
+   ---------------------------------------------------------------- */
+
+/* ----------------------------------------------------------------
+   MUSIK
+   ---------------------------------------------------------------- */
+var ytPlayer = null;
+var ytReady = false;
+var musicMode = 'audio'; // 'audio' or 'youtube'
+
+function onYouTubeIframeAPIReady() {
+  ytReady = true;
+}
+
+function initYouTubePlayer(videoId) {
+  if (!ytReady) return;
+  if (ytPlayer) { ytPlayer.loadVideoById(videoId); return; }
+  ytPlayer = new YT.Player('ytMusicPlayer', {
+    videoId: videoId,
+    playerVars: { autoplay: 0, loop: 1, playlist: videoId, controls: 0, modestbranding: 1 },
+    events: { onReady: function(e) { e.target.setVolume(40); musicMode = 'youtube'; } }
+  });
+}
+
+function getMusicMode() {
+  return window._nikahinMusicMode || musicMode;
+}
+
+function toggleMusic() {
+  const btn = document.getElementById('musicBtn');
+  if (getMusicMode() === 'youtube') {
+    if (!ytPlayer) return;
+    if (ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+      ytPlayer.pauseVideo();
+      btn.classList.remove('playing');
+      btn.textContent = '♫';
+    } else {
+      ytPlayer.playVideo();
+      btn.classList.add('playing');
+      btn.textContent = '♪';
+    }
+  } else {
+    const music = document.getElementById('bgMusic');
+    if (music.paused) {
+      music.play();
+      btn.classList.add('playing');
+      btn.textContent = '♪';
+    } else {
+      music.pause();
+      btn.classList.remove('playing');
+      btn.textContent = '♫';
+    }
+  }
+}
+
+/* ----------------------------------------------------------------
+   RSVP
+   ---------------------------------------------------------------- */
+let selectedStatus = 'Hadir';
+function selectStatus(el, status) {
+  document.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedStatus = status;
+  document.getElementById('jumlahGroup').style.display =
+    status === 'Tidak Hadir' ? 'none' : 'block';
+}
+
+function submitRSVP() {
+  const name = document.getElementById('rsvpName').value.trim();
+  const wishes = document.getElementById('rsvpWishes').value.trim();
+  const jumlah = document.getElementById('rsvpJumlah').value;
+  if (!name) { alert('Nama tidak boleh kosong.'); return; }
+
+  const list = document.getElementById('ucapanList');
+  const item = document.createElement('div');
+  item.className = 'ucapan-item';
+  item.style.animation = 'fadeInUp .5s ease both';
+  item.innerHTML = `
+    <p class="ucapan-name">${escHtml(name)}</p>
+    <p class="ucapan-status">${escHtml(selectedStatus)}${selectedStatus==='Hadir'?' · '+jumlah:''}</p>
+    ${wishes ? `<p class="ucapan-text">${escHtml(wishes)}</p>` : ''}
+  `;
+  list.prepend(item);
+
+  document.getElementById('rsvpName').value = '';
+  document.getElementById('rsvpWishes').value = '';
+  list.scrollTop = 0;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ----------------------------------------------------------------
+   COPY REKENING
+   ---------------------------------------------------------------- */
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+/* ----------------------------------------------------------------
+   KELOPAK BUNGA — Canvas
+   ---------------------------------------------------------------- */
+function runPetals() {
+  const canvas = document.getElementById('petal-canvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Bentuk kelopak sebagai path
+  function drawPetal(ctx, x, y, size, rotation, color, alpha) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.ellipse(0, -size/2, size * 0.4, size * 0.7, 0, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    // Kilap tengah
+    ctx.beginPath();
+    ctx.ellipse(-size*.08, -size*.4, size*.1, size*.25, -0.3, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  const colors = [
+    'rgba(201,169,110,0.7)',  // emas
+    'rgba(245,220,180,0.6)',  // emas muda
+    'rgba(255,240,200,0.5)',  // krem
+    'rgba(180,140,80,0.6)',   // emas tua
+  ];
+
+  const petals = Array.from({length: 18}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height - canvas.height,
+    size: 8 + Math.random() * 12,
+    speedY: .4 + Math.random() * .8,
+    speedX: (Math.random() - .5) * .5,
+    rot: Math.random() * Math.PI * 2,
+    rotSpeed: (Math.random() - .5) * .03,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    alpha: .3 + Math.random() * .5,
+    sway: Math.random() * Math.PI * 2,
+    swaySpeed: .01 + Math.random() * .02,
+    swayAmt: 20 + Math.random() * 30,
+  }));
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    petals.forEach(p => {
+      p.sway += p.swaySpeed;
+      p.x += Math.sin(p.sway) * .6 + p.speedX;
+      p.y += p.speedY;
+      p.rot += p.rotSpeed;
+      if (p.y > canvas.height + 20) {
+        p.y = -20;
+        p.x = Math.random() * canvas.width;
+      }
+      drawPetal(ctx, p.x, p.y, p.size, p.rot, p.color, p.alpha);
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+</script>
+<script>
+  // Set footer domain from env
+  const footerDomain = document.getElementById('footer-domain');
+  if (footerDomain && window.__ENV?.PUBLIC_DOMAIN) {
+    const url = new URL(window.__ENV.PUBLIC_DOMAIN);
+    footerDomain.href = window.__ENV.PUBLIC_DOMAIN;
+    footerDomain.textContent = url.hostname;
+  }
+</script>
+<script src="https://www.youtube.com/iframe_api" defer></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+/* =========================================
+   BASE.CSS — Variabel, Reset, Dark Mode
+   RED NEUMORPHISM + GLASSMORPHISM THEME
+   Primary: Burgundy #800020
+========================================= */
+:root {
+  --primary:      #800020;
+  --primary-l:    #A3334D;
+  --primary-d:    #5C0018;
+  --primary-gl:   rgba(128,0,32,0.12);
+
+  /* Surfaces */
+  --bg-body:    #F7F5F2;
+  --bg-surface: #E8E5E1;
+  --bg-white:   #FFFFFF;
+
+  /* Text */
+  --text-main:  #2D2424;
+  --text-2:     #5C4A4A;
+  --text-muted: #8C7B7B;
+
+  /* Border */
+  --border:     rgba(128,0,32,0.15);
+  --border-s:   rgba(128,0,32,0.08);
+
+  /* Neumorphism shadows */
+  --neu-out:  6px 6px 14px #d4d1cc, -6px -6px 14px #fcfaf7;
+  --neu-in:   inset 5px 5px 10px #d4d1cc, inset -5px -5px 10px #fcfaf7;
+  --neu-sm:   3px 3px 8px #d4d1cc, -3px -3px 8px #fcfaf7;
+
+  /* Glassmorphism */
+  --glass-bg:     rgba(255,255,255,0.55);
+  --glass-border: rgba(255,255,255,0.65);
+  --glass-blur:   blur(16px);
+
+  /* Status */
+  --success:    #2D6A4F; --success-bg: #E8F5EE; --success-b: #B7DFC9;
+  --danger:     #9B2335; --danger-bg:  #FDECEA; --danger-b:  #F5C5C0;
+  --warning:    #B8860B; --warning-bg: #FFF8DC; --warning-b: #F0D88A;
+  --info:       #1A5276; --info-bg:    #EBF5FB; --info-b:    #A9CCE3;
+
+  /* Keep compat */
+  --gold: #B8860B; --gold-l: #FFF8DC; --gold-d: #8B6508;
+  --rose: #9B2335; --rose-l: #FDECEA;
+  --sage: #2D6A4F; --sage-l: #E8F5EE; --sage-d: #1E4D39;
+  --sky:  #1A5276; --sky-l:  #EBF5FB; --sky-d:  #0E3352;
+  --lavender: #6C3483; --lav-l: #F5EEF8; --lav-d: #4A235A;
+  --peach: #A3334D; --peach-l: #FDECEA; --peach-d: #7B1530;
+  --green: #2D6A4F; --green-bg: #E8F5EE; --green-b: #B7DFC9;
+  --red:   #9B2335; --red-bg: #FDECEA; --red-b: #F5C5C0;
+  --blue:  #1A5276; --blue-bg: #EBF5FB; --blue-b: #A9CCE3;
+  --muted: #8C7B7B; --muted-l: #B0A0A0;
+  --dark: #2D2424; --dark-2: #3D2E2E;
+  --cream: #F7F5F2; --cream-d: #E8E5E1;
+  --yellow: #B8860B; --yellow-bg: #FFF8DC; --yellow-b: #F0D88A;
+  --bg: #F7F5F2; --surface: #FFFFFF; --surface2: #E8E5E1; --surface3: #DDD9D5;
+
+  --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --radius-sm: 10px; --radius-md: 16px; --radius-lg: 22px; --radius-xl: 28px;
+  --shadow-sm: var(--neu-sm); --shadow-md: var(--neu-out); --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+}
+
+/* DARK MODE */
+[data-theme="dark"] {
+  --bg-body:    #1A1618;
+  --bg-surface: #241F21;
+  --bg-white:   #2E2729;
+  --text-main:  #F7F5F2;
+  --text-2:     #C4B4B4;
+  --text-muted: #A08888;
+  --border:     rgba(128,0,32,0.3);
+  --border-s:   rgba(128,0,32,0.15);
+  --neu-out:  6px 6px 14px #131011, -6px -6px 14px #312829;
+  --neu-in:   inset 5px 5px 10px #131011, inset -5px -5px 10px #312829;
+  --neu-sm:   3px 3px 8px #131011, -3px -3px 8px #312829;
+  --glass-bg:     rgba(36,31,33,0.65);
+  --glass-border: rgba(128,0,32,0.25);
+  --success-bg: #0D2E1A; --danger-bg: #2E0D0D; --warning-bg: #2E1F00; --info-bg: #0A1929;
+  --bg: #1A1618; --surface: #2E2729; --surface2: #241F21; --surface3: #1E191B;
+  --cream: #1A1618; --cream-d: #241F21;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--bg-body);
+  color: var(--text-main);
+  transition: background 0.3s, color 0.3s;
+  min-height: 100vh;
+}
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+@keyframes pillSlideIn { from { opacity:0; transform:translateY(20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes toastSlideIn  { from { opacity:0; transform:translateX(60px) scale(0.95); } to { opacity:1; transform:translateX(0) scale(1); } }
+@keyframes toastSlideOut { from { opacity:1; transform:translateX(0) scale(1); }       to { opacity:0; transform:translateX(60px) scale(0.95); } }
+
+.state-box { padding: 48px; text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 300; }
+.spinner { width: 22px; height: 22px; border: 2.5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }

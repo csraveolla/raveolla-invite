@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard RSVP</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/feather-icons"></script>
+
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/invitation.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-ornament">✦ Dashboard RSVP ✦</div>
+      <div class="login-title">Selamat Datang</div>
+      <div class="login-sub">Masukkan token akses dari admin</div>
+    </div>
+    <div class="login-body">
+      <label>Token Akses</label>
+      <input type="text" id="login-token" placeholder="XXXXXXXX" maxlength="12"
+        oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter') doLogin()">
+      <button class="login-btn" id="login-btn" onclick="doLogin()">Masuk →</button>
+      <div class="login-msg" id="login-msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP SCREEN -->
+<div id="app-screen">
+
+<!-- FLOATING PROGRESS PILL -->
+<div id="floating-progress">
+  <!-- Header pill -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+    <div class="pill-circle">
+      <svg width="44" height="44" viewBox="0 0 44 44">
+        <circle class="pill-circle-bg" cx="22" cy="22" r="18"/>
+        <circle class="pill-circle-fg" id="pill-circle-fg" cx="22" cy="22" r="18"/>
+      </svg>
+      <div class="pill-circle-pct" id="pill-pct">0%</div>
+    </div>
+    <div class="pill-info">
+      <div class="pill-title" id="pill-title">Mengirim pesan...</div>
+      <div class="pill-sub" id="pill-sub">Menyiapkan...</div>
+    </div>
+    <button class="pill-stop" id="pill-stop-btn" onclick="stopKirim()" title="Stop pengiriman">✕</button>
+  </div>
+  <!-- Stats row -->
+  <div id="pill-stats" style="display:flex;gap:0;margin-bottom:10px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden">
+    <div style="flex:1;text-align:center;padding:7px 4px;border-right:1px solid var(--border)">
+      <div id="pill-sent" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--sage-d);line-height:1">0</div>
+      <div style="font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--text-3)">Terkirim</div>
+    </div>
+    <div style="flex:1;text-align:center;padding:7px 4px;border-right:1px solid var(--border)">
+      <div id="pill-failed" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--rose);line-height:1">0</div>
+      <div style="font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--text-3)">Gagal</div>
+    </div>
+    <div style="flex:1;text-align:center;padding:7px 4px">
+      <div id="pill-total" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--text);line-height:1">0</div>
+      <div style="font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--text-3)">Total</div>
+    </div>
+  </div>
+  <!-- Recipient list scroll -->
+  <div id="pill-list" style="max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:4px"></div>
+</div>
+
+<!-- TOAST STACK — notifikasi reminder -->
+<div id="toast-stack"></div>
+
+<!-- MODAL TEMPLATE PESAN -->
+<div id="modal-template-pesan">
+  <div class="modal-template-box">
+    <div class="modal-template-header">
+      <div>
+        <div class="modal-template-title">📝 Pilih Template Pesan</div>
+        <div class="modal-template-sub">Klik teks template → otomatis disalin ke kolom pesan</div>
+      </div>
+      <button class="modal-template-close" onclick="tutupModalTemplate()">✕</button>
+    </div>
+    <iframe
+      id="iframe-template-pesan"
+      class="modal-template-iframe"
+      src="about:blank"
+      title="Template Pesan Undangan">
+    </iframe>
+  </div>
+</div>
+
+  <!-- STICKY HEADER -->
+  <div class="sticky-header">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-dot">💌</div>
+      <div>
+        <div class="brand-name" id="app-acara">Dashboard</div>
+        <div class="brand-sub">Dashboard RSVP</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div id="wa-quota-wrap">
+        <div class="kuota-dot"></div>
+        <span style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);font-weight:600">Kuota WA</span>
+        <div id="wa-quota-bar-wrap"><span id="wa-quota-bar"></span></div>
+        <span id="wa-quota-text" style="font-weight:600;color:var(--text-main);white-space:nowrap;font-size:11px">— / —</span>
+      </div>
+      <div class="theme-toggle" onclick="toggleTheme()" title="Ganti tema"><div class="slider"></div></div>
+      <button class="t-btn t-btn-outline" onclick="exportRsvpCSV()" style="display:none" id="btn-export">↓ CSV</button>
+      <button class="t-btn t-btn-outline" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+
+  <!-- PAKET INFO BAR -->
+  <div class="paket-bar" id="paket-bar">
+    <div class="paket-bar-label">Paket</div>
+    <div id="paket-badge-wrap"></div>
+    <div style="font-size:11px;color:var(--text-muted)" id="paket-info-text"></div>
+  </div>
+
+  <div class="tabs" id="tabs-wrap">
+    <div class="tab" onclick="switchTab('undangan')" id="tab-undangan-btn">📋 Data Undangan</div>
+    <div class="tab active" onclick="switchTab('tamu')">Daftar Tamu <span class="tab-badge" id="badge-tamu">0</span></div>
+    <div class="tab" onclick="switchTab('rsvp')">RSVP <span class="tab-badge" id="badge-rsvp">0</span></div>
+    <div class="tab" onclick="switchTab('komentar')" id="tab-komentar-btn">Komentar <span class="tab-badge" id="badge-komentar">0</span></div>
+    <div class="tab" onclick="switchTab('kirim')" id="tab-kirim-btn">📤 Kirim Pesan</div>
+    <div class="tab" onclick="switchTab('riwayat')" id="tab-riwayat-btn">📋 Riwayat</div>
+  </div>
+  </div><!-- /sticky-header -->
+
+  <div class="main">
+
+    <!-- ===== TAB: DATA UNDANGAN ===== -->
+    <div class="tab-content" id="tab-undangan">
+
+      <div class="sub-tabs" id="undangan-subtabs">
+        <button class="sub-tab active" onclick="switchInvSubTab('mempelai')">👰 Mempelai</button>
+        <button class="sub-tab" onclick="switchInvSubTab('acara')">📅 Acara</button>
+        <button class="sub-tab" onclick="switchInvSubTab('galeri')">🖼 Galeri</button>
+        <button class="sub-tab" onclick="switchInvSubTab('music')">🎵 Music</button>
+        <button class="sub-tab" onclick="switchInvSubTab('kado')">💝 Kado</button>
+        <button class="sub-tab" onclick="switchInvSubTab('lovestory')">💌 Love Story</button>
+      </div>
+
+      <div id="inv-loading" class="state-box"><div class="spinner"></div>Memuat data undangan...</div>
+      <div id="inv-notfound" class="state-box" style="display:none">Data undangan belum tersedia. Hubungi admin.</div>
+
+      <div id="inv-wrap" style="display:none">
+        <div class="inv-layout">
+          <div class="inv-main-col">
+
+<div class="sub-tab-content active" id="inv-sub-mempelai">
+<div class="card">
+            <div class="card-header"><div class="card-title">Data Mempelai</div></div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+                <!-- Wanita -->
+                <div>
+                  <div class="inv-section-label" style="color:var(--primary)">Mempelai Wanita</div>
+                  <div class="fg" style="margin-bottom:10px"><label>Nama Lengkap</label><input class="inv-input" id="bride_name"></div>
+                  <div class="fg" style="margin-bottom:10px"><label>Nama Panggilan</label><input class="inv-input" id="bride_nickname"></div>
+                  <div class="fg" style="margin-bottom:10px"><label>Nama Ayah</label><input class="inv-input" id="bride_father"></div>
+                  <div class="fg" style="margin-bottom:10px"><label>Nama Ibu</label><input class="inv-input" id="bride_mother"></div>
+                  <div class="fg" style="margin-bottom:10px"><label>Instagram</label><input class="inv-input" id="bride_instagram"></div>
+                  <div class="fg">
+                    <label>Foto Profil</label>
+                    <div class="inv-photo-upload" onclick="document.getElementById('bride_photo_input').click()">
+                      <div id="bride_photo_preview" class="inv-photo-circle" style="background:linear-gradient(135deg,#C9A96E,#8B5E3C)">A</div>
+                      <div class="inv-photo-label" id="bride_photo_label">Pilih Foto</div>
+                    </div>
+                    <input type="file" id="bride_photo_input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="window._app.uploadProfilePhoto('bride', this.files[0])">
+                    <input type="hidden" id="bride_photo_url">
+                  </div>
+                </div>
+                <!-- Pria -->
+                <div>
+                  <div class="inv-section-label" style="color:var(--info)">Mempelai Pria</div>
+                  <div class="fg" style="margin-bottom:10px"><label>Nama Lengkap</label><input class="inv-input" id="groom_name"></div>
+                  <div class="fg" style="margin-bottom:10px"><label>Nama Panggilan</label><input class="inv-input" id="groom_nickname"></div>
+                  <div class="fg" style="margin-bottom:10px"><label>Nama Ayah</label><input class="inv-input" id="groom_father"></div>
+                  <div class="fg" style="margin-bottom:10px"><label>Nama Ibu</label><input class="inv-input" id="groom_mother"></div>
+                  <div class="fg" style="margin-bottom:10px"><label>Instagram</label><input class="inv-input" id="groom_instagram"></div>
+                  <div class="fg">
+                    <label>Foto Profil</label>
+                    <div class="inv-photo-upload" onclick="document.getElementById('groom_photo_input').click()">
+                      <div id="groom_photo_preview" class="inv-photo-circle" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">B</div>
+                      <div class="inv-photo-label" id="groom_photo_label">Pilih Foto</div>
+                    </div>
+                    <input type="file" id="groom_photo_input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="window._app.uploadProfilePhoto('groom', this.files[0])">
+                    <input type="hidden" id="groom_photo_url">
+                  </div>
+                </div>
+              </div>
+              <div class="fg" style="margin-top:18px"><label>Kutipan / Quote Undangan</label><textarea class="inv-input" id="quote" rows="3"></textarea></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px">
+                <div class="fg"><label>Tanggal Pernikahan <span style="color:var(--danger)">*</span></label><input type="date" class="inv-input" id="tanggal_acara"></div>
+                <div class="fg"><label>Hashtag</label><input class="inv-input" id="hashtag"></div>
+              </div>
+              <div style="margin-top:16px">
+                <button class="btn btn-gold" onclick="window._app.saveInvitationMain()" id="btn-save-mempelai">💾 Simpan Data Mempelai</button>
+              </div>
+              <div class="msg" id="msg-inv-mempelai"></div>
+            </div>
+          </div>
+        </div>
+
+<div class="sub-tab-content" id="inv-sub-acara">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Jadwal Acara</div></div>
+            <div class="card-body">
+              <div id="inv-events-repeater"></div>
+              <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:8px" onclick="window._app.addEvent()">+ Tambah Acara</button>
+              <div style="margin-top:16px">
+                <button class="btn btn-gold" onclick="window._app.saveEvents()">💾 Simpan Acara</button>
+              </div>
+              <div class="msg" id="msg-inv-acara"></div>
+            </div>
+          </div>
+        </div>
+
+<div class="sub-tab-content" id="inv-sub-galeri">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Foto Galeri</div>
+              <div class="card-header-controls">
+                <span style="font-size:11px;color:var(--text-muted)" id="inv-gallery-count">0 foto · maks 30</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="inv-gallery-dropzone" class="inv-dropzone"
+                onclick="document.getElementById('inv-gallery-input').click()"
+                ondragover="event.preventDefault();this.classList.add('drag')"
+                ondragleave="this.classList.remove('drag')"
+                ondrop="event.preventDefault();this.classList.remove('drag');window._app.uploadGalleryPhotos(event.dataTransfer.files)">
+                <div id="inv-gallery-grid" class="inv-gallery-grid"></div>
+                <div id="inv-gallery-hint" style="text-align:center;padding:16px 0;color:var(--text-muted);font-size:12px">
+                  Klik atau drag &amp; drop foto ke sini (maks 30 foto)
+                </div>
+              </div>
+              <input type="file" id="inv-gallery-input" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="window._app.uploadGalleryPhotos(this.files)">
+              <div class="msg" id="msg-inv-galeri"></div>
+            </div>
+          </div>
+        </div>
+
+<div class="sub-tab-content" id="inv-sub-music">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+            <div class="card">
+              <div class="card-header"><div class="card-title">🎵 Music Latar</div></div>
+              <div class="card-body">
+                <div class="fg" style="margin-bottom:10px">
+                  <label>URL Musik</label>
+                  <div style="position:relative">
+                    <input class="inv-input" id="music_url" placeholder="https://example.com/song.mp3 atau YouTube URL" style="width:100%;padding-right:32px">
+                    <button type="button" id="music-clear-btn" title="Hapus link" onclick="document.getElementById('music_url').value='';document.getElementById('music-preview-wrap').style.display='none';document.getElementById('music-preview-container').innerHTML=''" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;border-radius:4px;transition:color .15s">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    </button>
+                  </div>
+                  <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Format: URL audio langsung (MP3) atau YouTube URL (youtube.com/watch?v=...)</div>
+                </div>
+                <div id="music-preview-wrap" style="display:none;margin-bottom:12px">
+                  <label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block">Preview</label>
+                  <div id="music-preview-container"></div>
+                </div>
+                <div style="margin-top:16px">
+                  <button class="btn btn-gold" onclick="window._app.saveMusicUrl()">💾 Simpan Music</button>
+                </div>
+                <div class="msg" id="msg-inv-music"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">🎶 Playlist Music</div></div>
+              <div class="card-body" style="padding:0;height:420px">
+                <iframe src="https://nikahinkita.my.id/music/" style="width:100%;height:100%;border:none;border-radius:0 0 8px 8px" loading="lazy"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+
+<div class="sub-tab-content" id="inv-sub-kado">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Info Kado / Rekening</div></div>
+            <div class="card-body">
+              <div id="inv-bank-repeater"></div>
+              <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:8px" onclick="window._app.addBankAccount()">+ Tambah Rekening</button>
+              <div style="margin-top:16px">
+                <button class="btn btn-gold" onclick="window._app.saveBankAccounts()">💾 Simpan Kado</button>
+              </div>
+              <div class="msg" id="msg-inv-kado"></div>
+            </div>
+          </div>
+        </div>
+
+<div class="sub-tab-content" id="inv-sub-lovestory">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Kisah Cinta</div></div>
+            <div class="card-body">
+              <div id="inv-lovestory-repeater"></div>
+              <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:8px" onclick="window._app.addLoveStory()">+ Tambah Momen</button>
+              <div style="margin-top:16px">
+                <button class="btn btn-gold" onclick="window._app.saveLoveStories()">💾 Simpan Love Story</button>
+              </div>
+              <div class="msg" id="msg-inv-lovestory"></div>
+            </div>
+          </div>
+        </div>
+
+          </div>
+
+          <div class="card inv-sidebar-card">
+            <div class="card-header"><div class="card-title">Status &amp; Info</div></div>
+            <div class="card-body">
+              <div class="inv-info-row">
+                <div class="inv-info-label">Nama Acara</div>
+                <div class="inv-info-val" id="inv-info-nama">—</div>
+              </div>
+              <div class="inv-info-row">
+                <div class="inv-info-label">Tanggal Pernikahan</div>
+                <div class="inv-info-val" id="inv-info-tanggal-acara">—</div>
+              </div>
+              <div class="inv-info-row">
+                <div class="inv-info-label">Link Undangan</div>
+                <div class="inv-info-val"><a id="inv-info-link" href="#" target="_blank" class="inv-info-link">—</a></div>
+              </div>
+              <div class="inv-info-row">
+                <div class="inv-info-label">Paket</div>
+                <div class="inv-info-val"><span class="paket-badge" id="inv-info-paket">—</span></div>
+              </div>
+              <div class="inv-info-row">
+                <div class="inv-info-label">Status Publish</div>
+                <div class="inv-info-val" id="inv-info-published">—</div>
+              </div>
+              <div class="inv-info-row">
+                <div class="inv-info-label">Masa Aktif Hingga</div>
+                <div class="inv-info-val" id="inv-info-expired">—</div>
+              </div>
+              <div class="inv-info-row">
+                <div class="inv-info-label">Tema</div>
+                <div class="inv-info-val" id="inv-info-tema">—</div>
+              </div>
+              <div class="inv-info-row">
+                <div class="inv-info-label">Token Login Client</div>
+                <div class="inv-info-val-wrapper">
+                  <div class="inv-info-val inv-info-mono" id="inv-info-token">—</div>
+                  <button type="button" class="inv-copy-btn" data-copy="inv-info-token" title="Salin token">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="inv-info-row">
+                <div class="inv-info-label">PIN Scanner</div>
+                <div class="inv-info-val-wrapper">
+                  <div class="inv-info-val inv-info-mono" id="inv-info-pin">—</div>
+                  <button type="button" class="inv-copy-btn" data-copy="inv-info-pin" title="Salin PIN">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="inv-info-note">Info di atas hanya bisa diubah oleh admin.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===== TAB: DAFTAR TAMU ===== -->
+    <div class="tab-content active" id="tab-tamu">
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-box-label">Total Tamu</div><div class="stat-box-val" id="st-total">0</div></div>
+        <div class="stat-box"><div class="stat-box-label">Undangan Dikirim</div><div class="stat-box-val" id="st-kirim" style="color:var(--gold)">0</div></div>
+        <div class="stat-box"><div class="stat-box-label">Dibuka</div><div class="stat-box-val" id="st-buka">0</div></div>
+        <div class="stat-box"><div class="stat-box-label">Sudah RSVP</div><div class="stat-box-val" id="st-rsvp" style="color:var(--green)">0</div></div>
+        <div class="stat-box"><div class="stat-box-label">Belum RSVP</div><div class="stat-box-val" id="st-belum" style="color:var(--red)">0</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Tambah Tamu</div>
+          <div id="tamu-quota-text" style="font-size:11px;color:var(--muted-l)"></div>
+        </div>
+        <div class="card-body">
+          <div class="form-row" style="margin-bottom:10px">
+            <div class="fg"><label>Nama Tamu</label><input type="text" id="t-nama" placeholder="Nama lengkap tamu"></div>
+            <div class="fg"><label>Nomor WhatsApp</label><input type="tel" id="t-telpon" placeholder="628xxxxxxxxxx" onkeydown="if(event.key==='Enter') tambahTamu()"></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-dark" onclick="tambahTamu()" id="btn-tambah-tamu">+ Tambah</button>
+            <label class="btn btn-outline" style="cursor:pointer">
+              ↑ Import Excel
+              <input type="file" accept=".xlsx,.xls" onchange="importExcel(this)" style="display:none" id="import-excel-input">
+            </label>
+            <a href="#" onclick="downloadTemplateExcel()" class="btn btn-outline" style="font-size:9px">↓ Template</a>
+          </div>
+          <div class="msg" id="msg-tamu"></div>
+        </div>
+      </div>
+
+      <!-- Template Pesan WA -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Template Pesan WA</div>
+          <button class="btn-template-pilih" onclick="bukaModalTemplate('pesan-template')">✨ Pilih Template</button>
+        </div>
+        <div class="card-body">
+          <div class="fg">
+            <label>Isi Pesan</label>
+            <textarea id="pesan-template" rows="7"></textarea>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6">
+            Gunakan <strong>{nama}</strong> untuk nama tamu dan <strong>{link}</strong> untuk link undangan.
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-dark" onclick="simpanTemplate()">Simpan Template</button>
+            <button class="btn btn-outline" onclick="resetTemplate()">Reset Default</button>
+          </div>
+          <div class="msg" id="msg-template"></div>
+        </div>
+      </div>
+
+      <!-- Tabel tamu -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" style="flex-shrink:0">Daftar Tamu</div>
+          <div class="card-header-controls">
+            <input type="text" id="f-tamu-cari" placeholder="Cari nama tamu..." oninput="filterTamu()">
+            <select id="f-tamu-status" onchange="filterTamu()">
+              <option value="">Semua Status</option>
+              <option value="terkirim">Terkirim</option>
+              <option value="belum">Belum Terkirim</option>
+              <option value="buka">Sudah Buka</option>
+              <option value="rsvp">Sudah RSVP</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="loadTamu()" style="white-space:nowrap">↻ Refresh</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <div id="tamu-table"><div class="state-box"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: RSVP ===== -->
+    <div class="tab-content" id="tab-rsvp">
+      <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-box"><div class="stat-box-label">Total RSVP</div><div class="stat-box-val" id="sr-total">0</div></div>
+        <div class="stat-box"><div class="stat-box-label">Konfirmasi Hadir</div><div class="stat-box-val" id="sr-hadir" style="color:var(--green)">0</div></div>
+        <div class="stat-box"><div class="stat-box-label">Tidak Hadir</div><div class="stat-box-val" id="sr-tidak" style="color:var(--red)">0</div></div>
+        <div class="stat-box"><div class="stat-box-label">Check-in Fisik</div><div class="stat-box-val" id="sr-checkin" style="color:var(--gold)">0</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" style="flex-shrink:0">Data RSVP</div>
+          <div class="card-header-controls">
+            <input type="text" id="f-rsvp-cari" placeholder="Cari nama..." oninput="filterRsvp()">
+            <select id="f-rsvp-kehadiran" onchange="filterRsvp()">
+              <option value="">Semua</option>
+              <option value="Hadir">Hadir</option>
+              <option value="Tidak Hadir">Tidak Hadir</option>
+            </select>
+            <select id="f-rsvp-checkin" onchange="filterRsvp()">
+              <option value="">Semua Check-in</option>
+              <option value="sudah">Sudah Check-in</option>
+              <option value="belum">Belum Check-in</option>
+            </select>
+            <button class="btn btn-gold btn-sm" onclick="exportRsvpCSV()" id="btn-export-rsvp" style="white-space:nowrap">↓ CSV</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <div id="rsvp-table"><div class="state-box"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: KOMENTAR ===== -->
+    <div class="tab-content" id="tab-komentar">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" style="flex-shrink:0">Ucapan & Komentar <span id="komentar-count" style="font-size:12px;color:var(--muted);font-weight:300;font-family:'Jost',sans-serif"></span></div>
+          <div class="card-header-controls">
+            <input type="text" id="f-komentar-cari" placeholder="Cari nama / isi..." oninput="filterKomentar()">
+          </div>
+        </div>
+        <div id="komentar-list" class="komentar-list" style="padding:0">
+          <div class="state-box"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: KIRIM PESAN ===== -->
+    <div class="tab-content" id="tab-kirim">
+      <!-- Gate Pro -->
+      <div id="kirim-gate" style="display:none">
+        <div class="card">
+          <div class="card-body">
+            <div class="upgrade-gate">
+              <div class="upgrade-gate-icon">📤</div>
+              <div class="upgrade-gate-title">Fitur Kirim Pesan</div>
+              <div class="upgrade-gate-sub">
+                Fitur <strong>Kirim WA Otomatis</strong> tersedia untuk paket <strong>Pro</strong> dan <strong>Premium</strong>.<br>
+                Upgrade untuk bisa kirim undangan massal, reminder otomatis, dan jadwal kirim.
+              </div>
+              <div class="upgrade-btn">🔒 Upgrade ke Pro</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Konten Kirim (Pro/Premium) -->
+      <div id="kirim-content" style="display:none">
+
+        <!-- SUB-TABS KIRIM -->
+        <div class="sub-tabs" id="sub-tabs-kirim">
+          <button class="sub-tab active" onclick="switchSubTab('kirim-undangan')" id="sub-tab-kirim-undangan">📤 Kirim Undangan</button>
+          <button class="sub-tab" onclick="switchSubTab('reminder-rsvp')" id="sub-tab-reminder-rsvp">📋 Reminder RSVP</button>
+          <button class="sub-tab" onclick="switchSubTab('reminder-h3')" id="sub-tab-reminder-h3">📅 H-3</button>
+          <button class="sub-tab" onclick="switchSubTab('reminder-h1')" id="sub-tab-reminder-h1">📅 H-1</button>
+          <button class="sub-tab" onclick="switchSubTab('reminder-ucapan')" id="sub-tab-reminder-ucapan">🙏 Ucapan</button>
+        </div>
+
+
+        <!-- SUB-TAB: KIRIM UNDANGAN -->
+        <div class="sub-tab-content active" id="sub-kirim-undangan">
+<!-- BULK SEND WA -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📤 Kirim WA Massal</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Pilih tamu → tentukan jeda & jadwal → kirim</div>
+            </div>
+          </div>
+          <div class="card-body">
+
+            <!-- Target & Filter -->
+            <div class="card-section" style="padding:0 0 16px 0;border:none">
+              <div class="section-title">1. Pilih Target Tamu</div>
+              <div class="filter-bar" style="margin-bottom:10px">
+                <select id="ks-filter" onchange="filterKirimTamu()" style="width:30%">
+                  <option value="all">Semua Tamu (yang ada no WA)</option>
+                  <option value="belum_kirim">Belum Terkirim</option>
+                  <option value="belum_rsvp">Belum RSVP</option>
+                  <option value="sudah_rsvp_hadir">Konfirmasi Hadir</option>
+                </select>
+                <span id="ks-count" style="font-size:11px;color:var(--muted-l)">— tamu</span>
+              </div>
+              <div id="ks-list-mini" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);background:var(--cream)">
+                <div class="state-box" style="padding:20px">Memuat tamu...</div>
+              </div>
+              <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+                <label style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer">
+                  <input type="checkbox" id="ks-select-all" onchange="toggleSelectAll()" style="accent-color:var(--gold)"> Pilih Semua
+                </label>
+                <span id="ks-selected-count" style="font-size:11px;color:var(--gold);font-weight:500">0 dipilih</span>
+              </div>
+            </div>
+
+            <!-- Template -->
+            <div class="card-section" style="padding:16px 0;border-top:1px solid var(--border-s);border-bottom:1px solid var(--border-s)">
+              <div class="section-title">2. Template Pesan</div>
+              <div style="padding:10px 14px;background:var(--cream);border:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.7;max-height:80px;overflow-y:auto" id="ks-template-preview">
+                Menggunakan template yang sudah tersimpan. Edit di tab "Daftar Tamu".
+              </div>
+            </div>
+
+            <!-- Jeda + Jadwal -->
+            <div style="padding-top:16px">
+              <div class="section-title">3. Pengaturan Kirim</div>
+              <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+                <!-- Jeda -->
+                <div>
+                  <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Jeda Antar Pesan (acak)</div>
+                  <div class="jeda-inputs" style="font-size:12px;"">
+                    <input type="number" id="jeda-min" value="5" min="1" max="120" style="width:70px;padding:6px 8px;border:1px solid var(--border);background:var(--cream);font-family:Jost,sans-serif;font-size:12px;color:var(--dark);outline:none"> detik s.d.
+                    <input type="number" id="jeda-max" value="30" min="1" max="120" style="width:70px;padding:6px 8px;border:1px solid var(--border);background:var(--cream);font-family:Jost,sans-serif;font-size:12px;color:var(--dark);outline:none"> detik
+                  </div>
+                  <div style="font-size:10px;color:var(--muted-l);margin-top:4px">Jeda acak mencegah nomor diblokir WA</div>
+                </div>
+                <!-- Batas Batch -->
+                <div>
+                  <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Batas Kirim per Sesi</div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <input type="number" id="batas-batch" value="30" min="1" max="500"
+                      style="width:70px;padding:6px 8px;border:1px solid var(--border);background:var(--cream);font-family:Jost,sans-serif;font-size:13px;color:var(--dark);outline:none">
+                    <span style="font-size:12px;color:var(--muted)">pesan</span>
+                  </div>
+                  <div style="font-size:10px;color:var(--muted-l);margin-top:4px">Bagi ratusan tamu jadi beberapa sesi</div>
+                </div>
+                <!-- Jadwal -->
+                <div>
+                  <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Jadwal Kirim</div>
+                  <div class="jadwal-toggle">
+                    <button class="btn btn-gold" onclick="setJadwal('sekarang')" id="jopt-sekarang">Kirim Sekarang</button>
+                    <button class="btn btn-gold" onclick="setJadwal('jadwal')" id="jopt-jadwal" id="premium-jadwal-btn">
+                      Jadwal &nbsp;<span id="jadwal-premium-lock" style="font-size:10px">🔒</span>
+                    </button>
+                  </div>
+                  <div id="jadwal-picker" style="display:none;margin-top:8px">
+                    <div class="fg" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+                      <div style="flex:1;min-width:130px">
+                        <label>Tanggal Kirim</label>
+                        <input type="date" id="jadwal-tanggal">
+                      </div>
+                      <div style="min-width:100px">
+                        <label>Jam (WIB)</label>
+                        <select id="jadwal-jam" style="width:100%;padding:8px 10px;border:1px solid var(--border);background:var(--cream);font-family:'Jost',sans-serif;font-size:13px;color:var(--dark);outline:none">
+                          <option value="">-- Pilih Jam --</option>
+                          <option value="06">06.00</option>
+                          <option value="07">07.00</option>
+                          <option value="08">08.00</option>
+                          <option value="09">09.00</option>
+                          <option value="10">10.00</option>
+                          <option value="11">11.00</option>
+                          <option value="12">12.00</option>
+                          <option value="13">13.00</option>
+                          <option value="14">14.00</option>
+                          <option value="15">15.00</option>
+                          <option value="16">16.00</option>
+                          <option value="17">17.00</option>
+                          <option value="18">18.00</option>
+                          <option value="19">19.00</option>
+                          <option value="20">20.00</option>
+                          <option value="21">21.00</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div style="font-size:10px;color:var(--muted-l);margin-top:5px">
+                      ⏱ Pesan dikirim server otomatis — tab boleh ditutup setelah simpan jadwal.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview Media (read-only, Pro/Premium) -->
+            <div id="media-preview-wrap" style="display:none;margin-top:14px;padding:12px;background:var(--cream);border:1px solid var(--border)">
+              <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">📎 Media Lampiran WA</div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <div id="media-preview-thumb" style="width:60px;height:60px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid var(--border)"></div>
+                <div>
+                  <div id="media-preview-nama" style="font-size:13px;font-weight:500;margin-bottom:3px"></div>
+                  <a id="media-preview-url" href="#" target="_blank" style="font-size:10px;color:var(--gold);letter-spacing:1px;text-decoration:none">Buka File ↗</a>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--muted-l);margin-top:8px">File ini akan ikut terkirim bersama setiap pesan WA.</div>
+            </div>
+            <div id="media-none-wrap" style="display:none;margin-top:10px;padding:8px 12px;border:1px dashed var(--border)">
+              <span style="font-size:11px;color:var(--muted-l)">📎 Belum ada media lampiran — hubungi admin untuk mengatur.</span>
+            </div>
+
+            <!-- Tombol Kirim -->
+            <div style="margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button class="btn btn-gold" onclick="mulaiKirim()" id="btn-mulai-kirim">
+                ▶ Mulai Kirim WA
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="stopKirim()" id="btn-stop-kirim" style="display:none">
+                ⏹ Stop
+              </button>
+              <button class="btn btn-outline btn-sm" onclick="lanjutkanKirim()" id="btn-lanjut-kirim" style="display:none" title="Lanjutkan dari tamu yang belum terkirim">
+                ↩ Lanjutkan Kirim
+              </button>
+              <div id="kirim-mode-info" style="font-size:11px;color:var(--muted)"></div>
+            </div>
+
+            <!-- progress-log hidden, dipakai pill untuk update log -->
+            <div class="progress-log" id="progress-log" style="display:none;max-height:180px;overflow-y:auto;font-size:11px;color:var(--muted);font-family:monospace;background:var(--surface2);border:1px solid var(--border);padding:10px;margin-top:10px;line-height:1.7;border-radius:var(--radius-sm)"></div>
+
+            <div class="msg" id="msg-kirim"></div>
+
+            <!-- Peringatan penting -->
+            <div style="margin-top:14px;padding:12px 14px;border:1px solid #E8C06A;background:#FFFBF0;display:flex;gap:10px;align-items:flex-start;line-height:1.6;border-radius:var(--radius-sm)">
+              <span style="font-size:18px;flex-shrink:0">⚠️</span>
+              <div>
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.5px;color:#8B6914;margin-bottom:4px;text-transform:uppercase">Peringatan Penting!</div>
+                <div style="font-size:11px;color:#7A5C10">Pengiriman pesan di luar batas wajar berpotensi nomor diblokir WA. Gunakan jeda waktu pengiriman pesan dan bagi menjadi beberapa hari jika pesan ada ratusan.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- SUB-TAB: REMINDER RSVP -->
+        <div class="sub-tab-content" id="sub-reminder-rsvp">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📋 Reminder Isi RSVP</div>
+            </div>
+            <div class="card-body">
+<div class="reminder-item" id="rem-rsvp-item">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                  <div class="reminder-item-title">📋 Reminder Isi RSVP</div>
+                  <span class="badge b-gold" id="rem-rsvp-badge">Premium</span>
+                </div>
+                <div class="reminder-item-sub">Kirim ke tamu yang belum isi RSVP. Bisa kirim sekarang atau jadwalkan otomatis.</div>
+
+                <!-- Ringkasan status reminder -->
+                <div id="rem-rsvp-summary" style="margin-bottom:12px;padding:10px 12px;background:var(--cream);border:1px solid var(--border);border-radius:2px;font-size:12px">
+                  <div style="display:flex;gap:16px;flex-wrap:wrap">
+                    <span>⏳ Belum dikirim: <strong id="rem-rsvp-belum-kirim">—</strong></span>
+                    <span style="color:var(--green)">✓ Sudah dikirim: <strong id="rem-rsvp-sudah-kirim">—</strong></span>
+                  </div>
+                </div>
+
+                <!-- Badge jumlah tamu -->
+                <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span class="hadir-badge">⏳ <span id="rem-rsvp-count">0</span></span>
+                </div>
+
+                <!-- Badge jumlah hadir -->
+                <div class="badge-hadir-wrap">
+                  <span style="font-size:11px;color:var(--muted)">Konfirmasi hadir:</span>
+                  <span class="badge-hadir">❤️ <span id="rem-rsvp-hadir-count">0</span> tamu</span>
+                </div>
+
+                <!-- Template pesan -->
+                <div style="margin-bottom:10px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                    <label style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block">Template Pesan</label>
+                    <button class="btn-template-pilih" onclick="bukaModalTemplate('rem-rsvp-template')">✨ Pilih Template</button>
+                  </div>
+                  <textarea id="rem-rsvp-template" rows="3" style="width:100%;padding:8px 10px;border:1px solid var(--border);background:white;font-family:Jost,sans-serif;font-size:12px;color:var(--dark);resize:vertical;outline:none"
+                    placeholder="Halo {nama}, mohon konfirmasi kehadiran Anda di acara kami melalui link: {link} 🙏"></textarea>
+                  <div style="font-size:10px;color:var(--muted-l);margin-top:4px">Variabel: {nama} | {link}</div>
+                </div>
+
+                <!-- Mode: Kirim Sekarang vs Jadwal Otomatis -->
+                <div style="margin-bottom:12px">
+                  <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Mode Pengiriman</div>
+                  <div style="display:flex;gap:10px;flex-wrap:wrap">
+                    <div style="flex:1;min-width:180px;padding:10px 12px;border:1px solid var(--border);background:var(--cream)">
+                      <div style="font-size:12px;font-weight:500;margin-bottom:6px">⚡ Kirim Sekarang</div>
+                      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Langsung kirim ke tamu yang belum RSVP.</div>
+                      <button class="btn btn-gold btn-sm" onclick="kirimReminderRsvpSekarang()" id="btn-rem-rsvp-sekarang">▶ Kirim Sekarang</button>
+                    </div>
+                    <div style="flex:1;min-width:180px;padding:10px 12px;border:1px solid var(--border);background:var(--cream)">
+                      <div style="font-size:12px;font-weight:500;margin-bottom:6px">🕐 Jadwal Otomatis</div>
+                      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Server kirim <strong>jam 19.00 WIB</strong> di tanggal ini.</div>
+                      <div class="fg" style="margin-bottom:8px">
+                        <input type="date" id="rem-rsvp-jadwal">
+                      </div>
+                      <div style="display:flex;gap:6px">
+                        <button class="btn btn-outline btn-sm" onclick="simpanJadwalRsvp()" style="flex:1">💾 Simpan Jadwal</button>
+                        <button class="btn btn-outline btn-sm" onclick="hapusJadwalRsvp()" style="flex:1;color:var(--muted)">✕ Hapus</button>
+                      </div>
+                      <div style="font-size:10px;color:var(--muted-l);margin-top:6px" id="rem-rsvp-jadwal-info"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="msg" id="msg-rem-rsvp"></div>
+              </div>
+
+              <!-- Reminder H-3/H-1 (Premium) -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-TAB: REMINDER H-3 -->
+        <div class="sub-tab-content" id="sub-reminder-h3">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📅 Reminder H-3</div>
+            </div>
+            <div class="card-body">
+<div class="reminder-item" id="rem-hadir-item">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                  <div class="reminder-item-title">📅 Reminder H-3 / H-1</div>
+                  <span class="badge b-gold" id="rem-hadir-badge">Premium</span>
+                </div>
+                <div class="reminder-item-sub">Pesan dikirim otomatis <strong>jam 06.00 WIB</strong> oleh server — browser tidak perlu terbuka.</div>
+
+                <!-- Ringkasan status reminder H3/H1 -->
+                <div style="margin-bottom:12px;padding:10px 12px;background:var(--cream);border:1px solid var(--border);font-size:12px">
+                  <div style="display:flex;gap:16px;flex-wrap:wrap">
+                    <span>📅 H-3 — Sudah: <strong id="rem-h3-sudah">—</strong> · Belum: <strong id="rem-h3-belum">—</strong></span>
+                    <span>📅 H-1 — Sudah: <strong id="rem-h1-sudah">—</strong> · Belum: <strong id="rem-h1-belum">—</strong></span>
+                  </div>
+                </div>
+
+                <!-- Badge jumlah hadir -->
+                <div class="badge-hadir-wrap">
+                  <span style="font-size:11px;color:var(--muted)">Konfirmasi hadir:</span>
+                  <span class="badge-hadir">❤️ <span id="rem-hadir-count">0</span> tamu</span>
+                </div>
+
+                <!-- Tanggal acara -->
+                <div class="fg" style="margin-bottom:10px;max-width:220px">
+                  <label>Tanggal Acara</label>
+                  <input type="date" id="rem-hari-h-tgl">
+                  <div style="font-size:10px;color:var(--muted-l);margin-top:4px">H-3 dan H-1 otomatis dihitung dari tanggal ini</div>
+                </div>
+
+                <!-- Toggle H-3 -->
+                <div style="margin-bottom:12px;padding:12px;background:var(--cream);border:1px solid var(--border)">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:500">
+                      <input type="checkbox" id="rem-h3-aktif" onchange="toggleReminderTemplate('h3')">
+                      Aktifkan Reminder H-3
+                    </label>
+                    <span style="font-size:10px;color:var(--muted-l)" id="rem-h3-tanggal"></span>
+                  </div>
+                  <div id="rem-h3-wrap" style="display:none">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                      <label style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block">Template Pesan H-3</label>
+                      <button class="btn-template-pilih" onclick="bukaModalTemplate('rem-h3-template')">✨ Pilih Template</button>
+                    </div>
+                    <textarea id="rem-h3-template" rows="3" class="reminder-textarea"
+                      placeholder="Halo {nama}, mengingatkan bahwa acara tinggal 3 hari lagi! Jangan lupa bawa QR Code undangan Anda. 🙏"></textarea>
+                    <div style="font-size:10px;color:var(--muted-l);margin-top:4px">Variabel: {nama} | {link}</div>
+                  </div>
+                </div>
+
+                <!-- Toggle H-1 -->
+                <div style="margin-bottom:12px;padding:12px;background:var(--cream);border:1px solid var(--border)">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:500">
+                      <input type="checkbox" id="rem-h1-aktif" onchange="toggleReminderTemplate('h1')">
+                      Aktifkan Reminder H-1
+                    </label>
+                    <span style="font-size:10px;color:var(--muted-l)" id="rem-h1-tanggal"></span>
+                  </div>
+                  <div id="rem-h1-wrap" style="display:none">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                      <label style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block">Template Pesan H-1</label>
+                      <button class="btn-template-pilih" onclick="bukaModalTemplate('rem-h1-template')">✨ Pilih Template</button>
+                    </div>
+                    <textarea id="rem-h1-template" rows="3" class="reminder-textarea"
+                      placeholder="Halo {nama}, besok adalah hari istimewa! Acara akan segera dimulai. Sampai jumpa! 🎊"></textarea>
+                    <div style="font-size:10px;color:var(--muted-l);margin-top:4px">Variabel: {nama} | {link}</div>
+                  </div>
+                </div>
+
+                <!-- Target tamu -->
+                <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px">
+                  <span style="font-size:11px;color:var(--muted)">Target reminder:</span>
+                  <span class="hadir-badge">🎊 <span id="rem-hadir-count-2">0</span> tamu konfirmasi hadir</span>
+                </div>
+
+                <div style="display:flex;gap:8px;align-items:center">
+                  <button class="btn btn-gold btn-sm" onclick="simpanReminderHadir()">💾 Simpan Setting Reminder</button>
+                  <span style="font-size:11px;color:var(--muted-l)" id="rem-hadir-info"></span>
+                </div>
+                <div class="msg" id="msg-rem-hadir"></div>
+              </div>
+
+              <!-- Ucapan Terima Kasih (Premium) -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-TAB: REMINDER H-1 -->
+        <div class="sub-tab-content" id="sub-reminder-h1">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">📅 Reminder H-1</div>
+            </div>
+            <div class="card-body">
+              <div style="padding:20px;text-align:center;color:var(--text-muted)">
+                <p style="font-size:13px">Template H-1 menggunakan pengaturan yang sama dengan H-3.</p>
+                <p style="font-size:12px;margin-top:8px">Atur di tab <strong>H-3</strong> — server akan kirim otomatis 1 hari sebelum acara.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-TAB: UCAPAN -->
+        <div class="sub-tab-content" id="sub-reminder-ucapan">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🙏 Ucapan Terima Kasih</div>
+            </div>
+            <div class="card-body">
+<div class="reminder-item" id="rem-ucapan-item">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                  <div class="reminder-item-title">🙏 Ucapan Terima Kasih</div>
+                  <span class="badge b-gold" id="rem-ucapan-badge">Premium</span>
+                </div>
+                <div class="reminder-item-sub">Kirim ucapan terima kasih ke tamu yang sudah check-in di acara. Bisa kirim sekarang atau jadwalkan otomatis.</div>
+
+                <!-- Ringkasan status ucapan -->
+                <div style="margin-bottom:12px;padding:10px 12px;background:var(--cream);border:1px solid var(--border);font-size:12px">
+                  <div style="display:flex;gap:16px;flex-wrap:wrap">
+                    <span>⏳ Belum dikirim: <strong id="rem-ucapan-belum-kirim">—</strong></span>
+                    <span style="color:var(--green)">✓ Sudah dikirim: <strong id="rem-ucapan-sudah-kirim">—</strong></span>
+                  </div>
+                </div>
+
+                <!-- Badge jumlah tamu -->
+                <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span class="hadir-badge">✅ <span id="rem-ucapan-hadir-count">0</span> sudah check-in</span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;background:var(--cream-d);color:var(--muted);border:1px solid var(--border);padding:4px 10px;font-size:11px;font-weight:600;border-radius:2px">
+                    👥 <span id="rem-ucapan-semua-count">0</span> total tamu
+                  </span>
+                </div>
+
+                <!-- Template -->
+                <div style="margin-bottom:14px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                    <label style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block">Template Pesan</label>
+                    <button class="btn-template-pilih" onclick="bukaModalTemplate('rem-ucapan-template')">✨ Pilih Template</button>
+                  </div>
+                  <textarea id="rem-ucapan-template" rows="3" class="reminder-textarea">Terima kasih {nama} atas kehadiran dan doa restu yang telah diberikan di acara kami. Semoga silaturahmi kita selalu terjaga. Salam hangat 🙏</textarea>
+                  <div style="font-size:10px;color:var(--muted-l);margin-top:4px">Variabel: {nama} | {acara} — klik untuk edit</div>
+                </div>
+
+                <!-- Mode: Kirim Sekarang vs Jadwal Otomatis -->
+                <div style="margin-bottom:12px">
+                  <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Mode Pengiriman</div>
+                  <div style="display:flex;gap:10px;flex-wrap:wrap">
+                    <div style="flex:1;min-width:180px;padding:10px 12px;border:1px solid var(--border);background:var(--cream)">
+                      <div style="font-size:12px;font-weight:500;margin-bottom:6px">⚡ Kirim Sekarang</div>
+                      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Langsung kirim ucapan ke tamu yang sudah check-in.</div>
+                      <button class="btn btn-gold btn-sm" onclick="kirimUcapanSekarang()" id="btn-ucapan-sekarang">▶ Kirim Sekarang</button>
+                    </div>
+                    <div style="flex:1;min-width:180px;padding:10px 12px;border:1px solid var(--border);background:var(--cream)">
+                      <div style="font-size:12px;font-weight:500;margin-bottom:6px">🕐 Jadwal Otomatis</div>
+                      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Server kirim <strong>jam 10.00 WIB</strong> di tanggal ini.</div>
+                      <div class="fg" style="margin-bottom:8px">
+                        <input type="date" id="rem-ucapan-jadwal">
+                      </div>
+                      <div style="display:flex;gap:6px">
+                        <button class="btn btn-outline btn-sm" onclick="simpanJadwalUcapan()" style="flex:1">💾 Simpan Jadwal</button>
+                        <button class="btn btn-outline btn-sm" onclick="hapusJadwalUcapan()" style="flex:1;color:var(--muted)">✕ Hapus</button>
+                      </div>
+                      <div style="font-size:10px;color:var(--muted-l);margin-top:6px" id="rem-ucapan-jadwal-info"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="msg" id="msg-rem-ucapan"></div>
+            </div><!-- /rem-ucapan-item -->
+          </div><!-- /card-body -->
+          </div><!-- /card -->
+        </div><!-- /sub-reminder-ucapan -->
+      </div><!-- /kirim-content -->
+    </div><!-- /tab-kirim -->
+
+    <!-- TAB RIWAYAT -->
+    <div class="tab-content" id="tab-riwayat">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 Riwayat Pengiriman</div>
+          <button class="btn btn-outline btn-sm" onclick="loadKirimLog()">↻ Refresh</button>
+        </div>
+        <div class="log-toolbar" id="log-toolbar" style="display:none">
+          <button class="log-filter-btn active" onclick="setLogFilter('semua',this)">Semua</button>
+          <button class="log-filter-btn" onclick="setLogFilter('wa_log',this)">📤 WA Massal</button>
+          <button class="log-filter-btn" onclick="setLogFilter('reminder_log',this)">🔔 Reminder</button>
+          <div class="log-pagination" id="log-pagination"></div>
+        </div>
+        <div class="log-summary-bar" id="log-summary-bar" style="display:none"></div>
+        <div id="kirim-log">
+          <div class="state-box">Belum ada riwayat pengiriman.</div>
+        </div>
+      </div>
+    </div><!-- /tab-riwayat -->
+
+
+
+  </div><!-- /main -->
+</div><!-- /app-screen -->
+
+<!-- MODAL EDIT TAMU -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">Edit Tamu</div></div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id">
+      <div class="form-row" style="margin-bottom:14px">
+        <div class="fg"><label>Nama</label><input type="text" id="edit-nama"></div>
+        <div class="fg"><label>WhatsApp</label><input type="tel" id="edit-telpon"></div>
+      </div>
+      <div class="fg"><label>Pesan Custom</label><textarea id="edit-pesan"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-edit')">Batal</button>
+      <button class="btn btn-dark" onclick="simpanEdit()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DELETE -->
+<div class="modal-overlay" id="modal-del">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">Hapus Data?</div></div>
+    <div class="modal-body"><p id="del-msg" style="font-size:13px;color:var(--muted);font-weight:300;line-height:1.6"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-del')">Batal</button>
+      <button class="btn btn-danger" onclick="confirmDel()">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script type="module" src="js/app.js"></script>
+
+</body>
+</html>
