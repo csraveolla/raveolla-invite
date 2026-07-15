@@ -5,16 +5,32 @@ Queries Supabase to determine theme, serves correct theme HTML.
 """
 import http.server
 import os
+import re
 import json
 import urllib.request
 import urllib.parse
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
-# Supabase config — use environment variables or fallback to defaults
-SUPABASE_URL  = os.environ.get('SUPABASE_URL',  'https://qyaxacjktcuyvkcrnofc.supabase.co')
-SUPABASE_KEY  = os.environ.get('SUPABASE_KEY',  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5YXhhY2prdGN1eXZrY3Jub2ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3OTY3NjYsImV4cCI6MjA5ODM3Mjc2Nn0.p1-9aFY_WZ4aVGg3D8Mx_4NUdqp8RZkXil6sX2-VA70')
-DEFAULT_THEME = os.environ.get('DEFAULT_THEME', 'sakina')
+# ── READ CONFIG FROM /env.js ──────────────────────────────────
+def _read_env_js():
+    """Parse env.js from project root."""
+    env_path = os.path.join(os.path.dirname(ROOT), 'env.js')
+    cfg = {}
+    if os.path.exists(env_path):
+        with open(env_path, 'r') as f:
+            content = f.read()
+        for key in ('SUPABASE_URL', 'SUPABASE_KEY', 'DEFAULT_THEME'):
+            m = re.search(rf"{key}\s*:\s*'([^']+)'", content)
+            if m:
+                cfg[key] = m[1]
+    return cfg
+
+_env = _read_env_js()
+
+SUPABASE_URL  = os.environ.get('SUPABASE_URL')  or _env.get('SUPABASE_URL',  '')
+SUPABASE_KEY  = os.environ.get('SUPABASE_KEY')  or _env.get('SUPABASE_KEY',  '')
+DEFAULT_THEME = os.environ.get('DEFAULT_THEME') or _env.get('DEFAULT_THEME', 'sakina')
 
 
 def get_theme_for_slug(slug):

@@ -1,11 +1,11 @@
 // ============================================================
 // config.js — Konfigurasi & Konstanta Global
-// Secrets ada di env.js (tidak di-commit ke git)
+// Secrets dari /env.js (window.__ENV)
 // ============================================================
 
-import { SB, KEY } from './env.js';
-
-export { SB, KEY };
+const E = window.__ENV || {};
+export const SB  = E.SUPABASE_URL || '';
+export const KEY = E.SUPABASE_KEY || '';
 
 export const H   = {
   'apikey':        KEY,
@@ -40,5 +40,5 @@ export const PAKET_FEATURES = {
 
 export const TZ      = 'Asia/Jakarta';
 export const PER     = 20;  // item per halaman tabel
-export const DOMAIN  = 'https://raveolla.my.id';
-export const FONNTE  = 'https://api.fonnte.com/send';
+export const DOMAIN  = E.PUBLIC_DOMAIN || '';
+export const FONNTE  = E.FONNTE_API    || '';

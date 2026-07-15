@@ -2,11 +2,8 @@
 # .gitignore — RSVP Wedding Invitation Platform
 # ================================================================
 
-# Environment configs (contain secrets)
-rsvp-admin/js/env.js
-rsvp-client/js/env.js
-tema/assets/env.js
-tema/config.php
+# Secrets — satu file di root
+/env.js
 
 # Python
 __pycache__/

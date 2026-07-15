@@ -5,12 +5,22 @@
  * Query Supabase by slug → determine theme → serve theme HTML
  */
 
-// ── CONFIG ──────────────────────────────────────────────────────
-$config = require __DIR__ . '/config.php';
-$SUPABASE_URL  = $config['SUPABASE_URL'];
-$SUPABASE_KEY  = $config['SUPABASE_KEY'];
-$DEFAULT_THEME = $config['DEFAULT_THEME'];
-$CACHE_TTL     = $config['CACHE_TTL'];
+// ── READ CONFIG FROM /env.js ──────────────────────────────────
+$env_path = dirname(__DIR__) . '/env.js';
+$SUPABASE_URL  = '';
+$SUPABASE_KEY  = '';
+$DEFAULT_THEME = 'sakina';
+$CACHE_TTL     = 3600;
+
+if (file_exists($env_path)) {
+    $env_content = file_get_contents($env_path);
+    if (preg_match("/SUPABASE_URL\s*:\s*'([^']+)'/", $env_content, $m))
+        $SUPABASE_URL = $m[1];
+    if (preg_match("/SUPABASE_KEY\s*:\s*'([^']+)'/", $env_content, $m))
+        $SUPABASE_KEY = $m[1];
+    if (preg_match("/DEFAULT_THEME\s*:\s*'([^']+)'/", $env_content, $m))
+        $DEFAULT_THEME = $m[1];
+}
 
 // ── PARSE SLUG ──────────────────────────────────────────────────
 $slug = trim($_GET['slug'] ?? '', '/');

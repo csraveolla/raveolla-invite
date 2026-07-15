@@ -3,10 +3,13 @@
 // ================================================================
 
 import { state } from './state.js'
-import { SB_URL, SB_KEY, PUBLIC_DOMAIN, FONNTE_API } from './env.js'
 
-export { SB_URL, SB_KEY, PUBLIC_DOMAIN, FONNTE_API }
-export const SESSION_KEY = 'rsvp_admin_session'
+const E = window.__ENV || {}
+export const SB_URL        = E.SUPABASE_URL  || ''
+export const SB_KEY        = E.SUPABASE_KEY  || ''
+export const PUBLIC_DOMAIN = E.PUBLIC_DOMAIN || ''
+export const FONNTE_API    = E.FONNTE_API    || ''
+export const SESSION_KEY   = 'rsvp_admin_session'
 
 export function authHeaders() {
   return {

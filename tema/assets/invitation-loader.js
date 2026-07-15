@@ -27,8 +27,8 @@
   'use strict'
 
   // ── CONFIG ─────────────────────────────────────────────────────
-  const SUPABASE_URL  = window.__ENV?.SUPABASE_URL  || 'https://qyaxacjktcuyvkcrnofc.supabase.co'
-  const SUPABASE_ANON = window.__ENV?.SUPABASE_ANON || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5YXhhY2prdGN1eXZrY3Jub2ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3OTY3NjYsImV4cCI6MjA5ODM3Mjc2Nn0.p1-9aFY_WZ4aVGg3D8Mx_4NUdqp8RZkXil6sX2-VA70'
+  const SUPABASE_URL  = window.__ENV?.SUPABASE_URL || ''
+  const SUPABASE_ANON = window.__ENV?.SUPABASE_KEY || ''
 
   // ── AMBIL SLUG DARI URL PATH ────────────────────────────────────
   // URL pattern: domain.com/{slug}
