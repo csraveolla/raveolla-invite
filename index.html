@@ -23,7 +23,7 @@
 </head>
 <body>
 
-<div class="loader">
+<div class="loader" id="loader">
   <div class="spinner"></div>
   <p>Memuat undangan...</p>
   <p class="error" id="err"></p>
@@ -35,8 +35,8 @@
   'use strict';
 
   var E = window.__ENV || {};
-  var SB_URL  = E.SUPABASE_URL  || '';
-  var SB_KEY  = E.SUPABASE_KEY  || '';
+  var SB_URL = E.SUPABASE_URL || '';
+  var SB_KEY = E.SUPABASE_KEY || '';
 
   // Ambil slug dari URL path
   var slug = window.location.pathname
@@ -45,11 +45,11 @@
     .filter(Boolean)
     .pop() || '';
 
-  // Root path → tampilkan landing atau 404
+  // Root path → 404
   if (!slug) {
     document.title = '404';
-    document.querySelector('.spinner').style.display = 'none';
-    document.querySelector('.loader p').textContent = 'Halaman tidak ditemukan';
+    document.getElementById('loader').innerHTML =
+      '<p style="font-size:48px;margin:0">404</p><p style="margin-top:8px">Halaman tidak ditemukan</p>';
     return;
   }
 
@@ -68,16 +68,33 @@
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    var theme = 'sakina'; // default
+    var theme = 'sakina';
     if (data && data[0] && data[0].themes && data[0].themes.name) {
       theme = data[0].themes.name.toLowerCase();
     }
-    // Redirect ke tema dengan slug sebagai query param
-    window.location.href = '/' + theme + '/index.html?slug=' + encodeURIComponent(slug);
+    // Fetch theme HTML dan render di tempat (tanpa redirect)
+    var themeUrl = '/' + theme + '/index.html?slug=' + encodeURIComponent(slug);
+    return fetch(themeUrl);
+  })
+  .then(function(r) { return r.text(); })
+  .then(function(html) {
+    document.open();
+    document.write(html);
+    document.close();
   })
   .catch(function() {
-    // Gagal query → coba langsung ke default theme
-    window.location.href = '/sakina/index.html?slug=' + encodeURIComponent(slug);
+    // Fallback: coba default theme
+    fetch('/sakina/index.html?slug=' + encodeURIComponent(slug))
+      .then(function(r) { return r.text(); })
+      .then(function(html) {
+        document.open();
+        document.write(html);
+        document.close();
+      })
+      .catch(function() {
+        document.getElementById('loader').innerHTML =
+          '<p style="color:#e74c3c">Gagal memuat undangan</p>';
+      });
   });
 })();
 </script>
