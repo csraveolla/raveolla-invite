@@ -36,7 +36,7 @@ if (empty($slug)) {
 $api_url = $SUPABASE_URL . '/rest/v1/invitations'
          . '?slug=eq.' . urlencode($slug)
          . '&is_published=eq.true'
-         . '&select=theme_id,themes(name)';
+         . '&select=theme_id,themes(name,theme_code)';
 
 $ch = curl_init($api_url);
 curl_setopt_array($ch, [
