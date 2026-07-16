@@ -4,18 +4,20 @@ serve.py — Local Development Server with Multi-Theme Routing
 Queries Supabase to determine theme, serves correct theme HTML.
 """
 import http.server
+import socketserver
 import os
 import re
 import json
 import urllib.request
 import urllib.parse
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+TEMA = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(TEMA)
 
 # ── READ CONFIG FROM /env.js ──────────────────────────────────
 def _read_env_js():
     """Parse env.js from project root."""
-    env_path = os.path.join(os.path.dirname(ROOT), 'env.js')
+    env_path = os.path.join(ROOT, 'env.js')
     cfg = {}
     if os.path.exists(env_path):
         with open(env_path, 'r') as f:
@@ -78,30 +80,44 @@ class SPAHandler(http.server.SimpleHTTPRequestHandler):
 
         # Skip admin paths
         if slug.lower() == 'admin':
-            admin_path = os.path.join(ROOT, 'admin', 'index.html')
+            admin_path = os.path.join(TEMA, 'admin', 'index.html')
             if os.path.exists(admin_path):
-                self.path = '/admin/index.html'
+                self.path = '/tema/admin/index.html'
+                return super().do_GET()
+
+        # Handle rsvp-client: serve client-adm.html directly
+        if slug.lower() == 'rsvp-client':
+            rsvp_path = os.path.join(ROOT, 'rsvp-client', 'client-adm.html')
+            if os.path.exists(rsvp_path):
+                self.path = '/rsvp-client/client-adm.html'
+                return super().do_GET()
+
+        # Handle rsvp-admin: serve super-adm.html directly
+        if slug.lower() == 'rsvp-admin':
+            admin_rsvp_path = os.path.join(ROOT, 'rsvp-admin', 'super-adm.html')
+            if os.path.exists(admin_rsvp_path):
+                self.path = '/rsvp-admin/super-adm.html'
                 return super().do_GET()
 
         # Query Supabase for theme
         theme = get_theme_for_slug(slug)
-        theme_path = os.path.join(ROOT, theme, 'index.html')
+        theme_path = os.path.join(TEMA, theme, 'index.html')
 
         # Case-insensitive fallback: find matching directory
         if not os.path.exists(theme_path):
-            for entry in os.listdir(ROOT):
-                if entry.lower() == theme.lower() and os.path.isdir(os.path.join(ROOT, entry)):
+            for entry in os.listdir(TEMA):
+                if entry.lower() == theme.lower() and os.path.isdir(os.path.join(TEMA, entry)):
                     theme = entry
-                    theme_path = os.path.join(ROOT, theme, 'index.html')
+                    theme_path = os.path.join(TEMA, theme, 'index.html')
                     break
 
         # Fallback to default theme
         if not os.path.exists(theme_path):
             theme = DEFAULT_THEME
-            theme_path = os.path.join(ROOT, theme, 'index.html')
+            theme_path = os.path.join(TEMA, theme, 'index.html')
 
         if os.path.exists(theme_path):
-            self.path = f'/{theme}/index.html'
+            self.path = f'/tema/{theme}/index.html'
             return super().do_GET()
 
         # Final fallback
@@ -113,7 +129,8 @@ class SPAHandler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    server = http.server.HTTPServer(('0.0.0.0', 8080), SPAHandler)
+    server = socketserver.ThreadingTCPServer(('0.0.0.0', 8080), SPAHandler)
+    server.daemon_threads = True
     print('SPA server running on http://localhost:8080')
     print('Theme routing via Supabase: enabled')
     server.serve_forever()

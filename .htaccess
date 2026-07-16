@@ -3,15 +3,22 @@ RewriteEngine On
 # Map /assets/* → /tema/assets/*
 RewriteRule ^assets/(.+)$ tema/assets/$1 [L,QSA]
 
-# Serve admin panel di /rsvp-admin (tanpa redirect)
+# Serve React build assets directly
+RewriteRule ^tema-react/assets/(.+)$ tema-react/dist/assets/$1 [L,QSA]
+RewriteRule ^tema-react/env\.js$ tema-react/dist/env.js [L,QSA]
+RewriteRule ^tema-react/favicon\.svg$ tema-react/dist/favicon.svg [L,QSA]
+RewriteRule ^tema-react/icons\.svg$ tema-react/dist/icons.svg [L,QSA]
+
+# Serve admin panel
 RewriteRule ^rsvp-admin/?$ rsvp-admin/super-adm.html [L]
 
-# Serve client panel di /rsvp-client (tanpa redirect)
+# Serve client panel
 RewriteRule ^rsvp-client/?$ rsvp-client/client-adm.html [L]
 
-# Skip file & folder yang ada
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+# Serve existing files & directories directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
 
 # Route slug bersih ke PHP router
 RewriteRule ^([a-zA-Z0-9_-]+)$ tema/index.php?slug=$1 [QSA,L]
