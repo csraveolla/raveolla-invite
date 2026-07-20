@@ -1,10 +1,12 @@
 // ================================================================
 // invitation.js — Data Undangan editor (all sub-tabs)
+// Style system: CSS class-based via style-presets.css
 // ================================================================
 
 import { state, INV, INV_MONTHS, INV_FIELDS } from './state.js'
 import { SB_URL, SB_KEY, authHeaders } from './api.js'
 import { showToast, invMsg, esc, escH } from './utils.js'
+import { STYLE_PRESETS, FONT_OPTIONS, ALL_STYLE_CLASSES, ALL_FONT_CLASSES, SECTION_LABELS } from '../../tema/assets/event-presets.js'
 
 // ── Navigation ────────────────────────────────────────────────
 
@@ -83,11 +85,13 @@ export async function loadInvData(clientId) {
     INV.gallery = (gaR.ok ? await gaR.json() : []).map(g => ({
       url: g.file_url, caption: g.caption || '', is_cover: g.is_cover
     }))
+    INV.section_styles = inv.section_styles || {}
 
     renderInvEvents()
     renderInvBanks()
     renderInvLoves()
     renderInvGallery()
+    renderAllSectionStyles()
     document.getElementById('inv-wrap').style.display = 'block'
   } catch (e) {
     document.getElementById('inv-loading').innerHTML =
@@ -269,7 +273,11 @@ export async function saveInvMempelai() {
 export function renderInvEvents() {
   const w = document.getElementById('inv-events-wrap')
   if (!INV.events.length) { w.innerHTML = '<div class="state-box">Belum ada acara.</div>'; return }
-  w.innerHTML = INV.events.map((ev, i) => `
+  w.innerHTML = INV.events.map((ev, i) => {
+    const cs = ev.custom_style || {}
+    const currentPreset = normalizePreset(cs)
+    const currentOverrides = normalizeOverrides(cs)
+    return `
     <div class="inv-repeater-item">
       <div class="inv-repeater-head">
         <div class="inv-repeater-title">${ev.event_name || 'Acara Baru'}</div>
@@ -302,8 +310,69 @@ export function renderInvEvents() {
         <div class="span2"><label>Link Google Maps</label>
           <input type="text" value="${esc(ev.maps_url)}" oninput="INV.events[${i}].maps_url=this.value">
         </div>
+        <div class="span2"><label>Link Livestream (opsional)</label>
+          <input type="text" value="${esc(ev.livestream_url)}" oninput="INV.events[${i}].livestream_url=this.value">
+        </div>
+        ${renderEventStyleUI(i, currentPreset, currentOverrides)}
       </div>
-    </div>`).join('')
+    </div>`
+  }).join('')
+}
+
+function renderEventStyleUI(i, currentPreset, currentOverrides) {
+  const presetOpts = Object.entries(STYLE_PRESETS).map(([k, v]) =>
+    `<option value="${k}" ${currentPreset === k ? 'selected' : ''}>${v.label}</option>`
+  ).join('')
+  const fontOpts = FONT_OPTIONS.map(f =>
+    `<option value="${f.value}" ${currentOverrides.font_class === f.value ? 'selected' : ''}>${f.label}</option>`
+  ).join('')
+
+  return `
+    <div class="span2" style="border-top:1px dashed rgba(255,255,255,.15);padding-top:12px;margin-top:4px">
+      <label style="color:var(--gold);letter-spacing:.1em;font-size:11px">🎨 STYLE EVENT</label>
+    </div>
+    <div><label>Preset</label>
+      <select onchange="INV.events[${i}].custom_style=applyEventPreset(${i},this.value);renderInvEvents()">
+        <option value="">— Default Tema —</option>
+        ${presetOpts}
+      </select>
+    </div>
+    <div><label>Font</label>
+      <select onchange="INV.events[${i}].custom_style=applyEventFont(${i},this.value);renderInvEvents()">
+        <option value="">— Default Tema —</option>
+        ${fontOpts}
+      </select>
+    </div>
+    <details style="grid-column:span 2;margin-top:8px">
+      <summary style="cursor:pointer;font-size:11px;color:var(--gold);letter-spacing:.05em">⚙ Custom Override</summary>
+      <div style="padding:8px 0;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><label>Background</label>
+          <input type="text" value="${esc(currentOverrides.bg_color || '')}" placeholder="rgba(...) atau #hex"
+            oninput="INV.events[${i}].custom_style=applyEventOverride(${i},'bg_color',this.value)">
+        </div>
+        <div><label>Text Color</label>
+          <input type="text" value="${esc(currentOverrides.text_color || '')}" placeholder="#hex"
+            oninput="INV.events[${i}].custom_style=applyEventOverride(${i},'text_color',this.value)">
+        </div>
+        <div><label>Accent Color</label>
+          <input type="text" value="${esc(currentOverrides.accent_color || '')}" placeholder="#hex"
+            oninput="INV.events[${i}].custom_style=applyEventOverride(${i},'accent_color',this.value)">
+        </div>
+        <div><label>Border</label>
+          <input type="text" value="${esc(currentOverrides.border || '')}" placeholder="1px solid #c9a96e"
+            oninput="INV.events[${i}].custom_style=applyEventOverride(${i},'border',this.value)">
+        </div>
+        <div><label>Border Radius</label>
+          <input type="text" value="${esc(currentOverrides.border_radius || '')}" placeholder="0px"
+            oninput="INV.events[${i}].custom_style=applyEventOverride(${i},'border_radius',this.value)">
+        </div>
+        <div><label>Box Shadow</label>
+          <input type="text" value="${esc(currentOverrides.box_shadow || '')}" placeholder="0 4px 20px rgba(0,0,0,0.3)"
+            oninput="INV.events[${i}].custom_style=applyEventOverride(${i},'box_shadow',this.value)">
+        </div>
+      </div>
+    </details>
+  `
 }
 
 function tSel(i, field, part, val) {
@@ -326,9 +395,212 @@ export function tUpd(i, field, part, value) {
 export function addInvEvent() {
   INV.events.push({
     event_name: '', event_date: '', start_time: '', end_time: '',
-    location_name: '', address: '', maps_url: ''
+    location_name: '', address: '', maps_url: '', livestream_url: '',
+    custom_style: null
   })
   renderInvEvents()
+}
+
+// ── STYLE HELPERS (class-based) ──────────────────────────────
+
+function normalizePreset(cs) {
+  if (!cs) return ''
+  if (typeof cs === 'string') {
+    // Old: "gold", "navy" etc. → convert
+    if (STYLE_PRESETS[cs]) return cs
+    // Already new format class name
+    const found = Object.entries(STYLE_PRESETS).find(([k, v]) => v.cssClass === cs)
+    return found ? found[0] : ''
+  }
+  if (typeof cs === 'object') {
+    const p = cs.preset || ''
+    if (STYLE_PRESETS[p]) return p
+    // Old format with flat values: { preset: "gold", bg_color: ... }
+    if (['gold','navy','blush','sage','ivory','rose','custom'].includes(p)) return p
+  }
+  return ''
+}
+
+function normalizeOverrides(cs) {
+  if (!cs) return {}
+  if (typeof cs === 'string') return {}
+  if (typeof cs === 'object') {
+    // New format: { preset: "...", overrides: { ... } }
+    if (cs.overrides) return cs.overrides
+    // Old format: { preset: "gold", bg_color: "...", text_color: "...", ... }
+    const result = {}
+    for (const [k, v] of Object.entries(cs)) {
+      if (k !== 'preset' && k !== 'label' && v) result[k] = v
+    }
+    // Map old font_family to font_class
+    if (result.font_family) {
+      const fontCls = FONT_OPTIONS.find(f => f.value === result.font_class || f.label?.toLowerCase().includes(result.font_family?.toLowerCase()))
+      if (fontCls) result.font_class = fontCls.value
+      delete result.font_family
+    }
+    return result
+  }
+  return {}
+}
+
+export function applyEventPreset(i, presetKey) {
+  if (!presetKey) return null
+  const currentOverrides = normalizeOverrides(INV.events[i].custom_style)
+  const cssClass = STYLE_PRESETS[presetKey]?.cssClass || ''
+  if (!cssClass) return Object.keys(currentOverrides).length ? { preset: presetKey, overrides: currentOverrides } : null
+  if (Object.keys(currentOverrides).length) {
+    return { preset: presetKey, overrides: currentOverrides }
+  }
+  return { preset: presetKey }
+}
+
+export function applyEventFont(i, fontClass) {
+  const cs = INV.events[i].custom_style || {}
+  const overrides = normalizeOverrides(cs)
+  const preset = normalizePreset(cs)
+  if (fontClass) overrides.font_class = fontClass
+  else delete overrides.font_class
+  return preset ? { preset, overrides } : (Object.keys(overrides).length ? { overrides } : null)
+}
+
+export function applyEventOverride(i, key, value) {
+  const cs = INV.events[i].custom_style || {}
+  const preset = normalizePreset(cs)
+  const overrides = normalizeOverrides(cs)
+  if (value) overrides[key] = value
+  else delete overrides[key]
+  return preset ? { preset, overrides } : (Object.keys(overrides).length ? { overrides } : null)
+}
+
+// ── SECTION STYLES ──────────────────────────────────────────
+
+function renderAllSectionStyles() {
+  const containers = {
+    gallery:      'inv-style-gallery',
+    love_story:   'inv-style-lovestory',
+    kado:         'inv-style-kado',
+    countdown:    'inv-style-countdown',
+    quote_footer: 'inv-style-quote-footer',
+    profile:      'inv-style-profile',
+  }
+  for (const [key, id] of Object.entries(containers)) {
+    const el = document.getElementById(id)
+    if (el) {
+      el.innerHTML = renderSectionStyleBox(key)
+    }
+  }
+}
+
+function renderSectionStyleBox(sectionKey) {
+  const cs = (INV.section_styles || {})[sectionKey] || {}
+  const currentPreset = normalizePreset(cs)
+  const currentOverrides = normalizeOverrides(cs)
+
+  const presetOpts = Object.entries(STYLE_PRESETS).map(([k, v]) =>
+    `<option value="${k}" ${currentPreset === k ? 'selected' : ''}>${v.label}</option>`
+  ).join('')
+  const fontOpts = FONT_OPTIONS.map(f =>
+    `<option value="${f.value}" ${currentOverrides.font_class === f.value ? 'selected' : ''}>${f.label}</option>`
+  ).join('')
+
+  const label = SECTION_LABELS[sectionKey] || sectionKey.toUpperCase()
+
+  return `
+    <div style="border-top:1px dashed rgba(255,255,255,.12);padding-top:12px;margin-top:12px">
+      <label style="color:var(--gold);letter-spacing:.1em;font-size:11px">🎨 STYLE ${label.toUpperCase()}</label>
+    </div>
+    <div><label>Preset</label>
+      <select onchange="applySectionPreset('${sectionKey}',this.value)">
+        <option value="">— Default Tema —</option>
+        ${presetOpts}
+      </select>
+    </div>
+    <div><label>Font</label>
+      <select onchange="applySectionFont('${sectionKey}',this.value)">
+        <option value="">— Default Tema —</option>
+        ${fontOpts}
+      </select>
+    </div>
+    <details style="margin-top:8px">
+      <summary style="cursor:pointer;font-size:11px;color:var(--gold);letter-spacing:.05em">⚙ Custom Override</summary>
+      <div style="padding:8px 0;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><label>Background</label>
+          <input type="text" value="${esc(currentOverrides.bg_color || '')}" placeholder="rgba(...) atau #hex"
+            oninput="applySectionOverride('${sectionKey}','bg_color',this.value)">
+        </div>
+        <div><label>Text Color</label>
+          <input type="text" value="${esc(currentOverrides.text_color || '')}" placeholder="#hex"
+            oninput="applySectionOverride('${sectionKey}','text_color',this.value)">
+        </div>
+        <div><label>Accent Color</label>
+          <input type="text" value="${esc(currentOverrides.accent_color || '')}" placeholder="#hex"
+            oninput="applySectionOverride('${sectionKey}','accent_color',this.value)">
+        </div>
+        <div><label>Border</label>
+          <input type="text" value="${esc(currentOverrides.border || '')}" placeholder="1px solid #c9a96e"
+            oninput="applySectionOverride('${sectionKey}','border',this.value)">
+        </div>
+        <div><label>Border Radius</label>
+          <input type="text" value="${esc(currentOverrides.border_radius || '')}" placeholder="0px"
+            oninput="applySectionOverride('${sectionKey}','border_radius',this.value)">
+        </div>
+        <div><label>Box Shadow</label>
+          <input type="text" value="${esc(currentOverrides.box_shadow || '')}" placeholder="0 4px 20px rgba(0,0,0,0.3)"
+            oninput="applySectionOverride('${sectionKey}','box_shadow',this.value)">
+        </div>
+      </div>
+    </details>
+  `
+}
+
+export function applySectionPreset(sectionKey, presetKey) {
+  INV.section_styles = INV.section_styles || {}
+  const currentOverrides = normalizeOverrides(INV.section_styles[sectionKey])
+  if (!presetKey) {
+    INV.section_styles[sectionKey] = Object.keys(currentOverrides).length ? { overrides: currentOverrides } : null
+    return
+  }
+  if (Object.keys(currentOverrides).length) {
+    INV.section_styles[sectionKey] = { preset: presetKey, overrides: currentOverrides }
+  } else {
+    INV.section_styles[sectionKey] = { preset: presetKey }
+  }
+  renderAllSectionStyles()
+}
+
+export function applySectionFont(sectionKey, fontClass) {
+  INV.section_styles = INV.section_styles || {}
+  const cs = INV.section_styles[sectionKey] || {}
+  const preset = normalizePreset(cs)
+  const overrides = normalizeOverrides(cs)
+  if (fontClass) overrides.font_class = fontClass
+  else delete overrides.font_class
+  INV.section_styles[sectionKey] = preset ? { preset, overrides } : (Object.keys(overrides).length ? { overrides } : null)
+  renderAllSectionStyles()
+}
+
+export function applySectionOverride(sectionKey, key, value) {
+  INV.section_styles = INV.section_styles || {}
+  const cs = INV.section_styles[sectionKey] || {}
+  const preset = normalizePreset(cs)
+  const overrides = normalizeOverrides(cs)
+  if (value) overrides[key] = value
+  else delete overrides[key]
+  INV.section_styles[sectionKey] = preset ? { preset, overrides } : (Object.keys(overrides).length ? { overrides } : null)
+}
+
+export async function saveSectionStyles() {
+  const msg = document.getElementById('msg-inv-section-styles')
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/invitations?id=eq.${INV.invId}`, {
+      method: 'PATCH', headers: authHeaders(),
+      body: JSON.stringify({ section_styles: INV.section_styles || null })
+    })
+    if (!res.ok) throw new Error(await res.text())
+    invMsg(msg, 'success', '✓ Style section tersimpan.')
+  } catch (e) {
+    invMsg(msg, 'error', 'Gagal: ' + e.message)
+  }
 }
 
 export async function saveInvEvents() {

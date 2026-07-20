@@ -1,15 +1,14 @@
 // ============================================================
 // invitation.js — Tab "Data Undangan"
 // Client bisa edit: mempelai, quote, hashtag, acara, galeri,
-//                    kado (bank_accounts), love story
-// Client TIDAK BISA edit: slug, theme_id, package_id,
-//                    expired_at, is_published
-// (field-field itu memang tidak dimunculkan di form ini sama sekali)
+//                    kado (bank_accounts), love story, section styles
+// Style system: CSS class-based via style-presets.css
 // ============================================================
 import { showMsg, showToast } from './utils.js';
 import { DOMAIN } from './config.js';
 import { clientData } from './auth.js';
 import { initSupabaseClient, supabaseClient } from './realtime.js';
+import { STYLE_PRESETS, FONT_OPTIONS, SECTION_LABELS } from '../../tema/assets/event-presets.js';
 
 const MEMPELAI_FIELDS = [
   'bride_name', 'bride_nickname', 'bride_father', 'bride_mother',
@@ -19,17 +18,18 @@ const MEMPELAI_FIELDS = [
   'quote', 'hashtag', 'music_url'
 ];
 
-export let invitationId = null;   // id invitations (bigint) milik client ini
+export let invitationId = null;
 export const state = {
   events:       [],
   bankAccounts: [],
-  loveStories:  []
+  loveStories:  [],
+  sectionStyles: {}
 };
-export const galleryState = []; // [{ url, caption, is_cover, sort_order }]
+export const galleryState = [];
 
 let loaded = false;
 
-// ── Sub-Tab Switching (khusus tab Data Undangan) ────────────────
+// ── Sub-Tab Switching ────────────────────────────────────────
 
 export function switchInvSubTab(name) {
   document.querySelectorAll('#undangan-subtabs .sub-tab').forEach(el => el.classList.remove('active'));
@@ -41,7 +41,7 @@ export function switchInvSubTab(name) {
 // ── Load ──────────────────────────────────────────────────────
 
 export async function loadInvitationTab() {
-  if (loaded) return; // hanya load sekali per sesi, hemat request
+  if (loaded) return;
   initSupabaseClient();
 
   const loadingEl  = document.getElementById('inv-loading');
@@ -55,7 +55,7 @@ export async function loadInvitationTab() {
   try {
     const { data, error } = await supabaseClient
       .from('invitations')
-      .select([...MEMPELAI_FIELDS, 'id', 'slug', 'expired_at', 'is_published', 'themes(name)'].join(','))
+      .select([...MEMPELAI_FIELDS, 'id', 'slug', 'expired_at', 'is_published', 'section_styles', 'themes(name)'].join(','))
       .eq('client_id', clientData.id)
       .single();
 
@@ -66,13 +66,14 @@ export async function loadInvitationTab() {
     }
 
     invitationId = data.id;
+    state.sectionStyles = data.section_styles || {};
     fillMempelaiForm(data);
     fillStatusSidebar(data);
     initCopyButtons();
 
     const [eventsRes, bankRes, loveRes, galleryRes] = await Promise.all([
       supabaseClient.from('events')
-        .select('event_name, event_date, start_time, end_time, location_name, address, maps_url')
+        .select('event_name, event_date, start_time, end_time, location_name, address, maps_url, livestream_url, custom_style')
         .eq('invitation_id', invitationId).order('sort_order'),
       supabaseClient.from('bank_accounts')
         .select('type, bank_name, account_number, account_name')
@@ -97,6 +98,7 @@ export async function loadInvitationTab() {
     renderBankAccounts();
     renderLoveStories();
     renderGallery();
+    renderAllSectionStyles();
 
     const musicInput = document.getElementById('music_url');
     if (musicInput) {
@@ -201,10 +203,7 @@ function initCopyButtons() {
   });
 }
 
-// ── Save: Mempelai (bride/groom fields + quote/hashtag) ─────────
-// Ini satu-satunya UPDATE ke tabel invitations dari sisi client.
-// Kolom yang dikirim SELALU dibatasi ke MEMPELAI_FIELDS —
-// tidak pernah menyentuh slug/theme_id/package_id/expired_at/dll.
+// ── Save: Mempelai ────────────────────────────────────────────
 
 export async function saveInvitationMain() {
   const btn = document.getElementById('btn-save-mempelai');
@@ -312,6 +311,40 @@ export async function uploadProfilePhoto(person, file) {
 
 // ── ACARA (events) ────────────────────────────────────────────
 
+function normalizePreset(cs) {
+  if (!cs) return ''
+  if (typeof cs === 'string') {
+    if (STYLE_PRESETS[cs]) return cs
+    const found = Object.entries(STYLE_PRESETS).find(([k, v]) => v.cssClass === cs)
+    return found ? found[0] : ''
+  }
+  if (typeof cs === 'object') {
+    const p = cs.preset || ''
+    if (STYLE_PRESETS[p]) return p
+    if (['gold','navy','blush','sage','ivory','rose','custom'].includes(p)) return p
+  }
+  return ''
+}
+
+function normalizeOverrides(cs) {
+  if (!cs) return {}
+  if (typeof cs === 'string') return {}
+  if (typeof cs === 'object') {
+    if (cs.overrides) return cs.overrides
+    const result = {}
+    for (const [k, v] of Object.entries(cs)) {
+      if (k !== 'preset' && k !== 'label' && v) result[k] = v
+    }
+    if (result.font_family) {
+      const fontCls = FONT_OPTIONS.find(f => f.value === result.font_class || f.label?.toLowerCase().includes(result.font_family?.toLowerCase()))
+      if (fontCls) result.font_class = fontCls.value
+      delete result.font_family
+    }
+    return result
+  }
+  return {}
+}
+
 export function renderEvents() {
   const wrap = document.getElementById('inv-events-repeater');
   if (!wrap) return;
@@ -319,7 +352,19 @@ export function renderEvents() {
     wrap.innerHTML = '<div class="state-box">Belum ada acara. Klik "Tambah Acara" di bawah.</div>';
     return;
   }
-  wrap.innerHTML = state.events.map((ev, i) => `
+  wrap.innerHTML = state.events.map((ev, i) => {
+    const cs = ev.custom_style || {};
+    const currentPreset = normalizePreset(cs);
+    const currentOverrides = normalizeOverrides(cs);
+
+    const presetOpts = Object.entries(STYLE_PRESETS).map(([k, v]) =>
+      `<option value="${k}" ${currentPreset === k ? 'selected' : ''}>${v.label}</option>`
+    ).join('');
+    const fontOpts = FONT_OPTIONS.map(f =>
+      `<option value="${f.value}" ${currentOverrides.font_class === f.value ? 'selected' : ''}>${f.label}</option>`
+    ).join('');
+
+    return `
     <div class="inv-repeater-item">
       <div class="inv-repeater-head">
         <div class="inv-repeater-title">${ev.event_name || 'Acara Baru'}</div>
@@ -361,18 +406,64 @@ export function renderEvents() {
           <input class="inv-input" value="${escAttr(ev.maps_url)}"
             oninput="window._app.state.events[${i}].maps_url=this.value">
         </div>
+        <div class="fg span2"><label>Link Livestream (opsional)</label>
+          <input class="inv-input" value="${escAttr(ev.livestream_url)}"
+            oninput="window._app.state.events[${i}].livestream_url=this.value">
+        </div>
+        <div class="fg span2" style="border-top:1px dashed rgba(0,0,0,.1);padding-top:12px;margin-top:4px">
+          <label style="color:var(--accent,#c9a96e);letter-spacing:.1em;font-size:11px">🎨 STYLE EVENT</label>
+        </div>
+        <div class="fg"><label>Preset</label>
+          <select class="inv-input" onchange="window._app.applyEventPreset(${i},this.value)">
+            <option value="">— Default Tema —</option>
+            ${presetOpts}
+          </select>
+        </div>
+        <div class="fg"><label>Font</label>
+          <select class="inv-input" onchange="window._app.applyEventFont(${i},this.value)">
+            <option value="">— Default Tema —</option>
+            ${fontOpts}
+          </select>
+        </div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
+}
+
+export function applyEventPreset(i, presetKey) {
+  if (!presetKey) {
+    if (Object.keys(normalizeOverrides(state.events[i].custom_style)).length) {
+      state.events[i].custom_style = { overrides: normalizeOverrides(state.events[i].custom_style) };
+    } else {
+      state.events[i].custom_style = null;
+    }
+    renderEvents();
+    return;
+  }
+  const currentOverrides = normalizeOverrides(state.events[i].custom_style);
+  if (Object.keys(currentOverrides).length) {
+    state.events[i].custom_style = { preset: presetKey, overrides: currentOverrides };
+  } else {
+    state.events[i].custom_style = { preset: presetKey };
+  }
+}
+
+export function applyEventFont(i, fontClass) {
+  const cs = state.events[i].custom_style || {};
+  const preset = normalizePreset(cs);
+  const overrides = normalizeOverrides(cs);
+  if (fontClass) overrides.font_class = fontClass;
+  else delete overrides.font_class;
+  state.events[i].custom_style = preset ? { preset, overrides } : (Object.keys(overrides).length ? { overrides } : null);
 }
 
 export function addEvent() {
-  state.events.push({ event_name: '', event_date: '', start_time: '', end_time: '', location_name: '', address: '', maps_url: '' });
+  state.events.push({ event_name: '', event_date: '', start_time: '', end_time: '', location_name: '', address: '', maps_url: '', livestream_url: '', custom_style: null });
   renderEvents();
 }
 
 function renderTimeSelect(i, field, part, currentVal) {
-  // currentVal format dari DB: "HH:MM" atau "HH:MM:SS" atau kosong
   const [hh, mm] = (currentVal || '').split(':');
   const cur = part === 'h' ? hh : mm;
   const max = part === 'h' ? 24 : 60;
@@ -426,8 +517,6 @@ export function renderBankAccounts() {
   }
   wrap.innerHTML = state.bankAccounts.map((b, i) => {
     const isQris = b.type === 'qris';
-    // Catatan: untuk tipe QRIS, kolom account_number dipakai menyimpan URL gambar QRIS
-    // (tidak perlu migrasi kolom baru — account_number tidak dipakai untuk teks di mode ini)
     const qrisUrl = isQris ? (b.account_number || '') : '';
     return `
     <div class="inv-repeater-item">
@@ -485,7 +574,7 @@ export async function uploadQrisImage(i, file) {
     if (error) throw new Error(error.message);
     const { data: urlData } = supabaseClient.storage.from('gallery-photos').getPublicUrl(path);
     state.bankAccounts[i].account_number = urlData.publicUrl;
-    state.bankAccounts[i].account_name   = ''; // tidak dipakai untuk QRIS
+    state.bankAccounts[i].account_name   = '';
     renderBankAccounts();
     showToast('✓ Gambar QRIS diupload — klik "Simpan Kado" untuk menyimpan');
   } catch (e) {
@@ -531,7 +620,6 @@ export function renderLoveStories() {
     return;
   }
   wrap.innerHTML = state.loveStories.map((s, i) => {
-    // Inisialisasi _month/_year sekali dari event_date (kalau belum ada)
     if (s._month === undefined || s._year === undefined) {
       const [y, m] = (s.event_date || '').split('-');
       s._year  = y || '';
@@ -577,8 +665,6 @@ export function updateLoveStoryDate(i, bulan, tahun) {
   const cur = state.loveStories[i];
   if (bulan !== null) cur._month = bulan;
   if (tahun !== null) cur._year  = tahun;
-  // event_date final hanya dihitung ulang di saat Simpan (saveLoveStories),
-  // supaya state Bulan/Tahun tidak pernah hilang meski salah satu masih kosong.
 }
 
 export function addLoveStory() {
@@ -743,6 +829,101 @@ export async function saveMusicUrl() {
     if (error) throw new Error(error.message);
     showMsg(msg, 'success', '✓ Music tersimpan.');
     showToast('✓ Music diperbarui');
+  } catch (e) {
+    showMsg(msg, 'error', 'Gagal menyimpan: ' + e.message);
+  }
+}
+
+// ── SECTION STYLES ────────────────────────────────────────
+
+function renderAllSectionStyles() {
+  const containers = {
+    gallery:      'inv-style-gallery',
+    love_story:   'inv-style-lovestory',
+    kado:         'inv-style-kado',
+    countdown:    'inv-style-countdown',
+    quote_footer: 'inv-style-quote-footer',
+    profile:      'inv-style-profile',
+  };
+  for (const [key, id] of Object.entries(containers)) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.innerHTML = renderSectionStyleBox(key);
+    }
+  }
+}
+
+function renderSectionStyleBox(sectionKey) {
+  const cs = (state.sectionStyles || {})[sectionKey] || {};
+  const currentPreset = normalizePreset(cs);
+  const currentOverrides = normalizeOverrides(cs);
+
+  const presetOpts = Object.entries(STYLE_PRESETS).map(([k, v]) =>
+    `<option value="${k}" ${currentPreset === k ? 'selected' : ''}>${v.label}</option>`
+  ).join('');
+  const fontOpts = FONT_OPTIONS.map(f =>
+    `<option value="${f.value}" ${currentOverrides.font_class === f.value ? 'selected' : ''}>${f.label}</option>`
+  ).join('');
+
+  const label = SECTION_LABELS[sectionKey] || sectionKey.toUpperCase();
+
+  return `
+    <div style="border-top:1px dashed rgba(0,0,0,.1);padding-top:12px;margin-top:12px">
+      <label style="color:var(--accent,#c9a96e);letter-spacing:.1em;font-size:11px">🎨 STYLE ${label.toUpperCase()}</label>
+    </div>
+    <div class="fg"><label>Preset</label>
+      <select class="inv-input" onchange="window._app.applySectionPreset('${sectionKey}',this.value)">
+        <option value="">— Default Tema —</option>
+        ${presetOpts}
+      </select>
+    </div>
+    <div class="fg"><label>Font</label>
+      <select class="inv-input" onchange="window._app.applySectionFont('${sectionKey}',this.value)">
+        <option value="">— Default Tema —</option>
+        ${fontOpts}
+      </select>
+    </div>
+  `;
+}
+
+export function applySectionPreset(sectionKey, presetKey) {
+  state.sectionStyles = state.sectionStyles || {};
+  const currentOverrides = normalizeOverrides(state.sectionStyles[sectionKey]);
+  if (!presetKey) {
+    state.sectionStyles[sectionKey] = Object.keys(currentOverrides).length ? { overrides: currentOverrides } : null;
+    renderAllSectionStyles();
+    return;
+  }
+  if (Object.keys(currentOverrides).length) {
+    state.sectionStyles[sectionKey] = { preset: presetKey, overrides: currentOverrides };
+  } else {
+    state.sectionStyles[sectionKey] = { preset: presetKey };
+  }
+  renderAllSectionStyles();
+}
+
+export function applySectionFont(sectionKey, fontClass) {
+  state.sectionStyles = state.sectionStyles || {};
+  const cs = state.sectionStyles[sectionKey] || {};
+  const preset = normalizePreset(cs);
+  const overrides = normalizeOverrides(cs);
+  if (fontClass) overrides.font_class = fontClass;
+  else delete overrides.font_class;
+  state.sectionStyles[sectionKey] = preset ? { preset, overrides } : (Object.keys(overrides).length ? { overrides } : null);
+  renderAllSectionStyles();
+}
+
+export async function saveSectionStyles() {
+  const msg = document.getElementById('msg-inv-section-styles');
+  if (!invitationId) { showMsg(msg, 'error', 'Data undangan belum dimuat.'); return; }
+  try {
+    const { error } = await supabaseClient
+      .from('invitations')
+      .update({ section_styles: state.sectionStyles || null })
+      .eq('id', invitationId);
+    if (error) throw new Error(error.message);
+    showMsg(msg, 'success', '✓ Style section tersimpan.');
+    showToast('✓ Style section diperbarui');
   } catch (e) {
     showMsg(msg, 'error', 'Gagal menyimpan: ' + e.message);
   }

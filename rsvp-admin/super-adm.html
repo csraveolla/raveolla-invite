@@ -373,6 +373,7 @@
           </div>
           <input type="file" id="inv-gal-file" multiple accept="image/*" style="display:none" onchange="uploadInvGallery(this.files)">
           <div class="msg" id="msg-inv-galeri"></div>
+          <div id="inv-style-gallery"></div>
         </div></div>
       </div>
 
@@ -383,6 +384,7 @@
           <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:8px" onclick="addInvBank()">+ Tambah Rekening</button>
           <button class="btn btn-gold" style="margin-top:16px" onclick="saveInvBank()">💾 Simpan Kado</button>
           <div class="msg" id="msg-inv-kado"></div>
+          <div id="inv-style-kado"></div>
         </div></div>
       </div>
 
@@ -393,6 +395,7 @@
           <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:8px" onclick="addInvLove()">+ Tambah Momen</button>
           <button class="btn btn-gold" style="margin-top:16px" onclick="saveInvLove()">💾 Simpan Love Story</button>
           <div class="msg" id="msg-inv-lovestory"></div>
+          <div id="inv-style-lovestory"></div>
         </div></div>
       </div>
         </div><!-- end inv-tabs-main -->
@@ -412,6 +415,11 @@
             <div class="form-group" style="margin-bottom:14px"><label>PIN Scanner</label><div class="token-box"><span class="token-text" id="inv-pin-display"></span></div></div>
             <button class="btn btn-gold btn-sm" style="width:100%;justify-content:center" onclick="saveInvSettings()">💾 Simpan Pengaturan</button>
             <div class="msg" id="msg-inv-pengaturan"></div>
+            <div id="inv-style-profile"></div>
+            <div id="inv-style-countdown"></div>
+            <div id="inv-style-quote-footer"></div>
+            <button class="btn btn-gold btn-sm" style="width:100%;justify-content:center;margin-top:12px" onclick="saveSectionStyles()">💾 Simpan Style Section</button>
+            <div class="msg" id="msg-inv-section-styles"></div>
           </div></div>
         </div>
       </div><!-- end inv-tabs-layout -->

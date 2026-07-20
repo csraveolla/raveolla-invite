@@ -39,6 +39,8 @@ import {
   saveInvSettings, createBlankInvitation, togglePublish,
   uploadInvPhoto, saveInvMempelai,
   renderInvEvents, tUpd, addInvEvent, saveInvEvents,
+  applyEventPreset, applyEventFont, applyEventOverride,
+  applySectionPreset, applySectionFont, applySectionOverride, saveSectionStyles,
   renderInvBanks, uploadInvQris, addInvBank, saveInvBank,
   renderInvLoves, addInvLove, saveInvLove,
   renderInvGallery, uploadInvGallery, saveInvGallery
@@ -104,6 +106,13 @@ window.saveInvMempelai      = saveInvMempelai
 window.renderInvEvents      = renderInvEvents
 window.tUpd                 = tUpd
 window.addInvEvent          = addInvEvent
+window.applyEventPreset    = applyEventPreset
+window.applyEventFont      = applyEventFont
+window.applyEventOverride  = applyEventOverride
+window.applySectionPreset  = applySectionPreset
+window.applySectionFont    = applySectionFont
+window.applySectionOverride = applySectionOverride
+window.saveSectionStyles   = saveSectionStyles
 window.saveInvEvents        = saveInvEvents
 window.renderInvBanks       = renderInvBanks
 window.uploadInvQris        = uploadInvQris

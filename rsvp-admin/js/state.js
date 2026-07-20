@@ -22,7 +22,8 @@ export const INV = {
   events: [],
   banks: [],
   loves: [],
-  gallery: []
+  gallery: [],
+  section_styles: null
 }
 
 export const INV_MONTHS = [

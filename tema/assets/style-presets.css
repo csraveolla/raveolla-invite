@@ -1,0 +1,261 @@
+/* ═══════════════════════════════════════════════════════
+   Style Presets — Shared CSS classes for invitation themes
+   
+   Cara pakai:
+     1. Include file ini di tema (<link rel="stylesheet" href="...style-presets.css">)
+     2. Tambah class ke element: <div class="style-gold"> atau <div class="style-navy">
+     3. Font: tambah class font-playfair, font-cormorant, dll.
+     4. Override via CSS custom properties: style="--override-bg: red"
+   
+   Preset colors menggunakan CSS variable --accent untuk propagasi ke child elements.
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Font Imports ─────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Great+Vibes&family=Poppins:wght@300;400;500&family=Lato:wght@300;400;500&display=swap');
+
+/* ── Preset: Gold ─────────────────────────────────── */
+.style-gold {
+  background: var(--override-bg, rgba(8,6,4,0.45));
+  color: var(--override-text, #f5f0e8);
+  --accent: var(--override-accent, #c9a96e);
+  border: var(--override-border, 1px solid #c9a96e);
+  border-radius: var(--override-radius, 0px);
+  box-shadow: var(--override-shadow, none);
+  font-family: var(--override-font, inherit);
+}
+
+/* ── Preset: Navy ─────────────────────────────────── */
+.style-navy {
+  background: var(--override-bg, #0f1729);
+  color: var(--override-text, #e8edf5);
+  --accent: var(--override-accent, #5b7fa5);
+  border: var(--override-border, 1px solid #5b7fa5);
+  border-radius: var(--override-radius, 4px);
+  box-shadow: var(--override-shadow, 0 4px 20px rgba(15,23,41,0.4));
+  font-family: var(--override-font, inherit);
+}
+
+/* ── Preset: Blush ────────────────────────────────── */
+.style-blush {
+  background: var(--override-bg, #fdf2f0);
+  color: var(--override-text, #4a3035);
+  --accent: var(--override-accent, #d4a0a0);
+  border: var(--override-border, 1px solid #d4a0a0);
+  border-radius: var(--override-radius, 8px);
+  box-shadow: var(--override-shadow, 0 2px 12px rgba(212,160,160,0.15));
+  font-family: var(--override-font, inherit);
+}
+
+/* ── Preset: Sage ─────────────────────────────────── */
+.style-sage {
+  background: var(--override-bg, #f0f4f0);
+  color: var(--override-text, #2d3b2d);
+  --accent: var(--override-accent, #8fae8b);
+  border: var(--override-border, 1px solid #8fae8b);
+  border-radius: var(--override-radius, 6px);
+  box-shadow: var(--override-shadow, 0 2px 12px rgba(143,174,139,0.15));
+  font-family: var(--override-font, inherit);
+}
+
+/* ── Preset: Ivory ────────────────────────────────── */
+.style-ivory {
+  background: var(--override-bg, #fffff0);
+  color: var(--override-text, #3d3225);
+  --accent: var(--override-accent, #c4a982);
+  border: var(--override-border, 1px solid #c4a982);
+  border-radius: var(--override-radius, 2px);
+  box-shadow: var(--override-shadow, 0 2px 12px rgba(196,169,130,0.12));
+  font-family: var(--override-font, inherit);
+}
+
+/* ── Preset: Rose ─────────────────────────────────── */
+.style-rose {
+  background: var(--override-bg, #fff0f3);
+  color: var(--override-text, #5c2030);
+  --accent: var(--override-accent, #c4506a);
+  border: var(--override-border, 1px solid #c4506a);
+  border-radius: var(--override-radius, 8px);
+  box-shadow: var(--override-shadow, 0 2px 12px rgba(196,80,106,0.12));
+  font-family: var(--override-font, inherit);
+}
+
+/* ── Preset: Custom (empty base for manual overrides) ── */
+.style-custom {
+  background: var(--override-bg, transparent);
+  color: var(--override-text, inherit);
+  --accent: var(--override-accent, inherit);
+  border: var(--override-border, none);
+  border-radius: var(--override-radius, 0px);
+  box-shadow: var(--override-shadow, none);
+  font-family: var(--override-font, inherit);
+}
+
+/* ── Font Classes ─────────────────────────────────── */
+.font-playfair  { font-family: 'Playfair Display', serif !important; }
+.font-cormorant { font-family: 'Cormorant Garamond', serif !important; }
+.font-greatvibes { font-family: 'Great Vibes', cursive !important; }
+.font-poppins   { font-family: 'Poppins', sans-serif !important; }
+.font-lato      { font-family: 'Lato', sans-serif !important; }
+
+/* ── Accent-Aware Child Elements ──────────────────── */
+/* Propagasi --accent ke child elements di dalam styled container.
+   Selector sengaja spesifik supaya cuma jalan di dalam preset class. */
+
+/* Event type label */
+.style-gold .event-type,
+.style-navy .event-type,
+.style-blush .event-type,
+.style-sage .event-type,
+.style-ivory .event-type,
+.style-rose .event-type,
+.style-custom .event-type {
+  color: var(--accent, inherit);
+}
+
+/* Event name */
+.style-gold .event-name,
+.style-navy .event-name,
+.style-blush .event-name,
+.style-sage .event-name,
+.style-ivory .event-name,
+.style-rose .event-name,
+.style-custom .event-name {
+  color: inherit;
+}
+
+/* Maps / action buttons */
+.style-gold .btn-maps,
+.style-navy .btn-maps,
+.style-blush .btn-maps,
+.style-sage .btn-maps,
+.style-ivory .btn-maps,
+.style-rose .btn-maps,
+.style-custom .btn-maps,
+.style-gold .btn-map,
+.style-navy .btn-map,
+.style-blush .btn-map,
+.style-sage .btn-map,
+.style-ivory .btn-map,
+.style-rose .btn-map,
+.style-custom .btn-map {
+  border-color: var(--accent, inherit);
+  color: var(--accent, inherit);
+}
+
+/* Gift bank logo */
+.style-gold .gift-bank-logo,
+.style-navy .gift-bank-logo,
+.style-blush .gift-bank-logo,
+.style-sage .gift-bank-logo,
+.style-ivory .gift-bank-logo,
+.style-rose .gift-bank-logo,
+.style-custom .gift-bank-logo {
+  background: var(--accent, rgba(201,169,110,0.2));
+  color: inherit;
+}
+
+/* Timeline date */
+.style-gold .timeline-date,
+.style-navy .timeline-date,
+.style-blush .timeline-date,
+.style-sage .timeline-date,
+.style-ivory .timeline-date,
+.style-rose .timeline-date,
+.style-custom .timeline-date {
+  color: var(--accent, inherit);
+}
+
+/* Timeline title */
+.style-gold .timeline-title,
+.style-navy .timeline-title,
+.style-blush .timeline-title,
+.style-sage .timeline-title,
+.style-ivory .timeline-title,
+.style-rose .timeline-title,
+.style-custom .timeline-title {
+  color: inherit;
+}
+
+/* Profile name display */
+.style-gold .profile-name-display,
+.style-navy .profile-name-display,
+.style-blush .profile-name-display,
+.style-sage .profile-name-display,
+.style-ivory .profile-name-display,
+.style-rose .profile-name-display,
+.style-custom .profile-name-display,
+.style-gold .couple-name,
+.style-navy .couple-name,
+.style-blush .couple-name,
+.style-sage .couple-name,
+.style-ivory .couple-name,
+.style-rose .couple-name,
+.style-custom .couple-name {
+  color: var(--accent, inherit);
+}
+
+/* Profile IG link */
+.style-gold .profile-ig,
+.style-navy .profile-ig,
+.style-blush .profile-ig,
+.style-sage .profile-ig,
+.style-ivory .profile-ig,
+.style-rose .profile-ig,
+.style-custom .profile-ig,
+.style-gold .couple-ig,
+.style-navy .couple-ig,
+.style-blush .couple-ig,
+.style-sage .couple-ig,
+.style-ivory .couple-ig,
+.style-rose .couple-ig,
+.style-custom .couple-ig {
+  color: var(--accent, inherit);
+}
+
+/* Countdown numbers */
+.style-gold .countdown-num,
+.style-navy .countdown-num,
+.style-blush .countdown-num,
+.style-sage .countdown-num,
+.style-ivory .countdown-num,
+.style-rose .countdown-num,
+.style-custom .countdown-num,
+.style-gold .cd-num,
+.style-navy .cd-num,
+.style-blush .cd-num,
+.style-sage .cd-num,
+.style-ivory .cd-num,
+.style-rose .cd-num,
+.style-custom .cd-num {
+  color: var(--accent, inherit);
+}
+
+/* Footer quote */
+.style-gold .footer-quote,
+.style-navy .footer-quote,
+.style-blush .footer-quote,
+.style-sage .footer-quote,
+.style-ivory .footer-quote,
+.style-rose .footer-quote,
+.style-custom .footer-quote {
+  color: inherit;
+  border-color: var(--accent, rgba(201,169,110,0.3));
+}
+
+/* Footer hashtag */
+.style-gold .footer-hashtag,
+.style-navy .footer-hashtag,
+.style-blush .footer-hashtag,
+.style-sage .footer-hashtag,
+.style-ivory .footer-hashtag,
+.style-rose .footer-hashtag,
+.style-custom .footer-hashtag {
+  color: var(--accent, inherit);
+}
+
+/* ── Helper: Background image support ─────────────── */
+/* Ketika --override-bg-image di-set, apply sebagai background image */
+[style*="--override-bg-image"] {
+  background-size: cover !important;
+  background-position: center !important;
+}
