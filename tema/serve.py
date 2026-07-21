@@ -129,6 +129,7 @@ class SPAHandler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
+    socketserver.TCPServer.allow_reuse_address = True
     server = socketserver.ThreadingTCPServer(('0.0.0.0', 8080), SPAHandler)
     server.daemon_threads = True
     print('SPA server running on http://localhost:8080')

@@ -1,0 +1,210 @@
+/* ============================================================
+   NK-DESIGN SYSTEM v4.0
+   Utility-class styling: panggil class → style diterapkan.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=WindSong:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Montserrat:wght@300;400;500&display=swap');
+
+/* ─── TOKENS ─────────────────────────────────────────────── */
+:root {
+    --nk-white:    #fcfcfc;
+    --nk-palm:     #909579;
+    --nk-sand:     #dbdcc3;
+    --nk-olive:    #96988d;
+    --nk-gunmetal: #37383a;
+}
+
+
+/* ─── 1. WARNA ───────────────────────────────────────────── */
+/* background hanya pada elemen itu sendiri (tidak cascade)   */
+/* warna teks dipaksa turun ke semua child via * selector     */
+
+.nk-white    { background-color: var(--nk-white)    !important; }
+.nk-palm     { background-color: var(--nk-palm)     !important; }
+.nk-sand     { background-color: var(--nk-sand)     !important; }
+.nk-olive    { background-color: var(--nk-olive)    !important; }
+.nk-gunmetal { background-color: var(--nk-gunmetal) !important; }
+
+.nk-white,    .nk-white    * { color: var(--nk-gunmetal) !important; }
+.nk-palm,     .nk-palm     * { color: var(--nk-white)    !important; }
+.nk-sand,     .nk-sand     * { color: var(--nk-gunmetal) !important; }
+.nk-olive,    .nk-olive    * { color: var(--nk-white)    !important; }
+.nk-gunmetal, .nk-gunmetal * { color: var(--nk-white)    !important; }
+
+/* Warna teks saja — tanpa background */
+.nk-color-white,    .nk-color-white    * { color: var(--nk-white)    !important; }
+.nk-color-palm,     .nk-color-palm     * { color: var(--nk-palm)     !important; }
+.nk-color-sand,     .nk-color-sand     * { color: var(--nk-sand)     !important; }
+.nk-color-olive,    .nk-color-olive    * { color: var(--nk-olive)    !important; }
+.nk-color-gunmetal, .nk-color-gunmetal * { color: var(--nk-gunmetal) !important; }
+
+
+/* ─── 2. TIPOGRAFI ───────────────────────────────────────── */
+/*
+   h1  →  Cinzel Decorative Bold    (display / grand title)
+   h2  →  Cinzel Decorative Regular (section heading)
+   h3  →  Cormorant Garamond Italic (sub-heading elegan)
+   h4  →  WindSong                  (aksen kaligrafi)
+   p   →  Cormorant Garamond        (body text)
+*/
+
+.nk-type h1 {
+    font-family:    'Cinzel Decorative', serif !important;
+    font-weight:    700                        !important;
+    letter-spacing: 0.04em                     !important;
+    text-transform: uppercase                  !important;
+    line-height:    1.15                       !important;
+}
+.nk-type h2 {
+    font-family:    'Cinzel Decorative', serif !important;
+    font-weight:    400                        !important;
+    letter-spacing: 0.06em                     !important;
+    text-transform: uppercase                  !important;
+    line-height:    1.25                       !important;
+}
+.nk-type h3 {
+    font-family:    'Cormorant Garamond', serif !important;
+    font-style:     italic                      !important;
+    font-weight:    400                         !important;
+    letter-spacing: 0.01em                      !important;
+    line-height:    1.35                        !important;
+}
+.nk-type h4 {
+    font-family:    'WindSong', cursive !important;
+    font-weight:    400                 !important;
+    line-height:    1.2                 !important;
+}
+.nk-type p {
+    font-family:    'Cormorant Garamond', serif !important;
+    font-weight:    400                         !important;
+    letter-spacing: 0.01em                      !important;
+    line-height:    1.4                        !important;
+}
+.nk-type * {
+    -webkit-font-smoothing:  antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ─── 3. UKURAN RESPONSIF ────────────────────────────────── */
+/*
+   Acuan:  mobile = 390px  |  desktop = 1440px
+
+   Class     Mobile   Desktop
+   ──────────────────────────
+   nk-s-p    12px     14px
+   nk-s-h4   18px     22px
+   nk-s-h3   24px     28px
+   nk-s-h2   36px     42px
+   nk-s-h1   50px     70px
+*/
+
+.nk-type p,  .nk-type .nk-s-p  { font-size: clamp(0.875rem, 0.2vw + 0.7rem, 1rem); }
+.nk-type h4, .nk-type .nk-s-h4 { font-size: clamp(1.125rem, 0.4vw + 1.03rem, 1.375rem); }
+.nk-type h3, .nk-type .nk-s-h3 { font-size: clamp(1.5rem, 0.4vw + 1.4rem, 1.75rem); }
+.nk-type h2, .nk-type .nk-s-h2 { font-size: clamp(2.25rem, 0.6vw + 2.1rem, 2.625rem); }
+.nk-type h1, .nk-type .nk-s-h1 { font-size: clamp(3.125rem, 1.9vw + 2.66rem, 4.375rem); }
+
+
+/* ─── 4. ELEMENTOR BUTTON WIDGETS ────────────────────────── */
+
+.nk-btn .elementor-button {
+    transition: all 0.3s ease-in-out !important;
+    border-radius: 0px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* Varian: Gunmetal (Primary) */
+.nk-btn-gunmetal .elementor-button {
+    background-color: var(--nk-gunmetal) !important;
+    color: var(--nk-white) !important;
+}
+.nk-btn-gunmetal .elementor-button:hover {
+    background-color: var(--nk-olive) !important;
+    color: var(--nk-white) !important;
+}
+
+/* Varian: Palm (Nature) */
+.nk-btn-palm .elementor-button {
+    background-color: var(--nk-palm) !important;
+    color: var(--nk-white) !important;
+}
+.nk-btn-palm .elementor-button:hover {
+    background-color: var(--nk-gunmetal) !important;
+    color: var(--nk-white) !important;
+}
+
+/* Varian: Olive (Muted) */
+.nk-btn-olive .elementor-button {
+    background-color: var(--nk-olive) !important;
+    color: var(--nk-white) !important;
+}
+.nk-btn-olive .elementor-button:hover {
+    background-color: var(--nk-sand) !important;
+    color: var(--nk-gunmetal) !important;
+}
+
+/* Varian: Outline (Minimalist) */
+.nk-btn-outline .elementor-button {
+    background-color: transparent !important;
+    border: 1px solid var(--nk-gunmetal) !important;
+    color: var(--nk-gunmetal) !important;
+}
+.nk-btn-outline .elementor-button:hover {
+    background-color: var(--nk-gunmetal) !important;
+    color: var(--nk-white) !important;
+}
+
+
+/* ─── 5. TYPOGRAPHY FOR BUTTONS ──────────────────────────── */
+
+.nk-btn .elementor-button-content-wrapper .elementor-button-text {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 500 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: clamp(0.875rem, 0.2vw + 0.7rem, 1rem) !important;
+}
+
+.nk-btn .elementor-button-text {
+    transition: all 0.3s ease !important;
+}
+
+/* Tombol dengan gaya H1 (Display/Bold) */
+.nk-btn-h1 .elementor-button-text {
+    font-family:    'Cinzel Decorative', serif !important;
+    font-weight:    700                        !important;
+    letter-spacing: 0.04em                     !important;
+    text-transform: uppercase                  !important;
+    font-size: clamp(3.125rem, 1.9vw + 2.66rem, 4.375rem) !important;
+}
+
+/* Tombol dengan gaya H2 (Section Heading) */
+.nk-btn-h2 .elementor-button-text {
+    font-family:    'Cinzel Decorative', serif !important;
+    font-weight:    400                        !important;
+    letter-spacing: 0.06em                     !important;
+    text-transform: uppercase                  !important;
+    font-size: clamp(2.25rem, 0.6vw + 2.1rem, 2.625rem) !important;
+}
+
+/* Tombol dengan gaya H3 (Elegant Italic) */
+.nk-btn-h3 .elementor-button-text {
+    font-family:    'Cormorant Garamond', serif !important;
+    font-style:     italic                      !important;
+    font-weight:    400                         !important;
+    font-size: clamp(1.5rem, 0.4vw + 1.4rem, 1.75rem) !important;
+}
+
+/* Tombol dengan gaya H4 (Calligraphy/Aksen) */
+.nk-btn-h4 .elementor-button-text {
+    font-family:    'WindSong', cursive !important;
+    font-size: clamp(1.125rem, 0.4vw + 1.03rem, 1.375rem) !important;
+}
+
+/* Tombol dengan gaya P (Body Text/Standard) */
+.nk-btn-p .elementor-button-text {
+    font-family:    'Cormorant Garamond', serif !important;
+    font-size: clamp(0.875rem, 0.2vw + 0.7rem, 1rem) !important;
+}
