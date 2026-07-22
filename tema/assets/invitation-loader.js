@@ -332,7 +332,7 @@
     // Mempelai Wanita
     setText('.profile-bride-nickname', inv.bride_nickname)
     setText('.profile-bride-name',     inv.bride_name)
-    setText('.profile-bride-parents',  buildParents(inv.bride_father, inv.bride_mother))
+    setHtml('.profile-bride-parents',  buildParents(inv.bride_father, inv.bride_mother))
     if (inv.bride_photo_url) setSrc('.profile-bride-photo', inv.bride_photo_url)
     if (inv.bride_instagram) setHref('.profile-bride-ig', `https://instagram.com/${inv.bride_instagram.replace('@','')}`)
     setText('.profile-bride-ig-text', inv.bride_instagram)
@@ -340,7 +340,7 @@
     // Mempelai Pria
     setText('.profile-groom-nickname', inv.groom_nickname)
     setText('.profile-groom-name',     inv.groom_name)
-    setText('.profile-groom-parents',  buildParents(inv.groom_father, inv.groom_mother))
+    setHtml('.profile-groom-parents',  buildParents(inv.groom_father, inv.groom_mother))
     if (inv.groom_photo_url) setSrc('.profile-groom-photo', inv.groom_photo_url)
     if (inv.groom_instagram) setHref('.profile-groom-ig', `https://instagram.com/${inv.groom_instagram.replace('@','')}`)
     setText('.profile-groom-ig-text', inv.groom_instagram)
