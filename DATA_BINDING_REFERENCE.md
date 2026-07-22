@@ -293,3 +293,126 @@ Medina theme supports all data binding selectors except:
 - `#cd-j` (countdown uses `#cd-h` for hours instead)
 - `#rsvpPhone` (not implemented)
 - `.footer-section` / `.quotes-section` (no section_styles.quote_footer support)
+
+---
+
+## 16. Declarative Data Binding (data-bind)
+
+Sistem baru yang memungkinkan theme developer membind data dari Supabase ke elemen HTML tanpa harus register class/selector di `invitation-loader.js`.
+
+### Cara Penggunaan
+
+```html
+<!-- Text content (default) -->
+<h3 data-bind="bride_name"></h3>
+
+<!-- Src attribute -->
+<img data-bind-src="bride_photo_url">
+
+<!-- Href attribute -->
+<a data-bind-href="bride_instagram">Instagram</a>
+
+<!-- Alt attribute -->
+<img data-bind-src="bride_photo_url" data-bind-alt="bride_nickname">
+
+<!-- Placeholder -->
+<input data-bind-placeholder="guest_name">
+
+<!-- Format text -->
+<p data-bind="bride_name" data-format="uppercase"></p>
+<p data-bind="groom_name" data-format="capitalize"></p>
+
+<!-- Nested array access -->
+<p data-bind="events.0.event_name"></p>
+<p data-bind="events.0.location_name"></p>
+```
+
+### Supported Attributes
+
+| Attribute | Fungsi | Contoh Value |
+|---|---|---|
+| `data-bind` | Isi textContent | `bride_name`, `guest_name` |
+| `data-bind-src` | Set src attribute | `bride_photo_url` |
+| `data-bind-href` | Set href attribute | `bride_instagram` |
+| `data-bind-alt` | Set alt attribute | `bride_nickname` |
+| `data-bind-placeholder` | Set placeholder | `guest_name` |
+| `data-format` | Format text output | `uppercase`, `lowercase`, `capitalize` |
+
+### Available Fields
+
+Semua field dari `invitations` table tersedia langsung:
+
+| Field | Deskripsi |
+|---|---|
+| `bride_name` | Nama lengkap mempelai wanita |
+| `bride_nickname` | Nama panggilan mempelai wanita |
+| `bride_photo_url` | URL foto mempelai wanita |
+| `bride_father` | Nama ayah mempelai wanita |
+| `bride_mother` | Nama ibu mempelai wanita |
+| `bride_instagram` | Instagram mempelai wanita |
+| `groom_name` | Nama lengkap mempelai pria |
+| `groom_nickname` | Nama panggilan mempelai pria |
+| `groom_photo_url` | URL foto mempelai pria |
+| `groom_father` | Nama ayah mempelai pria |
+| `groom_mother` | Nama ibu mempelai pria |
+| `groom_instagram` | Instagram mempelai pria |
+| `quote` | Kutipan undangan |
+| `hashtag` | Hashtag undangan |
+| `music_url` | URL musik |
+
+### Computed Fields
+
+| Field | Deskripsi | Contoh |
+|---|---|---|
+| `guest_name` | Nama tamu undangan | "Budi Santoso" |
+| `event_date_formatted` | Tanggal acara terformat | "Senin, 25 Desember 2025" |
+| `event_date` | Tanggal acara (YYYY-MM-DD) | "2025-12-25" |
+| `event_time` | Waktu acara | "09.00 WIB" |
+| `bride_initial` | Inisial mempelai wanita | "A" |
+| `groom_initial` | Inisial mempelai pria | "B" |
+| `bride_groom_initials` | Inisial gabungan | "A & B" |
+
+### Nested Array Access
+
+Untuk mengakses data dari array (events, galleries, dll):
+
+```html
+<p data-bind="events.0.event_name"></p>      <!-- Nama acara pertama -->
+<p data-bind="events.0.location_name"></p>   <!-- Lokasi acara pertama -->
+<p data-bind="events.1.event_name"></p>      <!-- Nama acara kedua -->
+```
+
+### Contoh Penggunaan di Theme
+
+```html
+<!-- Hero section dengan nama mempelai -->
+<section class="hero">
+  <h1 data-bind="bride_name" data-format="uppercase"></h1>
+  <p class="subtitle">&</p>
+  <h1 data-bind="groom_name" data-format="uppercase"></h1>
+</section>
+
+<!-- Photo mempelai -->
+<div class="bride-photo">
+  <img data-bind-src="bride_photo_url" data-bind-alt="bride_nickname">
+</div>
+
+<!-- Instagram link -->
+<a class="ig-link" data-bind-href="bride_instagram">
+  Follow <span data-bind="bride_instagram"></span>
+</a>
+
+<!-- Guest greeting -->
+<p>Halo, <span data-bind="guest_name"></span>!</p>
+
+<!-- Event details -->
+<div class="event">
+  <h3 data-bind="events.0.event_name"></h3>
+  <p data-bind="event_date_formatted"></p>
+  <p data-bind="event_time"></p>
+</div>
+```
+
+### Backward Compatibility
+
+Sistem class-based lama (`.name-bride`, `.profile-bride-name`, dll) tetap bekerja. Sistem `data-bind` adalah tambahan, bukan pengganti. Kedua sistem bisa digunakan bersamaan dalam satu tema.

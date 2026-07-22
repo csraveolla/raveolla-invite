@@ -75,12 +75,15 @@
     <!-- ==================== SECTION HOME ==================== -->
     <div class="section home min-h-[90vh] flex flex-col justify-center items-center text-center bg-primary-light rounded-b-[40px] px-5 py-14 max-w-xl mx-auto" id="home">
       <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-2">The Wedding Of</p>
-      <h1 class="font-script text-6xl text-primary-dark leading-tight my-2"><span class="name-groom">Romeo</span> & <span class="name-bride">Juliet</span></h1>
+      <h1 class="font-script text-6xl text-primary-dark leading-tight my-2">
+        <span class="name-groom" data-bind="groom_nickname">Romeo</span> & 
+        <span class="name-bride" data-bind="bride_nickname">Juliet</span>
+      </h1>
       <div class="w-16 h-[2px] bg-primary my-4"></div>
       <p class="italic text-slate-600 text-sm max-w-md mb-6 leading-relaxed">
         "Dan di antara tanda-tanda (kebesaran-Nya) ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri."
       </p>
-      <span class="bg-primary text-white py-2 px-5 rounded-full text-xs font-semibold tracking-wider">Sabtu, 12 Desember 2026</span>
+      <span class="bg-primary text-white py-2 px-5 rounded-full text-xs font-semibold tracking-wider" data-bind="event_date_formatted">Sabtu, 12 Desember 2026</span>
     </div>
 
     <!-- ==================== SECTION COUPLE ==================== -->
@@ -91,20 +94,20 @@
       <div class="flex flex-col md:flex-row items-center justify-center gap-6">
         <!-- Mempelai Pria -->
         <div class="profile-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 w-full">
-          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80" alt="Groom" class="profile-groom-photo w-36 h-36 rounded-full object-cover border-4 border-primary mx-auto mb-4 shadow-sm">
-          <h3 class="profile-groom-nickname font-serif text-xl text-primary-dark font-semibold">Romeo Montague, S.T.</h3>
+          <img data-bind-src="groom_photo_url" data-bind-alt="groom_nickname" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80" alt="Groom" class="profile-groom-photo w-36 h-36 rounded-full object-cover border-4 border-primary mx-auto mb-4 shadow-sm">
+          <h3 class="profile-groom-nickname font-serif text-xl text-primary-dark font-semibold" data-bind="groom_name">Romeo Montague, S.T.</h3>
           <p class="profile-groom-parents text-xs text-slate-500 my-2">Putra Pertama dari<br>Bapak Montague & Ibu Montague</p>
-          <a href="#" class="profile-groom-ig text-primary hover:text-primary-dark text-sm inline-flex items-center gap-1.5"><i class="fa-brands fa-instagram"></i> <span class="profile-groom-ig-text">@romeo</span></a>
+          <a href="#" class="profile-groom-ig text-primary hover:text-primary-dark text-sm inline-flex items-center gap-1.5"><i class="fa-brands fa-instagram"></i> <span class="profile-groom-ig-text" data-bind="groom_instagram">@romeo</span></a>
         </div>
 
         <div class="font-script text-5xl text-primary my-[-10px] md:my-0">&</div>
 
         <!-- Mempelai Wanita -->
         <div class="profile-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 w-full">
-          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80" alt="Bride" class="profile-bride-photo w-36 h-36 rounded-full object-cover border-4 border-primary mx-auto mb-4 shadow-sm">
-          <h3 class="profile-bride-nickname font-serif text-xl text-primary-dark font-semibold">Juliet Capulet, S.E.</h3>
+          <img data-bind-src="bride_photo_url" data-bind-alt="bride_nickname" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80" alt="Bride" class="profile-bride-photo w-36 h-36 rounded-full object-cover border-4 border-primary mx-auto mb-4 shadow-sm">
+          <h3 class="profile-bride-nickname font-serif text-xl text-primary-dark font-semibold" data-bind="bride_name">Juliet Capulet, S.E.</h3>
           <p class="profile-bride-parents text-xs text-slate-500 my-2">Putri Kedua dari<br>Bapak Capulet & Ibu Capulet</p>
-          <a href="#" class="profile-bride-ig text-primary hover:text-primary-dark text-sm inline-flex items-center gap-1.5"><i class="fa-brands fa-instagram"></i> <span class="profile-bride-ig-text">@juliet</span></a>
+          <a href="#" class="profile-bride-ig text-primary hover:text-primary-dark text-sm inline-flex items-center gap-1.5"><i class="fa-brands fa-instagram"></i> <span class="profile-bride-ig-text" data-bind="bride_instagram">@juliet</span></a>
         </div>
       </div>
     </div>
@@ -136,6 +139,12 @@
       <a href="https://calendar.google.com" target="_blank" class="inline-flex items-center gap-2 border-2 border-primary text-primary-dark hover:bg-primary hover:text-white font-semibold py-2.5 px-6 rounded-full text-sm transition-all duration-300">
         <i class="fa-regular fa-calendar-plus"></i> Tambah ke Kalender
       </a>
+      
+      <!-- Test: Tampilkan event date pakai data-bind -->
+      <p class="mt-4 text-xs text-slate-500">
+        <i class="fa-regular fa-clock"></i> 
+        Acara dimulai pukul <span data-bind="event_time" class="font-semibold text-primary-dark">09.00 WIB</span>
+      </p>
     </div>
 
     <!-- ==================== SECTION EVENTS ==================== -->
@@ -191,6 +200,12 @@
         <div id="ucapanList" class="space-y-3 text-left">
           <!-- Ucapan will be dynamically generated by invitation-loader.js -->
         </div>
+      </div>
+      
+      <!-- Test: Guest name pakai data-bind -->
+      <div class="mt-6 p-4 bg-primary-light rounded-xl border border-primary/20">
+        <p class="text-xs text-slate-500 mb-1">Selamat datang,</p>
+        <p class="text-lg font-bold text-primary-dark" data-bind="guest_name">Tamu Undangan</p>
       </div>
     </div>
 

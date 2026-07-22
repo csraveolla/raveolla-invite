@@ -206,6 +206,55 @@
     return res.ok
   }
 
+  // ── DECLARATIVE DATA BINDING ────────────────────────────────────
+  // Resolves nested object path: "events.0.event_name" → data.events[0].event_name
+  function resolvePath(obj, path) {
+    return path.split('.').reduce((o, k) => (o != null ? o[k] : undefined), obj)
+  }
+
+  function applyDataBindings(data) {
+    // Text content: data-bind="field_name"
+    document.querySelectorAll('[data-bind]').forEach(el => {
+      const field = el.getAttribute('data-bind')
+      const value = resolvePath(data, field)
+      if (value == null || value === '') return
+
+      let display = String(value)
+      const format = el.getAttribute('data-format')
+      if (format === 'uppercase') display = display.toUpperCase()
+      else if (format === 'lowercase') display = display.toLowerCase()
+      else if (format === 'capitalize') {
+        display = display.replace(/\b\w/g, c => c.toUpperCase())
+      }
+
+      el.textContent = display
+    })
+
+    // Src: data-bind-src="photo_url"
+    document.querySelectorAll('[data-bind-src]').forEach(el => {
+      const value = resolvePath(data, el.getAttribute('data-bind-src'))
+      if (value) el.setAttribute('src', value)
+    })
+
+    // Href: data-bind-href="instagram_url"
+    document.querySelectorAll('[data-bind-href]').forEach(el => {
+      const value = resolvePath(data, el.getAttribute('data-bind-href'))
+      if (value) el.setAttribute('href', value)
+    })
+
+    // Alt: data-bind-alt="alt_text"
+    document.querySelectorAll('[data-bind-alt]').forEach(el => {
+      const value = resolvePath(data, el.getAttribute('data-bind-alt'))
+      if (value) el.setAttribute('alt', value)
+    })
+
+    // Placeholder: data-bind-placeholder="field"
+    document.querySelectorAll('[data-bind-placeholder]').forEach(el => {
+      const value = resolvePath(data, el.getAttribute('data-bind-placeholder'))
+      if (value) el.setAttribute('placeholder', String(value))
+    })
+  }
+
   // ── HELPERS ─────────────────────────────────────────────────────
   function setText(selector, value, all = false) {
     if (!value) return
@@ -722,6 +771,20 @@
     fillKado(accounts)
     fillLoveStory(stories)
     startCountdown(events)
+
+    // ── Declarative data binding ──
+    const firstEvent = events[0] || {}
+    const bindData = {
+      ...inv,
+      guest_name: _guestName,
+      event_date_formatted: firstEvent.event_date ? formatTanggal(firstEvent.event_date) : '',
+      event_date: firstEvent.event_date || '',
+      event_time: firstEvent.start_time ? formatJam(firstEvent.start_time) : '',
+      bride_initial: (inv.bride_nickname || '')[0]?.toUpperCase() || '',
+      groom_initial: (inv.groom_nickname || '')[0]?.toUpperCase() || '',
+      bride_groom_initials: `${(inv.bride_nickname || '')[0] || ''} & ${(inv.groom_nickname || '')[0] || ''}`,
+    }
+    applyDataBindings(bindData)
 
     await loadUcapan(inv.client_id)
     logView(inv.id)
