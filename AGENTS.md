@@ -67,6 +67,8 @@ Each theme has ~800-1100 lines of inline `<style>` in index.html with theme-spec
 5. Fills DOM via class selectors (`.name-bride`, `.profile-card`, `.event-card`, etc.)
 6. Applies dynamic styling via `applyStyleToElement()` using `section_styles` JSONB
 
+See `DATA_BINDING_REFERENCE.md` for complete class/ID mapping.
+
 ## Database Tables (key columns)
 - `invitations`: id, slug, theme_id, client_id, is_published, section_styles (JSONB), bride_*, groom_*
 - `events`: id, invitation_id, event_name, event_date, start_time, end_time, location_name, address, maps_url, custom_style (JSONB)
