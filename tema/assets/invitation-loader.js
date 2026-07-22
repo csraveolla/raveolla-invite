@@ -345,13 +345,10 @@
     if (inv.groom_instagram) setHref('.profile-groom-ig', `https://instagram.com/${inv.groom_instagram.replace('@','')}`)
     setText('.profile-groom-ig-text', inv.groom_instagram)
 
-    // Apply profile card styles
-    const profileCs = window._nikahinSectionStyles?.profile
-    if (profileCs) {
-      // Sakina uses .profile-card, Arafa uses .couple-card
-      const profileCards = document.querySelectorAll('.profile-card, .couple-card')
-      profileCards.forEach(card => applyStyleToElement(card, profileCs))
-    }
+    // Apply profile card styles (always call to cleanup when null/default)
+    const profileCs = window._nikahinSectionStyles?.profile || null
+    const profileCards = document.querySelectorAll('.profile-card, .couple-card')
+    profileCards.forEach(card => applyStyleToElement(card, profileCs))
   }
 
   function buildParents(ayah, ibu) {
@@ -398,8 +395,7 @@
     const container = document.getElementById('galleryContainer')
     if (!container || !galleries.length) return
 
-    const cs = window._nikahinSectionStyles?.gallery
-    applyStyleToElement(container, cs)
+    applyStyleToElement(container, window._nikahinSectionStyles?.gallery || null)
 
     container.innerHTML = galleries.map((g, i) => `
       <div class="${i % 3 === 0 ? 'tall reveal-up' : 'reveal'}">
@@ -496,12 +492,10 @@
     if (inv.quote)   setText('.footer-quote', inv.quote)
     if (inv.hashtag) setText('.footer-hashtag', inv.hashtag)
 
-    const cs = window._nikahinSectionStyles?.quote_footer
-    if (cs) {
-      // Apply to footer section (Sakina: .footer-section, Arafa: .quotes-section / .footer-section)
-      const footerSections = document.querySelectorAll('.footer-section, .quotes-section')
-      footerSections.forEach(el => applyStyleToElement(el, cs))
-    }
+    const footerCs = window._nikahinSectionStyles?.quote_footer || null
+    // Apply to footer section (Sakina: .footer-section, Arafa: .quotes-section / .footer-section)
+    const footerSections = document.querySelectorAll('.footer-section, .quotes-section')
+    footerSections.forEach(el => applyStyleToElement(el, footerCs))
   }
 
   // ── FILL KADO DIGITAL (BANK ACCOUNTS) ──────────────────────────
@@ -509,8 +503,7 @@
     const container = document.getElementById('kadoContainer')
     if (!container || !accounts.length) return
 
-    const cs = window._nikahinSectionStyles?.kado
-    applyStyleToElement(container, cs)
+    applyStyleToElement(container, window._nikahinSectionStyles?.kado || null)
 
     container.innerHTML = accounts.map(a => {
       if (a.type === 'qris' && a.account_number) return `
@@ -550,8 +543,7 @@
     const container = document.querySelector('.timeline')
     if (!container || !stories.length) return
 
-    const cs = window._nikahinSectionStyles?.love_story
-    applyStyleToElement(container, cs)
+    applyStyleToElement(container, window._nikahinSectionStyles?.love_story || null)
 
     container.innerHTML = stories.map(s => `
       <div class="timeline-item fadeIn-Up">
@@ -579,11 +571,9 @@
 
     window._nikahinCountdownTarget = target
 
-    const cs = window._nikahinSectionStyles?.countdown
-    if (cs) {
-      const cdEl = document.querySelector('.countdown') || document.querySelector('#countdown') || document.querySelector('.countdown-row')
-      if (cdEl) applyStyleToElement(cdEl, cs)
-    }
+    const cdCs = window._nikahinSectionStyles?.countdown || null
+    const cdEl = document.querySelector('.countdown') || document.querySelector('#countdown') || document.querySelector('.countdown-row')
+    if (cdEl) applyStyleToElement(cdEl, cdCs)
 
     function tick() {
       const diff = target - new Date()
