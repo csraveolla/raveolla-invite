@@ -784,6 +784,7 @@ body {
 <script src="/tema/assets/invitation-loader.js" defer></script>
 <link rel="stylesheet" href="/tema/assets/audio-player.css">
 <script src="/tema/assets/audio-player.js" defer></script>
+<script src="/tema/assets/invitation-opener.js"></script>
 </head>
 <body>
 
@@ -1054,32 +1055,27 @@ body {
      SCRIPTS
      ============================== -->
 <script>
-function openInvitation() {
-  const cover = document.getElementById('cover');
-  const main = document.getElementById('main-content');
-  const overlay = document.getElementById('revealOverlay');
-  const petal = document.getElementById('petalCanvas');
-
-  cover.classList.add('cover-hide');
-  overlay.classList.add('show');
-  overlay.style.opacity = '1';
-  overlay.style.pointerEvents = 'all';
-
-  setTimeout(() => {
+/* ----------------------------------------------------------------
+   BUKA UNDANGAN — via shared invitation-opener.js
+   ---------------------------------------------------------------- */
+InvitationOpener.init({
+  coverSelector: '#cover',
+  mainSelector: '#main-content',
+  revealDelay: 600,
+  onReveal: (cover) => {
+    cover.classList.add('cover-hide');
+    const overlay = document.getElementById('revealOverlay');
+    overlay.classList.add('show');
+    overlay.style.opacity = '1';
+    overlay.style.pointerEvents = 'all';
+  },
+  onReady: () => {
+    const overlay = document.getElementById('revealOverlay');
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
-    main.classList.add('open');
-    document.body.style.overflow = 'auto';
     document.getElementById('petalCanvas').style.opacity = '1';
-    if (window.AudioPlayer) window.AudioPlayer.showButton();
-  }, 600);
-
-  // Play music (must be synchronous in click handler)
-  if (window.AudioPlayer) window.AudioPlayer.play();
-}
-
-// Pastikan overflow tersembunyi saat loading
-document.body.style.overflow = 'hidden';
+  }
+});
 
 // ==============================
 // Socket realtime untuk ucapan

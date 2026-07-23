@@ -1130,6 +1130,7 @@ body {
   <script src="/assets/invitation-loader.js" defer></script>
   <link rel="stylesheet" href="/tema/assets/audio-player.css">
   <script src="/tema/assets/audio-player.js" defer></script>
+  <script src="/tema/assets/invitation-opener.js"></script>
 </head>
 <body>
 
@@ -1733,46 +1734,32 @@ if (guestName) {
 })();
 
 /* ----------------------------------------------------------------
-   BUKA UNDANGAN
+   BUKA UNDANGAN — via shared invitation-opener.js
    ---------------------------------------------------------------- */
-function openInvitation() {
-  const overlay = document.getElementById('revealOverlay');
-  overlay.classList.add('show');
-
-  // PENTING: play() harus dipanggil SYNCHRONOUS di sini, langsung di dalam
-  // click handler "Buka Undangan" — kalau dipindah ke dalam setTimeout di
-  // bawah, browser sudah nggak anggap ini hasil klik user lagi, jadi
-  // autoplay-nya di-block diam-diam (music.play() gagal tanpa error).
-  if (window.AudioPlayer) {
-    window.AudioPlayer.play();
-  }
-
-  setTimeout(() => {
-    // Sembunyikan cover & BG
-    document.getElementById('cover').style.display = 'none';
-    document.getElementById('slideDots').style.display = 'none';
-    document.getElementById('shimmerBg').classList.add('hidden');
-
-    // Tampilkan konten utama
-    document.getElementById('main-content').classList.add('open');
-    if (window.AudioPlayer) window.AudioPlayer.showButton();
-    document.getElementById('stickyNav').classList.add('show');
-
-    // Tampilkan kelopak
-    document.getElementById('petal-canvas').classList.add('show');
-
-    // Scroll ke atas
-    window.scrollTo(0,0);
-
-    // Fade out overlay
+InvitationOpener.init({
+  coverSelector: '#cover',
+  mainSelector: '#main-content',
+  revealDelay: 1200,
+  onReveal: (cover) => {
+    const overlay = document.getElementById('revealOverlay');
+    overlay.classList.add('show');
+    setTimeout(() => {
+      cover.style.display = 'none';
+      document.getElementById('slideDots').style.display = 'none';
+      document.getElementById('shimmerBg').classList.add('hidden');
+    }, 1200);
+  },
+  onReady: () => {
+    const overlay = document.getElementById('revealOverlay');
     setTimeout(() => overlay.classList.remove('show'), 500);
-
-    // Init animasi scroll
+    document.getElementById('stickyNav').classList.add('show');
+    document.getElementById('petal-canvas').classList.add('show');
+    window.scrollTo(0, 0);
     setTimeout(initScrollAnimations, 800);
     setTimeout(runPetals, 1000);
     setTimeout(initStickyNav, 500);
-  }, 1200);
-}
+  }
+});
 
 /* ----------------------------------------------------------------
    MOTION PRO — IntersectionObserver trigger (REPEAT on scroll)

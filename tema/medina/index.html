@@ -18,26 +18,8 @@
     <link rel="stylesheet" href="/tema/assets/nk-design.css">
     <link rel="stylesheet" href="/tema/assets/motion-plus.css">
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: '#c5a059',
-              'primary-dark': '#a3803c',
-              'primary-light': '#f4ece1',
-            },
-            fontFamily: {
-              sans: ['Plus Jakarta Sans', 'sans-serif'],
-              serif: ['Playfair Display', 'serif'],
-              script: ['Great Vibes', 'cursive'],
-            }
-          }
-        }
-      }
-    </script>
+    <!-- Tailwind CSS (self-hosted build) -->
+    <link rel="stylesheet" href="/tema/assets/tailwind-built.css">
 </head>
 <body class="font-sans bg-[#faf8f5] text-slate-800 antialiased pb-20 overflow-x-hidden">
 
@@ -308,21 +290,23 @@
   <!-- ==================== END SECTION MENU ==================== -->
 
   <!-- JavaScript Interaktivitas -->
-  <script>
-    // Fungsi Buka Cover
-    function openInvitation() {
-      const cover = document.getElementById('cover');
-      cover.classList.add('-translate-y-full', 'opacity-0', 'pointer-events-none');
-      
-      // Play music when invitation opens (must be synchronous in click handler)
-      if (window.AudioPlayer) window.AudioPlayer.play();
-    }
-  </script>
   <script src="/env.js"></script>
   <script src="/tema/assets/motion-plus.js"></script>
   <script src="/tema/assets/invitation-loader.js"></script>
   <link rel="stylesheet" href="/tema/assets/audio-player.css">
   <script src="/tema/assets/audio-player.js"></script>
+  <script src="/tema/assets/invitation-opener.js"></script>
+  <script>
+    /* ----------------------------------------------------------------
+       BUKA UNDANGAN — via shared invitation-opener.js
+       ---------------------------------------------------------------- */
+    InvitationOpener.init({
+      coverSelector: '#cover',
+      onReveal: (cover) => {
+        cover.classList.add('-translate-y-full', 'opacity-0', 'pointer-events-none');
+      }
+    });
+  </script>
 
 </body>
 </html>

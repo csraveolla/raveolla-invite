@@ -1,0 +1,25 @@
+{
+  "name": "raveolla.my.id",
+  "version": "1.0.0",
+  "description": "",
+  "main": "env.js",
+  "scripts": {
+    "build:tailwind": "npx tailwindcss -i tema/assets/tailwind.css -o tema/assets/tailwind-built.css --minify",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/csraveolla/raveolla-invite.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/csraveolla/raveolla-invite/issues"
+  },
+  "homepage": "https://github.com/csraveolla/raveolla-invite#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}

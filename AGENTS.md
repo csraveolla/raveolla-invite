@@ -69,6 +69,19 @@ Each theme has ~800-1100 lines of inline `<style>` in index.html with theme-spec
 
 See `DATA_BINDING_REFERENCE.md` for complete class/ID mapping.
 
+## Invitation Opener (`invitation-opener.js`)
+Shared component handles scroll lock, audio play, cover dismiss, content reveal. Replaces duplicated `openInvitation()` in each theme.
+
+**Flow**: Page load → `init()` locks scroll → user clicks "Buka Undangan" → `open()` → audio plays (synchronous) → scroll unlocks → cover animates → main content revealed → post-open hooks.
+
+**API**:
+- `InvitationOpener.init(options)` — attach to `.btn-open`, lock scroll
+- `InvitationOpener.open()` — trigger open flow (auto-bound to button click)
+
+**Options**: `coverSelector`, `mainSelector`, `mainOpenClass` (default `'open'`), `revealDelay` (ms), `onReveal(coverEl)`, `onReady()`
+
+**Theme integration**: Each theme provides `onReveal` (cover animation) and `onReady` (post-open hooks like petals, sticky nav). The shared module handles scroll lock/unlock, `AudioPlayer.play()`, `AudioPlayer.showButton()`, and main content class toggle.
+
 ## Database Tables (key columns)
 - `invitations`: id, slug, theme_id, client_id, is_published, section_styles (JSONB), bride_*, groom_*
 - `events`: id, invitation_id, event_name, event_date, start_time, end_time, location_name, address, maps_url, custom_style (JSONB)
