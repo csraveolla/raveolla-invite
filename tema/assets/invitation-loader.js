@@ -2,11 +2,6 @@
 // invitation-loader.js — Data Loader untuk Semua Tema Undangan
 // Mengambil data dari Supabase berdasarkan slug di URL,
 // lalu mengisi elemen HTML tema dengan data nyata.
-//
-// Style system: CSS class-based via style-presets.css
-//   - Preset: style-gold, style-navy, style-blush, style-sage, style-ivory, style-rose
-//   - Font: font-playfair, font-cormorant, font-greatvibes, font-poppins, font-lato
-//   - Override: CSS custom properties (--override-bg, --override-text, --override-accent, etc.)
 // ================================================================
 
 ;(function() {
@@ -15,98 +10,6 @@
   // ── CONFIG ─────────────────────────────────────────────────────
   const SUPABASE_URL  = window.__ENV?.SUPABASE_URL || ''
   const SUPABASE_ANON = window.__ENV?.SUPABASE_KEY || ''
-
-  // ── STYLE SYSTEM CONSTANTS ─────────────────────────────────────
-  const STYLE_CLASSES = ['style-gold','style-navy','style-blush','style-sage','style-ivory','style-rose','style-custom']
-  const FONT_CLASSES  = ['font-playfair','font-cormorant','font-greatvibes','font-poppins','font-lato']
-
-  const OVERRIDE_MAP = {
-    bg_color:     '--override-bg',
-    text_color:   '--override-text',
-    accent_color: '--override-accent',
-    border:       '--override-border',
-    border_radius:'--override-radius',
-    box_shadow:   '--override-shadow',
-    font_family:  '--override-font',
-    bg_image:     '--override-bg-image',
-  }
-
-  // Old preset names → new CSS class (backward compatibility)
-  const OLD_PRESET_MAP = {
-    gold: 'style-gold', navy: 'style-navy', blush: 'style-blush',
-    sage: 'style-sage', ivory: 'style-ivory', rose: 'style-rose', custom: 'style-custom'
-  }
-
-  // ── APPLY STYLE TO ELEMENT ─────────────────────────────────────
-  // Handles both old format (object with preset/values) and new format (string class or {preset, overrides})
-  function applyStyleToElement(el, styleData) {
-    if (!el) return
-
-    // Cleanup existing style classes
-    STYLE_CLASSES.forEach(cls => el.classList.remove(cls))
-    FONT_CLASSES.forEach(cls => el.classList.remove(cls))
-
-    // Reset custom properties
-    Object.values(OVERRIDE_MAP).forEach(prop => el.style.removeProperty(prop))
-
-    if (!styleData) return
-
-    let cssClass = ''
-    let fontClass = ''
-    let overrides = {}
-
-    if (typeof styleData === 'string') {
-      // New format: "style-gold" or "font-playfair"
-      if (STYLE_CLASSES.includes(styleData)) {
-        cssClass = styleData
-      } else if (FONT_CLASSES.includes(styleData)) {
-        fontClass = styleData
-      } else {
-        cssClass = styleData
-      }
-    } else if (typeof styleData === 'object') {
-      const preset = styleData.preset || ''
-
-      // Detect old vs new format
-      if (preset.startsWith('style-')) {
-        // New format: { preset: "style-gold", overrides: {...} }
-        cssClass = preset
-        overrides = styleData.overrides || {}
-      } else if (OLD_PRESET_MAP[preset]) {
-        // Old format: { preset: "gold", bg_color: "...", text_color: "...", ... }
-        cssClass = OLD_PRESET_MAP[preset]
-        // Extract overrides from flat object (skip 'preset' key)
-        overrides = {}
-        for (const [k, v] of Object.entries(styleData)) {
-          if (k !== 'preset' && v && OVERRIDE_MAP[k]) {
-            overrides[k] = v
-          }
-        }
-      } else if (styleData.cssClass) {
-        cssClass = styleData.cssClass
-        overrides = styleData.overrides || {}
-      }
-    }
-
-    // Apply classes
-    if (cssClass) el.classList.add(cssClass)
-
-    // Apply font class from overrides or direct font_family value
-    if (overrides.font_family && FONT_CLASSES.includes(overrides.font_family)) {
-      el.classList.add(overrides.font_family)
-    }
-
-    // Apply overrides as CSS custom properties
-    for (const [key, prop] of Object.entries(OVERRIDE_MAP)) {
-      if (overrides[key]) {
-        if (key === 'bg_image') {
-          el.style.setProperty(prop, `url('${overrides[key]}')`)
-        } else {
-          el.style.setProperty(prop, overrides[key])
-        }
-      }
-    }
-  }
 
   // ── AMBIL SLUG DARI URL PATH ────────────────────────────────────
   function getSlug() {
@@ -344,11 +247,6 @@
     if (inv.groom_photo_url) setSrc('.profile-groom-photo', inv.groom_photo_url)
     if (inv.groom_instagram) setHref('.profile-groom-ig', `https://instagram.com/${inv.groom_instagram.replace('@','')}`)
     setText('.profile-groom-ig-text', inv.groom_instagram)
-
-    // Apply profile card styles (always call to cleanup when null/default)
-    const profileCs = window._nikahinSectionStyles?.profile || null
-    const profileCards = document.querySelectorAll('.profile-card, .couple-card')
-    profileCards.forEach(card => applyStyleToElement(card, profileCs))
   }
 
   function buildParents(ayah, ibu) {
@@ -367,8 +265,6 @@
     const cardClass = isSakina ? 'event-card orbitTiltReveal' : 'event-item orbit-tilt-reveal-dreamy'
 
     container.innerHTML = events.map((ev, i) => {
-      const cs = ev.custom_style
-
       return `
       <div class="${cardClass}" data-event-idx="${i}">
         <p class="event-type">Prosesi ${i + 1}</p>
@@ -380,22 +276,12 @@
         ${ev.livestream_url ? `<a href="${escHtml(ev.livestream_url)}" target="_blank" rel="noopener" class="btn-maps" style="margin-top:6px">▶ &nbsp; Live Stream</a>` : ''}
       </div>`
     }).join('')
-
-    // Apply per-event styles
-    const cards = container.querySelectorAll('[data-event-idx]')
-    cards.forEach((card, i) => {
-      if (events[i]?.custom_style) {
-        applyStyleToElement(card, events[i].custom_style)
-      }
-    })
   }
 
   // ── FILL GALERI ─────────────────────────────────────────────────
   function fillGallery(galleries) {
     const container = document.getElementById('galleryContainer')
     if (!container || !galleries.length) return
-
-    applyStyleToElement(container, window._nikahinSectionStyles?.gallery || null)
 
     container.innerHTML = galleries.map((g, i) => `
       <div class="${i % 3 === 0 ? 'tall reveal-up' : 'reveal'}">
@@ -497,19 +383,12 @@
   function fillQuoteHashtag(inv) {
     if (inv.quote)   setText('.footer-quote', inv.quote)
     if (inv.hashtag) setText('.footer-hashtag', inv.hashtag)
-
-    const footerCs = window._nikahinSectionStyles?.quote_footer || null
-    // Apply to footer section (Sakina: .footer-section, Arafa: .quotes-section / .footer-section)
-    const footerSections = document.querySelectorAll('.footer-section, .quotes-section')
-    footerSections.forEach(el => applyStyleToElement(el, footerCs))
   }
 
   // ── FILL KADO DIGITAL (BANK ACCOUNTS) ──────────────────────────
   function fillKado(accounts) {
     const container = document.getElementById('kadoContainer')
     if (!container || !accounts.length) return
-
-    applyStyleToElement(container, window._nikahinSectionStyles?.kado || null)
 
     container.innerHTML = accounts.map(a => {
       if (a.type === 'qris' && a.account_number) return `
@@ -549,8 +428,6 @@
     const container = document.querySelector('.timeline')
     if (!container || !stories.length) return
 
-    applyStyleToElement(container, window._nikahinSectionStyles?.love_story || null)
-
     container.innerHTML = stories.map(s => `
       <div class="timeline-item fadeIn-Up">
         <p class="timeline-date">${escHtml(formatBulanTahun(s.event_date))}</p>
@@ -576,10 +453,6 @@
     }
 
     window._nikahinCountdownTarget = target
-
-    const cdCs = window._nikahinSectionStyles?.countdown || null
-    const cdEl = document.querySelector('.countdown') || document.querySelector('#countdown') || document.querySelector('.countdown-row')
-    if (cdEl) applyStyleToElement(cdEl, cdCs)
 
     function tick() {
       const diff = target - new Date()
@@ -739,7 +612,6 @@
     const inv = invitations[0]
     window._nikahinInvitationId = inv.id
     window._nikahinClientId = inv.client_id
-    window._nikahinSectionStyles = inv.section_styles || {}
 
     await resolveGuestName()
     setText('#guestNameDisplay', _guestName)
