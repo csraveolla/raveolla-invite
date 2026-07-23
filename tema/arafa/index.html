@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="ap-light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -176,31 +176,6 @@ body {
   min-height: 100vh;
 }
 #main-content.open { display: block; }
-
-/* Floating music */
-.music-btn {
-  position: fixed; bottom: 1.5rem; right: 1.5rem;
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  border: 1px solid var(--accent-dim);
-  background: rgba(253,251,247,0.9);
-  backdrop-filter: blur(10px);
-  color: var(--accent);
-  font-size: 0.9rem;
-  cursor: pointer;
-  z-index: 200;
-  display: none;
-  align-items: center; justify-content: center;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  transition: all 0.3s;
-}
-.music-btn.show { display: flex; }
-.music-btn:hover { border-color: var(--accent); background: var(--white); }
-.music-btn.playing { animation: pulse-ring 2s ease infinite; }
-@keyframes pulse-ring {
-  0%,100% { box-shadow: 0 0 0 0 rgba(196,169,130,0.3); }
-  50% { box-shadow: 0 0 0 8px rgba(196,169,130,0); }
-}
 
 /* ==============================
    SECTION BASE
@@ -807,6 +782,8 @@ body {
 <script src="/env.js"></script>
 <script src="/tema/assets/motion-plus.js" defer></script>
 <script src="/tema/assets/invitation-loader.js" defer></script>
+<link rel="stylesheet" href="/tema/assets/audio-player.css">
+<script src="/tema/assets/audio-player.js" defer></script>
 </head>
 <body>
 
@@ -852,11 +829,6 @@ body {
      MAIN CONTENT
      ============================== -->
 <div id="main-content">
-
-  <!-- Music -->
-  <button class="music-btn" id="musicBtn" onclick="toggleMusic()">♪</button>
-  <audio id="bgMusic" loop><source src="" type="audio/mpeg"></audio>
-  <div id="ytMusicPlayer" style="position:fixed;bottom:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none"></div>
 
   <!-- ---- MINI GALLERY / SAVE THE DATE ---- -->
   <section class="section ani-container" id="sectionHome">
@@ -1099,13 +1071,11 @@ function openInvitation() {
     main.classList.add('open');
     document.body.style.overflow = 'auto';
     document.getElementById('petalCanvas').style.opacity = '1';
+    if (window.AudioPlayer) window.AudioPlayer.showButton();
   }, 600);
 
-  // Try music
-  const audio = document.getElementById('bgMusic');
-  if (audio && audio.querySelector('source')?.src) {
-    audio.play().catch(() => {});
-  }
+  // Play music (must be synchronous in click handler)
+  if (window.AudioPlayer) window.AudioPlayer.play();
 }
 
 // Pastikan overflow tersembunyi saat loading
@@ -1208,17 +1178,7 @@ async function submitRSVP() {
   }
 }
 
-function toggleMusic() {
-  const audio = document.getElementById('bgMusic');
-  const btn = document.getElementById('musicBtn');
-  if (audio.paused) {
-    audio.play().catch(() => {});
-    btn.classList.add('playing');
-  } else {
-    audio.pause();
-    btn.classList.remove('playing');
-  }
-}
+// toggleMusic() handled by shared audio-player.js
 
 // Sticky nav active state
 document.addEventListener('scroll', () => {

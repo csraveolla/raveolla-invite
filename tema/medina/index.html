@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
+<html lang="id" class="scroll-smooth ap-top-right">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -305,12 +305,6 @@
     </nav>
   </div>
 
-  <!-- Background Music Player -->
-  <audio id="bgMusic" loop></audio>
-  <div id="ytMusicPlayer"></div>
-  <button id="musicBtn" onclick="toggleMusic()" class="fixed top-4 right-4 z-[10000] bg-primary/80 hover:bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all">
-    <i class="fa-solid fa-music"></i>
-  </button>
   <!-- ==================== END SECTION MENU ==================== -->
 
   <!-- JavaScript Interaktivitas -->
@@ -320,34 +314,15 @@
       const cover = document.getElementById('cover');
       cover.classList.add('-translate-y-full', 'opacity-0', 'pointer-events-none');
       
-      // Play music when invitation opens
-      const music = document.getElementById('bgMusic');
-      if (music && music.src) {
-        music.play().catch(() => {});
-      }
-    }
-
-    // Music Toggle
-    let isMusicPlaying = false;
-    function toggleMusic() {
-      const music = document.getElementById('bgMusic');
-      const btn = document.getElementById('musicBtn');
-      
-      if (music && music.src) {
-        if (isMusicPlaying) {
-          music.pause();
-          btn.innerHTML = '<i class="fa-solid fa-music"></i>';
-        } else {
-          music.play().catch(() => {});
-          btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        }
-        isMusicPlaying = !isMusicPlaying;
-      }
+      // Play music when invitation opens (must be synchronous in click handler)
+      if (window.AudioPlayer) window.AudioPlayer.play();
     }
   </script>
   <script src="/env.js"></script>
   <script src="/tema/assets/motion-plus.js"></script>
   <script src="/tema/assets/invitation-loader.js"></script>
+  <link rel="stylesheet" href="/tema/assets/audio-player.css">
+  <script src="/tema/assets/audio-player.js"></script>
 
 </body>
 </html>

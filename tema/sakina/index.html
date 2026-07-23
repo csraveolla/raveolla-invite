@@ -226,30 +226,6 @@ body {
   pointer-events: none;
 }
 
-/* Floating music control */
-.music-btn {
-  position: fixed; bottom: 1.5rem; right: 1.5rem;
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  border: 1px solid var(--gold-dim);
-  background: rgba(13,13,13,.85);
-  backdrop-filter: blur(10px);
-  color: var(--gold);
-  font-size: .9rem;
-  cursor: pointer;
-  z-index: 100;
-  display: none;
-  align-items: center; justify-content: center;
-  transition: all .3s;
-}
-.music-btn.show { display: flex; }
-.music-btn:hover { border-color: var(--gold); background: rgba(201,169,110,.1); }
-.music-btn.playing { animation: pulse-ring 2s ease infinite; }
-@keyframes pulse-ring {
-  0%,100% { box-shadow: 0 0 0 0 rgba(201,169,110,.3); }
-  50% { box-shadow: 0 0 0 8px rgba(201,169,110,0); }
-}
-
 /* ================================================================
    SECTION BASE
    ================================================================ */
@@ -1152,6 +1128,8 @@ body {
   <script src="/env.js"></script>
   <script src="/assets/motion-plus.js" defer></script>
   <script src="/assets/invitation-loader.js" defer></script>
+  <link rel="stylesheet" href="/tema/assets/audio-player.css">
+  <script src="/tema/assets/audio-player.js" defer></script>
 </head>
 <body>
 
@@ -1240,13 +1218,6 @@ body {
      MAIN CONTENT
      ================================================================ -->
 <div id="main-content">
-
-  <!-- Music floating button -->
-  <button class="music-btn" id="musicBtn" onclick="toggleMusic()">♪</button>
-  <audio id="bgMusic" loop>
-    <source src="" type="audio/mpeg">
-  </audio>
-  <div id="ytMusicPlayer" style="position:fixed;bottom:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none"></div>
 
   <!-- ---- MINI GALLERY / SAVE THE DATE ---- -->
   <section class="section section-mini-gallery" id="sectionHome">
@@ -1772,14 +1743,8 @@ function openInvitation() {
   // click handler "Buka Undangan" — kalau dipindah ke dalam setTimeout di
   // bawah, browser sudah nggak anggap ini hasil klik user lagi, jadi
   // autoplay-nya di-block diam-diam (music.play() gagal tanpa error).
-  if (getMusicMode() === 'youtube') {
-    if (ytPlayer && ytPlayer.playVideo) { ytPlayer.playVideo(); }
-    document.getElementById('musicBtn').classList.add('playing');
-  } else {
-    const music = document.getElementById('bgMusic');
-    music.volume = 0.4;
-    music.play().catch(()=>{});
-    document.getElementById('musicBtn').classList.add('playing');
+  if (window.AudioPlayer) {
+    window.AudioPlayer.play();
   }
 
   setTimeout(() => {
@@ -1790,7 +1755,7 @@ function openInvitation() {
 
     // Tampilkan konten utama
     document.getElementById('main-content').classList.add('open');
-    document.getElementById('musicBtn').classList.add('show');
+    if (window.AudioPlayer) window.AudioPlayer.showButton();
     document.getElementById('stickyNav').classList.add('show');
 
     // Tampilkan kelopak
@@ -1946,56 +1911,8 @@ function initStickyNav() {
    ---------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------
-   MUSIK
+   MUSIK — handled by shared audio-player.js
    ---------------------------------------------------------------- */
-var ytPlayer = null;
-var ytReady = false;
-var musicMode = 'audio'; // 'audio' or 'youtube'
-
-function onYouTubeIframeAPIReady() {
-  ytReady = true;
-}
-
-function initYouTubePlayer(videoId) {
-  if (!ytReady) return;
-  if (ytPlayer) { ytPlayer.loadVideoById(videoId); return; }
-  ytPlayer = new YT.Player('ytMusicPlayer', {
-    videoId: videoId,
-    playerVars: { autoplay: 0, loop: 1, playlist: videoId, controls: 0, modestbranding: 1 },
-    events: { onReady: function(e) { e.target.setVolume(40); musicMode = 'youtube'; } }
-  });
-}
-
-function getMusicMode() {
-  return window._nikahinMusicMode || musicMode;
-}
-
-function toggleMusic() {
-  const btn = document.getElementById('musicBtn');
-  if (getMusicMode() === 'youtube') {
-    if (!ytPlayer) return;
-    if (ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
-      ytPlayer.pauseVideo();
-      btn.classList.remove('playing');
-      btn.textContent = '♫';
-    } else {
-      ytPlayer.playVideo();
-      btn.classList.add('playing');
-      btn.textContent = '♪';
-    }
-  } else {
-    const music = document.getElementById('bgMusic');
-    if (music.paused) {
-      music.play();
-      btn.classList.add('playing');
-      btn.textContent = '♪';
-    } else {
-      music.pause();
-      btn.classList.remove('playing');
-      btn.textContent = '♫';
-    }
-  }
-}
 
 /* ----------------------------------------------------------------
    RSVP
@@ -2128,6 +2045,5 @@ function runPetals() {
     footerDomain.textContent = url.hostname;
   }
 </script>
-<script src="https://www.youtube.com/iframe_api" defer></script>
 </body>
 </html>

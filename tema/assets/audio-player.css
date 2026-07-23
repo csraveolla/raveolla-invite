@@ -1,0 +1,101 @@
+/* ================================================================
+   AUDIO PLAYER — Shared component untuk semua tema undangan
+   Override via CSS custom properties di tema masing-masing.
+   ================================================================ */
+
+:root {
+  --ap-bg: rgba(13,13,13,.85);
+  --ap-color: var(--gold, #c9a96e);
+  --ap-border: var(--gold-dim, rgba(201,169,110,0.3));
+  --ap-hover-bg: rgba(201,169,110,.1);
+  --ap-pulse-color: rgba(201,169,110,.3);
+  --ap-bottom: 1.5rem;
+  --ap-right: 1.5rem;
+  --ap-left: auto;
+  --ap-top: auto;
+  --ap-z: 100;
+}
+
+/* ── Floating Button ─────────────────────────────────────────── */
+.ap-btn {
+  position: fixed;
+  bottom: var(--ap-bottom);
+  right: var(--ap-right);
+  left: var(--ap-left);
+  top: var(--ap-top);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--ap-border);
+  background: var(--ap-bg);
+  backdrop-filter: blur(10px);
+  color: var(--ap-color);
+  font-size: .9rem;
+  cursor: pointer;
+  z-index: var(--ap-z);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all .3s;
+}
+.ap-btn.show { display: flex; }
+.ap-btn:hover {
+  border-color: var(--ap-color);
+  background: var(--ap-hover-bg);
+}
+.ap-btn.playing {
+  animation: ap-pulse 2s ease infinite;
+}
+
+/* ── Icon Variants ───────────────────────────────────────────── */
+.ap-btn .ap-icon-play,
+.ap-btn .ap-icon-pause {
+  line-height: 1;
+}
+.ap-btn .ap-icon-pause { display: none; }
+.ap-btn.playing .ap-icon-play { display: none; }
+.ap-btn.playing .ap-icon-pause { display: inline; }
+
+/* Fallback: text content for themes using ♪ character */
+.ap-btn.ap-text-mode .ap-icon-play,
+.ap-btn.ap-text-mode .ap-icon-pause { display: none; }
+
+/* ── Pulse Animation ─────────────────────────────────────────── */
+@keyframes ap-pulse {
+  0%,100% { box-shadow: 0 0 0 0 var(--ap-pulse-color); }
+  50% { box-shadow: 0 0 0 8px rgba(201,169,110,0); }
+}
+
+/* ── YouTube Player (hidden offscreen) ───────────────────────── */
+#ytMusicPlayer {
+  position: fixed;
+  bottom: -9999px;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Theme Overrides ─────────────────────────────────────────── */
+
+/* Arafa (light theme) — panggil class="ap-light" di <html> */
+.ap-light {
+  --ap-bg: rgba(253,251,247,0.9);
+  --ap-color: var(--accent, #c9a96e);
+  --ap-border: var(--accent-dim, rgba(201,169,110,0.3));
+  --ap-hover-bg: rgba(255,255,255,0.9);
+  --ap-pulse-color: rgba(196,169,130,0.3);
+  --ap-z: 200;
+}
+.ap-light .ap-btn {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+/* Medina — position top-right */
+.ap-top-right {
+  --ap-bottom: auto;
+  --ap-top: 1rem;
+  --ap-right: 1rem;
+  --ap-z: 10000;
+}

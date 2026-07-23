@@ -448,15 +448,21 @@
   }
 
   // ── FILL MUSIK ──────────────────────────────────────────────────
-  function isYouTubeUrl(url) {
-    return /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)/.test(url)
-  }
-  function extractYouTubeId(url) {
-    const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?#]+)/)
-    return m ? m[1] : null
-  }
   function fillMusic(inv) {
     if (!inv.music_url) return
+    // Shared audio player — prefer if available
+    if (window.AudioPlayer) {
+      window.AudioPlayer.init(inv.music_url)
+      return
+    }
+    // Fallback: inline logic (legacy themes without audio-player.js)
+    function isYouTubeUrl(url) {
+      return /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)/.test(url)
+    }
+    function extractYouTubeId(url) {
+      const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?#]+)/)
+      return m ? m[1] : null
+    }
     if (isYouTubeUrl(inv.music_url)) {
       const vid = extractYouTubeId(inv.music_url)
       if (!vid) return
