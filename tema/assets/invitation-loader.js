@@ -392,7 +392,7 @@
 
     container.innerHTML = accounts.map(a => {
       if (a.type === 'qris' && a.account_number) return `
-        <div class="gift-card">
+        <div class="gift-card fade-in-up-dreamy">
           <div class="gift-bank-logo">QRIS</div>
           <div>
             <p class="gift-bank-name">QRIS</p>
@@ -402,7 +402,7 @@
         </div>`
 
       return `
-        <div class="gift-card">
+        <div class="gift-card fade-in-up-dreamy">
           <div class="gift-bank-logo">${escHtml((a.bank_name || a.type || '').substring(0, 6))}</div>
           <div>
             <p class="gift-bank-name">${escHtml(a.bank_name || a.type)}</p>
@@ -429,7 +429,7 @@
     if (!container || !stories.length) return
 
     container.innerHTML = stories.map(s => `
-      <div class="timeline-item fadeIn-Up">
+      <div class="timeline-item fade-in-up-dreamy">
         <p class="timeline-date">${escHtml(formatBulanTahun(s.event_date))}</p>
         <h3 class="timeline-title">${escHtml(s.title || '')}</h3>
         <p class="timeline-text">${escHtml(s.description || '')}</p>
@@ -540,7 +540,7 @@
     }
 
     list.innerHTML = data.map(r => `
-      <div class="ucapan-item">
+      <div class="ucapan-item fade-in-up-dreamy">
         <div class="ucapan-header">
           <span class="ucapan-name">${escHtml(r.nama)}</span>
           <span class="ucapan-badge ${r.kehadiran === 'Hadir' ? 'hadir' : r.kehadiran === 'Tidak Hadir' ? 'tidak' : 'ragu'}">
@@ -658,6 +658,15 @@
     logView(inv.id)
 
     document.dispatchEvent(new CustomEvent('nikahin:loaded', { detail: { inv, events, galleries } }))
+
+    // ── DISMISS LOADING OVERLAY → SHOW COVER ─────────────────────
+    if (window.LoadingOverlay) {
+      LoadingOverlay.dismiss(function () {
+        if (window.showCover) window.showCover()
+      })
+    } else if (window.showCover) {
+      window.showCover()
+    }
   }
 
   if (document.readyState === 'loading') {

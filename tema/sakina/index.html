@@ -87,6 +87,16 @@ body {
   text-align: center;
   padding: 2rem 1.5rem;
   z-index: 10;
+  transition: transform 0.8s cubic-bezier(0.65,0,0.35,1), opacity 0.6s ease;
+}
+#cover.cover-hide {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+.cover-start-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
 }
 
 .cover-corner {
@@ -888,28 +898,6 @@ body {
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
 /* ================================================================
-   REVEAL OVERLAY (saat buka undangan)
-   ================================================================ */
-.reveal-overlay {
-  position: fixed; inset: 0;
-  background: #0D0D0D;
-  z-index: 200;
-  display: flex; align-items: center; justify-content: center;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity .8s ease;
-}
-.reveal-overlay.show { opacity: 1; pointer-events: all; }
-.reveal-overlay-text {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.4rem;
-  color: var(--gold);
-  opacity: .8;
-  letter-spacing: .1em;
-}
-
-/* ================================================================
    UTILITY
    ================================================================ */
 .text-gold { color: var(--gold); }
@@ -1131,20 +1119,25 @@ body {
   <link rel="stylesheet" href="/tema/assets/audio-player.css">
   <script src="/tema/assets/audio-player.js" defer></script>
   <script src="/tema/assets/invitation-opener.js"></script>
+  <script src="/tema/assets/loading-overlay.js"></script>
 </head>
 <body>
+<script>
+LoadingOverlay.init({
+  bg: '#0D0D0D',
+  brandColor: '#C9A96E',
+  brandFont: "'Cormorant Garamond', serif",
+  brandWeight: '300',
+  ornamentColor: 'rgba(201,169,110,0.4)',
+  initialsColor: '#C9A96E',
+  ampColor: 'rgba(201,169,110,0.6)'
+});
+</script>
 
 <!-- ================================================================
      CANVAS KELOPAK BUNGA
      ================================================================ -->
 <canvas id="petal-canvas"></canvas>
-
-<!-- ================================================================
-     REVEAL OVERLAY
-     ================================================================ -->
-<div class="reveal-overlay" id="revealOverlay">
-  <span class="reveal-overlay-text">Membuka Undangan...</span>
-</div>
 
 <!-- ================================================================
      SHIMMER BACKGROUND
@@ -1159,7 +1152,7 @@ body {
 <!-- ================================================================
      COVER
      ================================================================ -->
-<section id="cover">
+<section id="cover" class="cover-start-hidden">
   <!-- Ornamen sudut -->
   <svg class="cover-corner tl" viewBox="0 0 80 80" fill="none">
     <path d="M5 5 L5 35" stroke="rgba(201,169,110,.6)" stroke-width=".75"/>
@@ -1734,24 +1727,31 @@ if (guestName) {
 })();
 
 /* ----------------------------------------------------------------
+   SHOW COVER — dipanggil setelah loading overlay dismiss
+   ---------------------------------------------------------------- */
+window.showCover = function () {
+  var cover = document.getElementById('cover')
+  if (cover) {
+    cover.classList.remove('cover-start-hidden')
+  }
+}
+
+/* ----------------------------------------------------------------
    BUKA UNDANGAN — via shared invitation-opener.js
    ---------------------------------------------------------------- */
 InvitationOpener.init({
   coverSelector: '#cover',
   mainSelector: '#main-content',
-  revealDelay: 1200,
+  revealDelay: 800,
   onReveal: (cover) => {
-    const overlay = document.getElementById('revealOverlay');
-    overlay.classList.add('show');
+    cover.classList.add('cover-hide');
     setTimeout(() => {
       cover.style.display = 'none';
       document.getElementById('slideDots').style.display = 'none';
       document.getElementById('shimmerBg').classList.add('hidden');
-    }, 1200);
+    }, 800);
   },
   onReady: () => {
-    const overlay = document.getElementById('revealOverlay');
-    setTimeout(() => overlay.classList.remove('show'), 500);
     document.getElementById('stickyNav').classList.add('show');
     document.getElementById('petal-canvas').classList.add('show');
     window.scrollTo(0, 0);

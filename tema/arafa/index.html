@@ -58,6 +58,10 @@ body {
   opacity: 0;
   pointer-events: none;
 }
+.cover-start-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+}
 
 .cover-ornament {
   position: absolute;
@@ -785,8 +789,20 @@ body {
 <link rel="stylesheet" href="/tema/assets/audio-player.css">
 <script src="/tema/assets/audio-player.js" defer></script>
 <script src="/tema/assets/invitation-opener.js"></script>
+<script src="/tema/assets/loading-overlay.js"></script>
 </head>
 <body>
+<script>
+LoadingOverlay.init({
+  bg: '#fdfbf7',
+  brandColor: '#c4a982',
+  brandFont: "'Playfair Display', serif",
+  brandWeight: '400',
+  ornamentColor: 'rgba(196,169,130,0.4)',
+  initialsColor: '#c4a982',
+  ampColor: 'rgba(196,169,130,0.6)'
+});
+</script>
 
 <!-- ==============================
      CANVAS KELOPAK
@@ -794,16 +810,9 @@ body {
 <canvas id="petal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;opacity:0;transition:opacity 1s" id="petalCanvas"></canvas>
 
 <!-- ==============================
-     REVEAL OVERLAY
-     ============================== -->
-<div id="revealOverlay" style="position:fixed;inset:0;background:#fdfbf7;z-index:50;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity 0.8s" class="reveal-overlay">
-  <span style="font-family:'Playfair Display',serif;font-style:italic;font-size:1.3rem;color:#c4a982">Membuka Undangan...</span>
-</div>
-
-<!-- ==============================
      COVER
      ============================== -->
-<section id="cover">
+<section id="cover" class="cover-start-hidden">
   <div class="cover-ornament tl">A</div>
   <div class="cover-ornament br">A</div>
 <div class="cover-eyebrow">The Wedding Of</div>
@@ -1056,6 +1065,16 @@ body {
      ============================== -->
 <script>
 /* ----------------------------------------------------------------
+   SHOW COVER — dipanggil setelah loading overlay dismiss
+   ---------------------------------------------------------------- */
+window.showCover = function () {
+  var cover = document.getElementById('cover')
+  if (cover) {
+    cover.classList.remove('cover-start-hidden')
+  }
+}
+
+/* ----------------------------------------------------------------
    BUKA UNDANGAN — via shared invitation-opener.js
    ---------------------------------------------------------------- */
 InvitationOpener.init({
@@ -1064,15 +1083,8 @@ InvitationOpener.init({
   revealDelay: 600,
   onReveal: (cover) => {
     cover.classList.add('cover-hide');
-    const overlay = document.getElementById('revealOverlay');
-    overlay.classList.add('show');
-    overlay.style.opacity = '1';
-    overlay.style.pointerEvents = 'all';
   },
   onReady: () => {
-    const overlay = document.getElementById('revealOverlay');
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none';
     document.getElementById('petalCanvas').style.opacity = '1';
   }
 });

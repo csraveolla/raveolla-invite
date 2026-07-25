@@ -70,6 +70,13 @@ class SPAHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         path = os.path.join(ROOT, self.path.lstrip('/'))
 
+        # Map /assets/* → /tema/assets/* (same as .htaccess)
+        if self.path.startswith('/assets/'):
+            tema_asset = os.path.join(TEMA, 'assets', self.path[len('/assets/'):])
+            if os.path.exists(tema_asset):
+                self.path = '/tema/assets/' + self.path[len('/assets/'):]
+                return super().do_GET()
+
         # If file exists, serve it directly
         if os.path.exists(path) and not (os.path.isdir(path) and not os.path.exists(os.path.join(path, 'index.html'))):
             return super().do_GET()

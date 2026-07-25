@@ -20,62 +20,212 @@
 
     <!-- Tailwind CSS (self-hosted build) -->
     <link rel="stylesheet" href="/tema/assets/tailwind-built.css">
-</head>
+
+    <style>
+      .timeline {
+        position: relative;
+        padding-left: 2rem;
+        text-align: left;
+      }
+      .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.4rem;
+        bottom: 0.4rem;
+        width: 1.5px;
+        background: #e5ded4;
+      }
+      .timeline-item {
+        position: relative;
+        margin-bottom: 1.8rem;
+      }
+      .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.85rem;
+        top: 0.4rem;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #c5a059;
+        border: 2px solid #faf8f5;
+        box-shadow: 0 0 0 1.5px #c5a059;
+      }
+      .timeline-date {
+        font-size: 0.65rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: #c5a059;
+        font-weight: 700;
+        margin-bottom: 0.35rem;
+      }
+      .timeline-title {
+        font-family: 'Playfair Display', serif;
+        font-style: italic;
+        font-weight: 600;
+        font-size: 1.15rem;
+        color: #1e293b;
+        margin-bottom: 0.4rem;
+      }
+      .timeline-text {
+        font-size: 0.8rem;
+        color: #64748b;
+        line-height: 1.7;
+      }
+      .timeline-photo {
+        width: 100%;
+        max-width: 200px;
+        border-radius: 12px;
+        margin-top: 0.6rem;
+        display: block;
+        border: 1px solid #f4ece1;
+      }
+
+      .event-list { display: flex; flex-direction: column; gap: 1.2rem; }
+      .event-item {
+        background: #ffffff;
+        border: 1px solid #f4ece1;
+        padding: 1.8rem 1.5rem;
+        text-align: center;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      }
+      .event-type {
+        font-size: 0.6rem;
+        letter-spacing: 0.5em;
+        text-transform: uppercase;
+        color: #c5a059;
+        font-weight: 700;
+        margin-bottom: 0.6rem;
+      }
+      .event-name {
+        font-family: 'Playfair Display', serif;
+        font-style: italic;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #1e293b;
+        margin-bottom: 0.8rem;
+      }
+      .event-time {
+        font-size: 1.1rem;
+        font-weight: 300;
+        color: #1e293b;
+        margin-bottom: 0.3rem;
+      }
+      .event-date-text {
+        font-size: 0.7rem;
+        letter-spacing: 0.15em;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 0.8rem;
+      }
+      .event-loc {
+        font-size: 0.8rem;
+        color: #64748b;
+        line-height: 1.6;
+        margin-bottom: 0.6rem;
+      }
+      .btn-maps {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #c5a059;
+        text-decoration: none;
+        border: 1px solid #f4ece1;
+        border-radius: 999px;
+        padding: 0.35rem 0.9rem;
+        transition: all 0.2s ease;
+      }
+      .btn-maps:hover {
+        background: #c5a059;
+        color: #ffffff;
+        border-color: #c5a059;
+      }
+      .cover-start-hidden {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      #main {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #main.open {
+        opacity: 1;
+        pointer-events: auto;
+        transition: opacity 0.6s ease;
+      }
+    </style>
+    <script src="/tema/assets/loading-overlay.js"></script>
+  </head>
 <body class="font-sans bg-[#faf8f5] text-slate-800 antialiased pb-20 overflow-x-hidden">
+<script>
+LoadingOverlay.init({
+  bg: '#faf8f5',
+  brandColor: '#a3803c',
+  brandFont: "'Great Vibes', cursive",
+  brandSize: '2.5rem',
+  brandWeight: '400',
+  ornamentColor: 'rgba(30,41,59,0.3)',
+  initialsColor: '#a3803c',
+  initialsFont: "'Great Vibes', cursive",
+  ampColor: 'rgba(30,41,59,0.4)'
+});
+</script>
+
+  <!-- ==================== SECTION COVER ==================== -->
+  <div class="section cover fixed inset-0 z-[9999] min-h-screen flex flex-col justify-center items-center text-center p-5 text-white bg-cover bg-center transition-all duration-700 ease-in-out cover-start-hidden" id="cover" style="background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80');">
+    <!-- Background Slides -->
+    <div id="slide0" class="absolute inset-0 bg-cover bg-center -z-10" style="background-image: url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80');"></div>
+    <div id="slide1" class="absolute inset-0 bg-cover bg-center -z-10 opacity-0"></div>
+    <div id="slide2" class="absolute inset-0 bg-cover bg-center -z-10 opacity-0"></div>
+    
+    <p class="uppercase tracking-[3px] text-xs font-medium">Undangan Pernikahan</p>
+    <h1 class="font-script text-5xl md:text-6xl my-4 text-white drop-shadow"><span class="name-groom">Romeo</span> & <span class="name-bride">Juliet</span></h1>
+    <p class="text-sm font-light" id="coverDate">12.12.2026</p>
+
+    <div class="bg-white/15 backdrop-blur-md p-5 rounded-2xl my-6 w-full max-w-xs border border-white/20">
+      <p class="text-xs uppercase tracking-wider font-light">Kepada Yth. Bapak/Ibu/Saudara/i:</p>
+      <p class="text-lg font-bold mt-1 text-white" id="guestNameDisplay">Tamu Undangan</p>
+    </div>
+
+    <button onclick="openInvitation()" class="bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-7 rounded-full text-sm transition-all duration-300 shadow-md hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
+      <i class="fa-solid fa-envelope-open"></i> Buka Undangan
+    </button>
+
+    <!-- Mini Gallery Carousel -->
+    <div class="mt-6 w-full max-w-xs overflow-hidden">
+      <div id="miniGalleryTrack" class="flex gap-2 animate-scroll">
+        <!-- Mini gallery items will be dynamically generated by invitation-loader.js -->
+      </div>
+    </div>
+  </div>
 
   <!-- ==================== SECTION MAIN ==================== -->
   <div class="main w-full relative" id="main">
-
-    <!-- ==================== SECTION COVER ==================== -->
-    <div class="section cover fixed inset-0 z-[9999] min-h-screen flex flex-col justify-center items-center text-center p-5 text-white bg-cover bg-center transition-all duration-700 ease-in-out" id="cover" style="background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80');">
-      <!-- Background Slides -->
-      <div id="slide0" class="absolute inset-0 bg-cover bg-center -z-10" style="background-image: url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80');"></div>
-      <div id="slide1" class="absolute inset-0 bg-cover bg-center -z-10 opacity-0"></div>
-      <div id="slide2" class="absolute inset-0 bg-cover bg-center -z-10 opacity-0"></div>
-      
-      <p class="uppercase tracking-[3px] text-xs font-medium">Undangan Pernikahan</p>
-      <h1 class="font-script text-5xl md:text-6xl my-4 text-white drop-shadow"><span class="name-groom">Romeo</span> & <span class="name-bride">Juliet</span></h1>
-      <p class="text-sm font-light" id="coverDate">12.12.2026</p>
-
-      <div class="bg-white/15 backdrop-blur-md p-5 rounded-2xl my-6 w-full max-w-xs border border-white/20">
-        <p class="text-xs uppercase tracking-wider font-light">Kepada Yth. Bapak/Ibu/Saudara/i:</p>
-        <p class="text-lg font-bold mt-1 text-white" id="guestNameDisplay">Tamu Undangan</p>
-      </div>
-
-      <button onclick="openInvitation()" class="bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-7 rounded-full text-sm transition-all duration-300 shadow-md hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
-        <i class="fa-solid fa-envelope-open"></i> Buka Undangan
-      </button>
-
-      <!-- Mini Gallery Carousel -->
-      <div class="mt-6 w-full max-w-xs overflow-hidden">
-        <div id="miniGalleryTrack" class="flex gap-2 animate-scroll">
-          <!-- Mini gallery items will be dynamically generated by invitation-loader.js -->
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== SECTION HOME ==================== -->
-    <div class="section home min-h-[90vh] flex flex-col justify-center items-center text-center bg-primary-light rounded-b-[40px] px-5 py-14 max-w-xl mx-auto" id="home">
-      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-2">The Wedding Of</p>
-      <h1 class="font-script text-6xl text-primary-dark leading-tight my-2">
+    <div class="section home ani-container min-h-[90vh] flex flex-col justify-center items-center text-center bg-primary-light rounded-b-[40px] px-5 py-14 max-w-xl mx-auto" id="home">
+      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-2 fade-in-dreamy">The Wedding Of</p>
+      <h1 class="font-script text-6xl text-primary-dark leading-tight my-2 fade-in-dreamy">
         <span class="name-groom" data-bind="groom_nickname">Romeo</span> & 
         <span class="name-bride" data-bind="bride_nickname">Juliet</span>
       </h1>
-      <div class="w-16 h-[2px] bg-primary my-4"></div>
-      <p class="italic text-slate-600 text-sm max-w-md mb-6 leading-relaxed">
+      <div class="w-16 h-[2px] bg-primary my-4 fade-in-dreamy"></div>
+      <p class="italic text-slate-600 text-sm max-w-md mb-6 leading-relaxed fade-in-dreamy">
         "Dan di antara tanda-tanda (kebesaran-Nya) ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri."
       </p>
-      <span class="bg-primary text-white py-2 px-5 rounded-full text-xs font-semibold tracking-wider" data-bind="event_date_formatted">Sabtu, 12 Desember 2026</span>
+      <span class="bg-primary text-white py-2 px-5 rounded-full text-xs font-semibold tracking-wider fade-in-up-dreamy" data-bind="event_date_formatted">Sabtu, 12 Desember 2026</span>
     </div>
 
     <!-- ==================== SECTION COUPLE ==================== -->
-    <div class="section couple py-14 px-5 max-w-xl mx-auto text-center" id="couple">
-      <h2 class="font-serif text-3xl text-primary-dark font-medium">Mempelai</h2>
-      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1">Mempelai Pria & Wanita</p>
+    <div class="section couple ani-container py-14 px-5 max-w-xl mx-auto text-center" id="couple">
+      <h2 class="font-serif text-3xl text-primary-dark font-medium fade-in-dreamy">Mempelai</h2>
+      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1 fade-in-dreamy">Mempelai Pria & Wanita</p>
 
       <div class="flex flex-col md:flex-row items-center justify-center gap-6">
         <!-- Mempelai Pria -->
-        <div class="profile-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 w-full">
+        <div class="profile-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 w-full fade-in-up-dreamy">
           <img data-bind-src="groom_photo_url" data-bind-alt="groom_nickname" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80" alt="Groom" class="profile-groom-photo w-36 h-36 rounded-full object-cover border-4 border-primary mx-auto mb-4 shadow-sm">
           <h3 class="profile-groom-nickname font-serif text-xl text-primary-dark font-semibold" data-bind="groom_name">Romeo Montague, S.T.</h3>
           <p class="profile-groom-parents text-xs text-slate-500 my-2">Putra Pertama dari<br>Bapak Montague & Ibu Montague</p>
@@ -85,7 +235,7 @@
         <div class="font-script text-5xl text-primary my-[-10px] md:my-0">&</div>
 
         <!-- Mempelai Wanita -->
-        <div class="profile-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 w-full">
+        <div class="profile-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 w-full fade-in-up-dreamy">
           <img data-bind-src="bride_photo_url" data-bind-alt="bride_nickname" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80" alt="Bride" class="profile-bride-photo w-36 h-36 rounded-full object-cover border-4 border-primary mx-auto mb-4 shadow-sm">
           <h3 class="profile-bride-nickname font-serif text-xl text-primary-dark font-semibold" data-bind="bride_name">Juliet Capulet, S.E.</h3>
           <p class="profile-bride-parents text-xs text-slate-500 my-2">Putri Kedua dari<br>Bapak Capulet & Ibu Capulet</p>
@@ -95,11 +245,11 @@
     </div>
 
     <!-- ==================== SECTION SAVE THE DATE ==================== -->
-    <div class="section save-the-date py-12 px-5 max-w-xl mx-auto text-center bg-white rounded-2xl shadow-sm border border-slate-100 my-6" id="countdown">
-      <h2 class="font-serif text-3xl text-primary-dark font-medium">Hitung Mundur</h2>
-      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-6 mt-1">Save The Date</p>
+    <div class="section save-the-date ani-container py-12 px-5 max-w-xl mx-auto text-center bg-white rounded-2xl shadow-sm border border-slate-100 my-6" id="countdown">
+      <h2 class="font-serif text-3xl text-primary-dark font-medium fade-in-dreamy">Hitung Mundur</h2>
+      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-6 mt-1 fade-in-dreamy">Save The Date</p>
 
-      <div class="grid grid-cols-4 gap-2.5 my-6">
+      <div class="grid grid-cols-4 gap-2.5 my-6 fade-in-up-dreamy">
         <div class="bg-primary-light p-3.5 rounded-xl border border-primary/20">
           <span class="text-xl font-bold text-primary-dark block" id="cd-d">00</span>
           <span class="text-[10px] uppercase text-slate-500">Hari</span>
@@ -118,21 +268,21 @@
         </div>
       </div>
 
-      <a href="https://calendar.google.com" target="_blank" class="inline-flex items-center gap-2 border-2 border-primary text-primary-dark hover:bg-primary hover:text-white font-semibold py-2.5 px-6 rounded-full text-sm transition-all duration-300">
+      <a href="https://calendar.google.com" target="_blank" class="inline-flex items-center gap-2 border-2 border-primary text-primary-dark hover:bg-primary hover:text-white font-semibold py-2.5 px-6 rounded-full text-sm transition-all duration-300 fade-in-up-dreamy">
         <i class="fa-regular fa-calendar-plus"></i> Tambah ke Kalender
       </a>
       
       <!-- Test: Tampilkan event date pakai data-bind -->
-      <p class="mt-4 text-xs text-slate-500">
+      <p class="mt-4 text-xs text-slate-500 fade-in-up-dreamy">
         <i class="fa-regular fa-clock"></i> 
         Acara dimulai pukul <span data-bind="event_time" class="font-semibold text-primary-dark">09.00 WIB</span>
       </p>
     </div>
 
     <!-- ==================== SECTION EVENTS ==================== -->
-    <div class="section events py-14 px-5 max-w-xl mx-auto text-center" id="events">
-      <h2 class="font-serif text-3xl text-primary-dark font-medium">Rangkaian Acara</h2>
-      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1">Waktu & Lokasi</p>
+    <div class="section events ani-container py-14 px-5 max-w-xl mx-auto text-center" id="events">
+      <h2 class="font-serif text-3xl text-primary-dark font-medium fade-in-dreamy">Rangkaian Acara</h2>
+      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1 fade-in-dreamy">Waktu & Lokasi</p>
 
       <div id="eventCardsContainer" class="event-list space-y-6">
         <!-- Events will be dynamically generated by invitation-loader.js -->
@@ -140,11 +290,11 @@
     </div>
 
     <!-- ==================== SECTION RSVP ==================== -->
-    <div class="section rsvp py-14 px-5 max-w-xl mx-auto text-center" id="rsvp">
-      <h2 class="font-serif text-3xl text-primary-dark font-medium">Konfirmasi Kehadiran</h2>
-      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1">RSVP & Ucapan</p>
+    <div class="section rsvp ani-container py-14 px-5 max-w-xl mx-auto text-center" id="rsvp">
+      <h2 class="font-serif text-3xl text-primary-dark font-medium fade-in-dreamy">Konfirmasi Kehadiran</h2>
+      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1 fade-in-dreamy">RSVP & Ucapan</p>
 
-      <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-100 text-left">
+      <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-100 text-left fade-in-up-dreamy">
         <div id="rsvpForm">
           <div class="space-y-4">
             <div>
@@ -178,44 +328,44 @@
 
       <!-- Ucapan Section -->
       <div class="mt-8">
-        <h3 class="font-serif text-2xl text-primary-dark font-medium mb-4">Ucapan & Doa</h3>
+        <h3 class="font-serif text-2xl text-primary-dark font-medium mb-4 fade-in-dreamy">Ucapan & Doa</h3>
         <div id="ucapanList" class="space-y-3 text-left">
           <!-- Ucapan will be dynamically generated by invitation-loader.js -->
         </div>
       </div>
       
       <!-- Test: Guest name pakai data-bind -->
-      <div class="mt-6 p-4 bg-primary-light rounded-xl border border-primary/20">
+      <div class="mt-6 p-4 bg-primary-light rounded-xl border border-primary/20 fade-in-up-dreamy">
         <p class="text-xs text-slate-500 mb-1">Selamat datang,</p>
         <p class="text-lg font-bold text-primary-dark" data-bind="guest_name">Tamu Undangan</p>
       </div>
     </div>
 
     <!-- ==================== SECTION STORY ==================== -->
-    <div class="section story py-14 px-5 max-w-xl mx-auto text-center" id="story">
-      <h2 class="font-serif text-3xl text-primary-dark font-medium">Kisah Kami</h2>
-      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1">Our Love Story</p>
+    <div class="section story ani-container py-14 px-5 max-w-xl mx-auto text-center" id="story">
+      <h2 class="font-serif text-3xl text-primary-dark font-medium fade-in-dreamy">Kisah Kami</h2>
+      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1 fade-in-dreamy">Our Love Story</p>
 
-      <div class="timeline relative pl-6 text-left border-l-2 border-primary-light space-y-6 ml-2">
+      <div class="timeline">
         <!-- Love stories will be dynamically generated by invitation-loader.js -->
-        <div class="relative pl-4 before:content-[''] before:absolute before:-left-[31px] before:top-1.5 before:w-3 before:h-3 before:bg-primary before:rounded-full">
-          <span class="timeline-date text-xs font-bold text-primary-dark">Januari 2021</span>
-          <h4 class="timeline-title font-serif font-semibold text-base text-slate-800 my-0.5">Pertama Kali Bertemu</h4>
-          <p class="timeline-text text-xs text-slate-500 leading-relaxed">Kami bertemu saat menghadiri seminar kampus yang sama di Jakarta.</p>
+        <div class="timeline-item fade-in-up-dreamy">
+          <p class="timeline-date">Januari 2021</p>
+          <h3 class="timeline-title">Pertama Kali Bertemu</h3>
+          <p class="timeline-text">Kami bertemu saat menghadiri seminar kampus yang sama di Jakarta.</p>
         </div>
 
-        <div class="relative pl-4 before:content-[''] before:absolute before:-left-[31px] before:top-1.5 before:w-3 before:h-3 before:bg-primary before:rounded-full">
-          <span class="timeline-date text-xs font-bold text-primary-dark">Agustus 2025</span>
-          <h4 class="timeline-title font-serif font-semibold text-base text-slate-800 my-0.5">Lamaran</h4>
-          <p class="timeline-text text-xs text-slate-500 leading-relaxed">Dengan restu kedua orang tua, kami melangkah ke jenjang yang lebih serius.</p>
+        <div class="timeline-item fade-in-up-dreamy">
+          <p class="timeline-date">Agustus 2025</p>
+          <h3 class="timeline-title">Lamaran</h3>
+          <p class="timeline-text">Dengan restu kedua orang tua, kami melangkah ke jenjang yang lebih serius.</p>
         </div>
       </div>
     </div>
 
     <!-- ==================== SECTION GALLERY ==================== -->
-    <div class="section gallery py-14 px-5 max-w-xl mx-auto text-center" id="gallery">
-      <h2 class="font-serif text-3xl text-primary-dark font-medium">Galeri Foto</h2>
-      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1">Momen Bahagia</p>
+    <div class="section gallery ani-container py-14 px-5 max-w-xl mx-auto text-center" id="gallery">
+      <h2 class="font-serif text-3xl text-primary-dark font-medium fade-in-dreamy">Galeri Foto</h2>
+      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1 fade-in-dreamy">Momen Bahagia</p>
 
       <div id="galleryContainer" class="grid grid-cols-2 md:grid-cols-3 gap-3">
         <!-- Gallery items will be dynamically generated by invitation-loader.js -->
@@ -223,10 +373,10 @@
     </div>
 
     <!-- ==================== SECTION GIFT ==================== -->
-    <div class="section gift py-14 px-5 max-w-xl mx-auto text-center" id="gift">
-      <h2 class="font-serif text-3xl text-primary-dark font-medium">Hadiah Digital</h2>
-      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-3 mt-1">Wedding Gift</p>
-      <p class="text-xs text-slate-500 mb-6 max-w-sm mx-auto leading-relaxed">
+    <div class="section gift ani-container py-14 px-5 max-w-xl mx-auto text-center" id="gift">
+      <h2 class="font-serif text-3xl text-primary-dark font-medium fade-in-dreamy">Hadiah Digital</h2>
+      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-3 mt-1 fade-in-dreamy">Wedding Gift</p>
+      <p class="text-xs text-slate-500 mb-6 max-w-sm mx-auto leading-relaxed fade-in-dreamy">
         Doa restu Anda merupakan karunia terindah. Namun jika ingin memberi hadiah, Anda dapat menggunakan rekening di bawah ini:
       </p>
 
@@ -236,14 +386,14 @@
     </div>
 
     <!-- ==================== SECTION END COVER ==================== -->
-    <div class="section end-cover bg-primary-light rounded-t-[40px] pt-14 pb-28 px-5 max-w-xl mx-auto text-center" id="end-cover">
-      <h2 class="font-serif text-3xl text-primary-dark font-medium mb-2">Terima Kasih</h2>
-      <p class="footer-quote text-xs text-slate-600 max-w-md mx-auto mb-6 leading-relaxed">
+    <div class="section end-cover ani-container bg-primary-light rounded-t-[40px] pt-14 pb-28 px-5 max-w-xl mx-auto text-center" id="end-cover">
+      <h2 class="font-serif text-3xl text-primary-dark font-medium mb-2 fade-in-dreamy">Terima Kasih</h2>
+      <p class="footer-quote text-xs text-slate-600 max-w-md mx-auto mb-6 leading-relaxed fade-in-dreamy">
         Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.
       </p>
-      <p class="text-xs text-slate-500 mb-1">Kami yang berbahagia,</p>
-      <div class="font-script text-5xl text-primary-dark"><span class="backcover-groom">Romeo</span> & <span class="backcover-bride">Juliet</span></div>
-      <div class="footer-hashtag mt-4 text-xs text-slate-500">#RomeoAndJuliet2026</div>
+      <p class="text-xs text-slate-500 mb-1 fade-in-dreamy">Kami yang berbahagia,</p>
+      <div class="font-script text-5xl text-primary-dark fade-in-up-dreamy"><span class="backcover-groom">Romeo</span> & <span class="backcover-bride">Juliet</span></div>
+      <div class="footer-hashtag mt-4 text-xs text-slate-500 fade-in-up-dreamy">#RomeoAndJuliet2026</div>
     </div>
 
   </div>
@@ -298,10 +448,21 @@
   <script src="/tema/assets/invitation-opener.js"></script>
   <script>
     /* ----------------------------------------------------------------
+       SHOW COVER — dipanggil setelah loading overlay dismiss
+       ---------------------------------------------------------------- */
+    window.showCover = function () {
+      var cover = document.getElementById('cover')
+      if (cover) {
+        cover.classList.remove('cover-start-hidden')
+      }
+    }
+
+    /* ----------------------------------------------------------------
        BUKA UNDANGAN — via shared invitation-opener.js
        ---------------------------------------------------------------- */
     InvitationOpener.init({
       coverSelector: '#cover',
+      mainSelector: '#main',
       onReveal: (cover) => {
         cover.classList.add('-translate-y-full', 'opacity-0', 'pointer-events-none');
       }
