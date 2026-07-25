@@ -284,7 +284,7 @@
     if (!container || !galleries.length) return
 
     container.innerHTML = galleries.map((g, i) => `
-      <div class="${i % 3 === 0 ? 'tall reveal-up' : 'reveal'}">
+      <div class="${i % 3 === 0 ? 'tall' : ''}">
         <img class="gallery-img" 
              src="${escHtml(g.file_url)}" 
              alt="${escHtml(g.caption || '')}" 
