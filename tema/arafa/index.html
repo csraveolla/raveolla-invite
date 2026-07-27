@@ -511,6 +511,36 @@ body {
 }
 
 /* ==============================
+   GALLERY
+   ============================== */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.gallery-grid .gallery-item { position: relative; overflow: hidden; }
+.gallery-grid .gallery-item.tall { grid-row: span 2; }
+.gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(10%) sepia(5%);
+  transition: filter .5s, transform .5s;
+  cursor: pointer;
+  aspect-ratio: 1;
+}
+.gallery-grid .gallery-item.tall .gallery-img { aspect-ratio: auto; }
+.gallery-img:hover { filter: grayscale(0%) sepia(0%); transform: scale(1.03); }
+@media (min-width: 480px) {
+  .gallery-grid { gap: 0.75rem; }
+}
+
+/* ==============================
    KADO DIGITAL
    ============================== */
 .gift-list { display: flex; flex-direction: column; gap: 0.8rem; max-width: 400px; margin: 0 auto; }
@@ -786,6 +816,8 @@ body {
 <script src="/env.js"></script>
 <script src="/tema/assets/motion-plus.js" defer></script>
 <script src="/tema/assets/invitation-loader.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script src="/tema/assets/rsvp-widget.js" defer></script>
 <link rel="stylesheet" href="/tema/assets/audio-player.css">
 <script src="/tema/assets/audio-player.js" defer></script>
 <script src="/tema/assets/invitation-opener.js"></script>
@@ -967,17 +999,34 @@ LoadingOverlay.init({
     <h2 class="section-title fade-in-dreamy">RSVP<br>Kehadiran</h2>
     <div class="accent-line"></div>
 
-    <div class="rsvp-form fade-in-up-dreamy">
+    <!-- Loading spinner -->
+    <div id="rsvpLoading" style="display:none;text-align:center;padding:20px">
+      <div style="width:18px;height:18px;border:2px solid rgba(196,169,130,.3);border-top-color:var(--accent);border-radius:50%;animation:rsvpSpin .8s linear infinite;display:inline-block"></div>
+      <style>@keyframes rsvpSpin{to{transform:rotate(360deg)}}</style>
+    </div>
+
+    <!-- Kepada banner -->
+    <div id="kepadaBanner" style="display:none;background:var(--accent);padding:8px 20px;text-align:center;margin-bottom:16px">
+      <span style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.8)">Kepada Yth.</span>
+      <span id="kepadaNama" style="display:block;font-family:'Cormorant Garamond',serif;font-weight:600;color:#fff;font-style:italic;margin-top:2px">—</span>
+    </div>
+
+    <!-- Form body -->
+    <div class="rsvp-form fade-in-up-dreamy" id="rsvpFormBody">
       <div class="form-group">
         <label class="form-label">Nama Lengkap</label>
         <input type="text" class="form-input" placeholder="Nama kamu..." id="rsvpName">
       </div>
       <div class="form-group">
+        <label class="form-label">Nomor Telpon / WhatsApp</label>
+        <input type="tel" class="form-input" placeholder="08xxxxxxxxx" id="rsvpTelpon">
+      </div>
+      <div class="form-group">
         <label class="form-label">Kehadiran</label>
         <div class="radio-group">
-          <div class="radio-option selected" onclick="selectStatus(this,'Hadir')">✓ Hadir</div>
-          <div class="radio-option" onclick="selectStatus(this,'Tidak Hadir')">✗ Tidak</div>
-          <div class="radio-option" onclick="selectStatus(this,'Ragu')">? Ragu</div>
+          <div class="radio-option selected" onclick="RsvpWidget.selectStatus(this,'Hadir')">✓ Hadir</div>
+          <div class="radio-option" onclick="RsvpWidget.selectStatus(this,'Tidak Hadir')">✗ Tidak</div>
+          <div class="radio-option" onclick="RsvpWidget.selectStatus(this,'Ragu')">? Ragu</div>
         </div>
       </div>
       <div class="form-group" id="jumlahGroup">
@@ -993,11 +1042,70 @@ LoadingOverlay.init({
         <label class="form-label">Ucapan & Doa</label>
         <textarea class="form-textarea" id="rsvpWishes" placeholder="Tulis ucapan terbaik..."></textarea>
       </div>
-      <button class="btn-submit" onclick="submitRSVP()">✦ Kirim ✦</button>
+      <button class="btn-submit" id="rsvpSubmitBtn" onclick="RsvpWidget.submitRSVP()">✦ Kirim ✦</button>
+      <div id="rsvpError" style="color:#c44;font-size:12px;text-align:center;margin-top:8px"></div>
+    </div>
+
+    <!-- RSVP Done screen -->
+    <div id="rsvpDone" style="display:none;text-align:center;padding:24px 0">
+      <div style="font-size:28px;color:var(--accent);margin-bottom:8px">✦</div>
+      <p style="font-family:'Cormorant Garamond',serif;font-weight:600;color:var(--green,#2D6A2D);font-size:20px">RSVP Sudah Terkirim</p>
+      <p id="rsvpDoneStatus" style="font-size:13px;color:var(--grey);margin-top:6px"></p>
+      <button onclick="RsvpWidget.showQR()" style="margin-top:16px;padding:10px 24px;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:11px;letter-spacing:2px;text-transform:uppercase">Lihat QR Code Saya →</button>
+    </div>
+
+    <!-- QR Screen -->
+    <div id="qrScreen" style="display:none;text-align:center;padding:24px 0">
+      <div style="font-size:28px;color:var(--accent);margin-bottom:8px">✦</div>
+      <p style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;margin-bottom:4px">Tiket Kehadiran Anda</p>
+      <p style="font-size:12px;color:var(--grey);margin-bottom:12px">Tunjukkan QR ini kepada penerima tamu</p>
+      <p id="qrNamaVal" style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--accent);margin-bottom:14px;font-size:16px">—</p>
+      <div style="display:inline-block;padding:12px;border:1px solid var(--border);background:#fff;margin-bottom:10px">
+        <div id="qrCode"></div>
+      </div>
+      <p id="qrTokenVal" style="font-family:monospace;font-size:12px;letter-spacing:3px;color:var(--grey);margin-bottom:12px"></p>
+      <p style="font-size:11px;color:var(--grey);margin-bottom:14px">📱 Screenshot atau simpan QR Code ini sebagai tiket masuk</p>
+      <button onclick="RsvpWidget.saveQR()" style="width:100%;padding:12px;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:11px;letter-spacing:2px;text-transform:uppercase">↓ Simpan QR Code</button>
+    </div>
+
+    <!-- Komentar form -->
+    <div class="rsvp-form fade-in-up-dreamy" style="margin-top:20px">
+      <div class="form-group">
+        <label class="form-label">Nama</label>
+        <input type="text" class="form-input" placeholder="Nama Anda" id="komentarNama">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ucapan & Doa</label>
+        <textarea class="form-textarea" id="komentarIsi" placeholder="Tuliskan ucapan dan doa terbaik..."></textarea>
+      </div>
+      <button class="btn-submit" id="komentarBtn" onclick="RsvpWidget.submitKomentar()">✦ Kirim Ucapan ✦</button>
+      <div id="komentarError" style="color:#c44;font-size:12px;text-align:center;margin-top:8px"></div>
     </div>
 
     <div class="ucapan-list" id="ucapanList">
-      <p style="font-size:0.7rem;color:var(--grey);text-align:center">Belum ada ucapan</p>
+      <p style="font-size:0.7rem;color:var(--grey);text-align:center">Memuat ucapan...</p>
+    </div>
+  </section>
+
+  <!-- ---- GALERI ---- -->
+  <section class="section ani-container" id="sectionGallery">
+    <p class="section-eyebrow swing-in-top-dreamy">Momen Kami</p>
+    <h2 class="section-title fade-in-dreamy">Galeri<br>Pre-Wedding</h2>
+    <div class="accent-line"></div>
+
+    <div class="gallery-grid" id="galleryContainer">
+      <div class="gallery-item tall fade-in-up-dreamy">
+        <img class="gallery-img" src="https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=400&h=600&fit=crop&q=80" alt="" loading="lazy">
+      </div>
+      <div class="gallery-item fade-in-up-dreamy">
+        <img class="gallery-img" src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&h=300&fit=crop&q=80" alt="" loading="lazy">
+      </div>
+      <div class="gallery-item fade-in-up-dreamy">
+        <img class="gallery-img" src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=300&fit=crop&q=80" alt="" loading="lazy">
+      </div>
+      <div class="gallery-item fade-in-up-dreamy" style="grid-column:span 2">
+        <img class="gallery-img" style="aspect-ratio:2" src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&h=300&fit=crop&q=80" alt="" loading="lazy">
+      </div>
     </div>
   </section>
 
@@ -1057,6 +1165,10 @@ LoadingOverlay.init({
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9-3-18-3 18-3-9H2"/></svg>
       RSVP
     </a>
+    <a href="#sectionGallery">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      Galeri
+    </a>
   </nav>
 </div>
 
@@ -1090,101 +1202,8 @@ InvitationOpener.init({
 });
 
 // ==============================
-// Socket realtime untuk ucapan
+// RSVP & Komentar — handled by shared rsvp-widget.js
 // ==============================
-let supabaseClient = null;
-function getSupabase() {
-  if (supabaseClient) return supabaseClient;
-  const url = window.__ENV?.SUPABASE_URL || '';
-  const key = window.__ENV?.SUPABASE_KEY || '';
-  if (!url || !key) return null;
-  if (typeof supabase !== 'undefined') {
-    supabaseClient = supabase.createClient(url, key);
-  }
-  return supabaseClient;
-}
-
-// Subscribe realtime komentar
-function subscribeComments(invitationId) {
-  const sb = getSupabase();
-  if (!sb) return;
-  const channel = sb.channel('komentar-realtime-' + invitationId)
-    .on('postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'komentar', filter: 'invitation_id=eq.' + invitationId },
-      (payload) => {
-        appendComment(payload.new);
-      }
-    )
-    .subscribe();
-}
-
-function appendComment(data) {
-  const ucapanStream = document.getElementById('ucapanStream');
-  const empty = ucapanStream.querySelector('p[style]');
-  if (empty) empty.remove();
-
-  const div = document.createElement('div');
-  div.className = 'ucapan-item fade-in-up-dreamy active';
-  div.innerHTML = `
-    <div class="ucapan-name">${escapeHtml(data.nama || 'Anonim')}</div>
-    <div class="ucapan-status">${data.status || 'Hadir'} · ${data.jumlah_tamu || 1} tamu</div>
-    <div class="ucapan-text">"${escapeHtml(data.ucapan || '')}"</div>
-  `;
-  ucapanStream.prepend(div);
-  div.style.transitionDelay = '0s';
-  div.style.animationDelay = '0s';
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-function selectStatus(el, status) {
-  document.querySelectorAll('.radio-option').forEach(e => e.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
-async function submitRSVP() {
-  const name = document.getElementById('rsvpName').value.trim();
-  const statusEl = document.querySelector('.radio-option.selected');
-  const status = statusEl ? statusEl.textContent.replace('✓','').replace('✗','').replace('?','').trim() : 'Hadir';
-  const jumlah = parseInt(document.getElementById('rsvpJumlah').value, 10) || 1;
-  const wishes = document.getElementById('rsvpWishes').value.trim();
-  const btn = document.querySelector('.btn-submit');
-
-  if (!name) { alert('Silakan isi nama'); return; }
-
-  btn.disabled = true;
-  btn.textContent = 'Mengirim...';
-
-  try {
-    // Get invitation ID from data attribute (set by loader)
-    const invId = document.querySelector('[data-invitation-id]')?.dataset.invitationId;
-    if (!invId) { alert('Data undangan belum siap'); btn.disabled=false; btn.textContent='✦ Kirim ✦'; return; }
-
-    const sb = getSupabase();
-    if (!sb) { alert('Koneksi gagal'); btn.disabled=false; btn.textContent='✦ Kirim ✦'; return; }
-
-    await sb.from('komentar').insert({
-      invitation_id: invId,
-      nama: name,
-      status: status,
-      jumlah_tamu: jumlah,
-      ucapan: wishes
-    });
-
-    document.getElementById('rsvpName').value = '';
-    document.getElementById('rsvpWishes').value = '';
-    btn.textContent = '✦ Terkirim ✦';
-    setTimeout(() => { btn.textContent = '✦ Kirim ✦'; btn.disabled = false; }, 2000);
-  } catch(e) {
-    alert('Gagal mengirim');
-    btn.disabled = false;
-    btn.textContent = '✦ Kirim ✦';
-  }
-}
 
 // toggleMusic() handled by shared audio-player.js
 
@@ -1203,19 +1222,7 @@ document.addEventListener('scroll', () => {
   });
 });
 
-// Init ucapan
-(function initUcapan() {
-  const ucapanStream = document.getElementById('ucapanStream');
-  const observer = new MutationObserver(() => {
-    const invEl = document.querySelector('[data-invitation-id]');
-    if (invEl) {
-      const id = invEl.dataset.invitationId;
-      if (id) subscribeComments(id);
-      observer.disconnect();
-    }
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
-})();
+// Init ucapan — handled by rsvp-widget.js
 </script>
 
 </body>

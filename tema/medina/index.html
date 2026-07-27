@@ -294,35 +294,99 @@ LoadingOverlay.init({
       <h2 class="font-serif text-3xl text-primary-dark font-medium fade-in-dreamy">Konfirmasi Kehadiran</h2>
       <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1 fade-in-dreamy">RSVP & Ucapan</p>
 
-      <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-100 text-left fade-in-up-dreamy">
-        <div id="rsvpForm">
-          <div class="space-y-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap</label>
-              <input type="text" id="rsvpName" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-primary" placeholder="Masukkan nama Anda" required>
-            </div>
+      <!-- Loading spinner -->
+      <div id="rsvpLoading" style="display:none;text-align:center;padding:20px">
+        <div style="width:18px;height:18px;border:2px solid rgba(196,169,130,.3);border-top-color:#886b5a;border-radius:50%;animation:rsvpSpin .8s linear infinite;display:inline-block"></div>
+        <style>@keyframes rsvpSpin{to{transform:rotate(360deg)}}</style>
+      </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Konfirmasi Kehadiran</label>
-              <select id="rsvpStatus" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-primary" required>
-                <option value="">-- Pilih Kehadiran --</option>
-                <option value="Hadir">Hadir</option>
-                <option value="Tidak Hadir">Tidak Hadir</option>
-                <option value="Ragu-ragu">Ragu-ragu</option>
-              </select>
-            </div>
+      <!-- Kepada banner -->
+      <div id="kepadaBanner" style="display:none;background:#886b5a;padding:8px 20px;text-align:center;margin-bottom:16px;border-radius:12px">
+        <span style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.8)">Kepada Yth.</span>
+        <span id="kepadaNama" style="display:block;font-family:'Playfair Display',serif;font-weight:600;color:#fff;font-style:italic;margin-top:2px">—</span>
+      </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Pesan / Ucapan</label>
-              <textarea id="rsvpWishes" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-primary" rows="3" placeholder="Tuliskan ucapan & doa..."></textarea>
-            </div>
-
-            <div id="rsvpError" class="text-red-500 text-xs text-center"></div>
-
-            <button type="button" id="rsvpSubmitBtn" onclick="submitRSVP()" class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-6 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2">
-              <i class="fa-solid fa-paper-plane"></i> Kirim Konfirmasi
-            </button>
+      <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-100 text-left fade-in-up-dreamy" id="rsvpFormBody">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap</label>
+            <input type="text" id="rsvpName" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-primary" placeholder="Masukkan nama Anda" required>
           </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor Telpon / WhatsApp</label>
+            <input type="tel" id="rsvpTelpon" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-primary" placeholder="08xxxxxxxxx">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Konfirmasi Kehadiran</label>
+            <div class="flex gap-2">
+              <button type="button" onclick="RsvpWidget.selectStatus(this,'Hadir')" class="rsvp-status-btn flex-1 px-3 py-2.5 border border-slate-200 rounded-xl text-sm text-center cursor-pointer transition-all bg-primary text-white font-semibold">✓ Hadir</button>
+              <button type="button" onclick="RsvpWidget.selectStatus(this,'Tidak Hadir')" class="rsvp-status-btn flex-1 px-3 py-2.5 border border-slate-200 rounded-xl text-sm text-center cursor-pointer transition-all">✗ Tidak</button>
+              <button type="button" onclick="RsvpWidget.selectStatus(this,'Ragu')" class="rsvp-status-btn flex-1 px-3 py-2.5 border border-slate-200 rounded-xl text-sm text-center cursor-pointer transition-all">? Ragu</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Jumlah Tamu</label>
+            <select id="rsvpJumlah" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-primary">
+              <option>1 orang</option>
+              <option>2 orang</option>
+              <option>3 orang</option>
+              <option>4 orang</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Pesan / Ucapan</label>
+            <textarea id="rsvpWishes" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-primary" rows="3" placeholder="Tuliskan ucapan & doa..."></textarea>
+          </div>
+
+          <div id="rsvpError" class="text-red-500 text-xs text-center"></div>
+
+          <button type="button" id="rsvpSubmitBtn" onclick="RsvpWidget.submitRSVP()" class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-6 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Kirim Konfirmasi
+          </button>
+        </div>
+      </div>
+
+      <!-- RSVP Done screen -->
+      <div id="rsvpDone" style="display:none;text-align:center;padding:24px 0">
+        <div style="font-size:28px;color:#886b5a;margin-bottom:8px">✦</div>
+        <p style="font-family:'Playfair Display',serif;font-weight:600;color:#2D6A2D;font-size:20px">RSVP Sudah Terkirim</p>
+        <p id="rsvpDoneStatus" style="font-size:13px;color:#8c99a6;margin-top:6px"></p>
+        <button onclick="RsvpWidget.showQR()" style="margin-top:16px;padding:10px 24px;background:#886b5a;color:#fff;border:none;cursor:pointer;font-size:11px;letter-spacing:2px;text-transform:uppercase;border-radius:12px">Lihat QR Code Saya →</button>
+      </div>
+
+      <!-- QR Screen -->
+      <div id="qrScreen" style="display:none;text-align:center;padding:24px 0">
+        <div style="font-size:28px;color:#886b5a;margin-bottom:8px">✦</div>
+        <p style="font-family:'Playfair Display',serif;font-weight:600;font-size:22px;margin-bottom:4px">Tiket Kehadiran Anda</p>
+        <p style="font-size:12px;color:#8c99a6;margin-bottom:12px">Tunjukkan QR ini kepada penerima tamu</p>
+        <p id="qrNamaVal" style="font-family:'Playfair Display',serif;font-style:italic;color:#886b5a;margin-bottom:14px;font-size:16px">—</p>
+        <div style="display:inline-block;padding:12px;border:1px solid #e5ded4;background:#fff;margin-bottom:10px;border-radius:8px">
+          <div id="qrCode"></div>
+        </div>
+        <p id="qrTokenVal" style="font-family:monospace;font-size:12px;letter-spacing:3px;color:#8c99a6;margin-bottom:12px"></p>
+        <p style="font-size:11px;color:#8c99a6;margin-bottom:14px">📱 Screenshot atau simpan QR Code ini sebagai tiket masuk</p>
+        <button onclick="RsvpWidget.saveQR()" style="width:100%;padding:12px;background:#886b5a;color:#fff;border:none;cursor:pointer;font-size:11px;letter-spacing:2px;text-transform:uppercase;border-radius:12px">↓ Simpan QR Code</button>
+      </div>
+
+      <!-- Komentar form -->
+      <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-100 text-left fade-in-up-dreamy" style="margin-top:20px">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nama</label>
+            <input type="text" id="komentarNama" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-primary" placeholder="Nama Anda">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Ucapan & Doa</label>
+            <textarea id="komentarIsi" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-primary" rows="3" placeholder="Tuliskan ucapan dan doa terbaik..."></textarea>
+          </div>
+          <div id="komentarError" class="text-red-500 text-xs text-center"></div>
+          <button type="button" id="komentarBtn" onclick="RsvpWidget.submitKomentar()" class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-6 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Kirim Ucapan
+          </button>
         </div>
       </div>
 
@@ -330,14 +394,29 @@ LoadingOverlay.init({
       <div class="mt-8">
         <h3 class="font-serif text-2xl text-primary-dark font-medium mb-4 fade-in-dreamy">Ucapan & Doa</h3>
         <div id="ucapanList" class="space-y-3 text-left">
-          <!-- Ucapan will be dynamically generated by invitation-loader.js -->
+          <p style="font-size:12px;color:#8c99a6;text-align:center">Memuat ucapan...</p>
         </div>
       </div>
-      
-      <!-- Test: Guest name pakai data-bind -->
-      <div class="mt-6 p-4 bg-primary-light rounded-xl border border-primary/20 fade-in-up-dreamy">
-        <p class="text-xs text-slate-500 mb-1">Selamat datang,</p>
-        <p class="text-lg font-bold text-primary-dark" data-bind="guest_name">Tamu Undangan</p>
+    </div>
+
+    <!-- ==================== SECTION GALLERY ==================== -->
+    <div class="section gallery ani-container py-14 px-5 max-w-xl mx-auto text-center" id="gallery">
+      <h2 class="font-serif text-3xl text-primary-dark font-medium fade-in-dreamy">Galeri Foto</h2>
+      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1 fade-in-dreamy">Momen Bahagia</p>
+
+      <div id="galleryContainer" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div class="fade-in-up-dreamy">
+          <img class="w-full h-full object-cover rounded-xl aspect-square" src="https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=400&h=400&fit=crop&q=80" alt="" loading="lazy">
+        </div>
+        <div class="fade-in-up-dreamy">
+          <img class="w-full h-full object-cover rounded-xl aspect-square" src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&h=300&fit=crop&q=80" alt="" loading="lazy">
+        </div>
+        <div class="fade-in-up-dreamy">
+          <img class="w-full h-full object-cover rounded-xl aspect-square" src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=300&fit=crop&q=80" alt="" loading="lazy">
+        </div>
+        <div class="fade-in-up-dreamy col-span-2">
+          <img class="w-full h-full object-cover rounded-xl aspect-video" src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&h=300&fit=crop&q=80" alt="" loading="lazy">
+        </div>
       </div>
     </div>
 
@@ -359,16 +438,6 @@ LoadingOverlay.init({
           <h3 class="timeline-title">Lamaran</h3>
           <p class="timeline-text">Dengan restu kedua orang tua, kami melangkah ke jenjang yang lebih serius.</p>
         </div>
-      </div>
-    </div>
-
-    <!-- ==================== SECTION GALLERY ==================== -->
-    <div class="section gallery ani-container py-14 px-5 max-w-xl mx-auto text-center" id="gallery">
-      <h2 class="font-serif text-3xl text-primary-dark font-medium fade-in-dreamy">Galeri Foto</h2>
-      <p class="text-xs uppercase tracking-[2px] text-slate-500 mb-8 mt-1 fade-in-dreamy">Momen Bahagia</p>
-
-      <div id="galleryContainer" class="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <!-- Gallery items will be dynamically generated by invitation-loader.js -->
       </div>
     </div>
 
@@ -443,6 +512,8 @@ LoadingOverlay.init({
   <script src="/env.js"></script>
   <script src="/tema/assets/motion-plus.js"></script>
   <script src="/tema/assets/invitation-loader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="/tema/assets/rsvp-widget.js"></script>
   <link rel="stylesheet" href="/tema/assets/audio-player.css">
   <script src="/tema/assets/audio-player.js"></script>
   <script src="/tema/assets/invitation-opener.js"></script>

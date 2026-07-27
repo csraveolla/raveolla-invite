@@ -26,8 +26,8 @@
   }
 
   // ── AMBIL NAMA TAMU DARI QUERY STRING ──────────────────────────
-  let _guestName = 'Tamu Undangan'
-  let _guestId   = null
+  window._guestName = 'Tamu Undangan'
+  window._guestId   = null
 
   function getGuestId() {
     return new URLSearchParams(window.location.search).get('tamu') || null
@@ -38,19 +38,19 @@
   }
 
   async function resolveGuestName() {
-    _guestId = getGuestId()
-    console.log('[nikahin] tamu ID dari URL:', _guestId)
+    window._guestId = getGuestId()
+    console.log('[nikahin] tamu ID dari URL:', window._guestId)
     
-    if (_guestId) {
+    if (window._guestId) {
       try {
-        const rows = await sbFetch('tamu_undangan', `?id=eq.${encodeURIComponent(_guestId)}&select=nama`)
+        const rows = await sbFetch('tamu_undangan', `?id=eq.${encodeURIComponent(window._guestId)}&select=nama`)
         console.log('[nikahin] hasil query tamu_undangan:', rows)
         
         if (rows && rows.length && rows[0].nama) {
-          _guestName = rows[0].nama
-          console.log('[nikahin] nama tamu ditemukan:', _guestName)
+          window._guestName = rows[0].nama
+          console.log('[nikahin] nama tamu ditemukan:', window._guestName)
           
-          fetch(`${SUPABASE_URL}/rest/v1/tamu_undangan?id=eq.${encodeURIComponent(_guestId)}`, {
+          fetch(`${SUPABASE_URL}/rest/v1/tamu_undangan?id=eq.${encodeURIComponent(window._guestId)}`, {
             method: 'PATCH',
             headers: {
               'apikey': SUPABASE_ANON,
@@ -62,15 +62,15 @@
           
           return
         } else {
-          console.warn('[nikahin] tamu tidak ditemukan atau nama kosong untuk ID:', _guestId)
+          console.warn('[nikahin] tamu tidak ditemukan atau nama kosong untuk ID:', window._guestId)
         }
       } catch (e) {
         console.error('[nikahin] error fetch tamu:', e.message || e)
       }
     }
     
-    _guestName = getGuestNameLocal()
-    console.log('[nikahin] menggunakan fallback guest name:', _guestName)
+    window._guestName = getGuestNameLocal()
+    console.log('[nikahin] menggunakan fallback guest name:', window._guestName)
   }
 
   // ── SUPABASE FETCH HELPER ───────────────────────────────────────
@@ -284,7 +284,7 @@
     if (!container || !galleries.length) return
 
     container.innerHTML = galleries.map((g, i) => `
-      <div class="${i % 3 === 0 ? 'tall' : ''}">
+      <div class="${i % 3 === 0 ? 'tall' : ''} fade-in-up-dreamy">
         <img class="gallery-img" 
              src="${escHtml(g.file_url)}" 
              alt="${escHtml(g.caption || '')}" 
@@ -482,76 +482,6 @@
     setInterval(tick, 1000)
   }
 
-  // ── RSVP ────────────────────────────────────────────────────────
-  window.submitRSVP = async function() {
-    const invId = window._nikahinInvitationId
-    const clientId = window._nikahinClientId
-    if (!invId) return
-
-    const name     = document.getElementById('rsvpName')?.value?.trim()
-    const status   = window._rsvpStatus || document.querySelector('.rsvp-status.selected')?.dataset?.status
-    const phone    = document.getElementById('rsvpPhone')?.value?.trim() || ''
-    const wishes   = document.getElementById('rsvpWishes')?.value?.trim() || ''
-    const errEl    = document.getElementById('rsvpError')
-    const btn      = document.getElementById('rsvpSubmitBtn')
-
-    if (!name)   { if (errEl) errEl.textContent = 'Nama wajib diisi.'; return }
-    if (!status) { if (errEl) errEl.textContent = 'Pilih status kehadiran.'; return }
-    if (errEl)   errEl.textContent = ''
-
-    if (btn) { btn.disabled = true; btn.textContent = 'Mengirim...' }
-
-    const ok = await sbPost('rsvp_tamu', {
-      client_id: clientId,
-      nama:      name,
-      kehadiran: status,
-      telpon:    phone,
-      pesan:     wishes,
-    })
-
-    if (btn) { btn.disabled = false; btn.textContent = 'Kirim' }
-
-    if (ok) {
-      const formEl = document.getElementById('rsvpForm')
-      if (formEl) formEl.innerHTML = `
-        <div style="text-align:center;padding:32px 0">
-          <div style="font-size:32px;margin-bottom:12px">✓</div>
-          <p style="font-weight:600;color:#C9A96E">Terima kasih, ${escHtml(name)}!</p>
-          <p style="font-size:14px;opacity:.7;margin-top:6px">RSVP kamu telah kami terima.</p>
-        </div>`
-      loadUcapan(window._nikahinClientId)
-    } else {
-      if (errEl) errEl.textContent = 'Gagal mengirim, coba lagi.'
-    }
-  }
-
-  // ── LOAD & RENDER UCAPAN ────────────────────────────────────────
-  async function loadUcapan(clientId) {
-    const list = document.getElementById('ucapanList')
-    if (!list) return
-
-    const data = await sbFetch('rsvp_tamu',
-      `?client_id=eq.${clientId}&pesan=neq.&order=created_at.desc&limit=20&select=nama,pesan,kehadiran,created_at`
-    ).catch(() => [])
-
-    if (!data.length) {
-      list.innerHTML = '<p style="text-align:center;opacity:.5;font-size:13px">Belum ada ucapan.</p>'
-      return
-    }
-
-    list.innerHTML = data.map(r => `
-      <div class="ucapan-item fade-in-up-dreamy">
-        <div class="ucapan-header">
-          <span class="ucapan-name">${escHtml(r.nama)}</span>
-          <span class="ucapan-badge ${r.kehadiran === 'Hadir' ? 'hadir' : r.kehadiran === 'Tidak Hadir' ? 'tidak' : 'ragu'}">
-            ${r.kehadiran === 'Hadir' ? '✓ Hadir' : r.kehadiran === 'Tidak Hadir' ? '✗ Tidak Hadir' : '? Ragu-ragu'}
-          </span>
-        </div>
-        <p class="ucapan-text">${escHtml(r.pesan)}</p>
-      </div>
-    `).join('')
-  }
-
   // ── COPY HELPER ─────────────────────────────────────────────────
   window._nikahinCopy = function(elId) {
     const el = document.getElementById(elId)
@@ -614,7 +544,7 @@
     window._nikahinClientId = inv.client_id
 
     await resolveGuestName()
-    setText('#guestNameDisplay', _guestName)
+    setText('#guestNameDisplay', window._guestName)
 
     const [events, galleries, accounts, stories, clients] = await Promise.all([
       sbFetch('events',        `?invitation_id=eq.${inv.id}&order=sort_order`).catch(() => []),
@@ -644,7 +574,7 @@
     const firstEvent = events[0] || {}
     const bindData = {
       ...inv,
-      guest_name: _guestName,
+      guest_name: window._guestName,
       event_date_formatted: firstEvent.event_date ? formatTanggal(firstEvent.event_date) : '',
       event_date: firstEvent.event_date || '',
       event_time: firstEvent.start_time ? formatJam(firstEvent.start_time) : '',
@@ -654,7 +584,6 @@
     }
     applyDataBindings(bindData)
 
-    await loadUcapan(inv.client_id)
     logView(inv.id)
 
     document.dispatchEvent(new CustomEvent('nikahin:loaded', { detail: { inv, events, galleries } }))

@@ -1116,6 +1116,8 @@ body {
   <script src="/env.js"></script>
   <script src="/assets/motion-plus.js" defer></script>
   <script src="/assets/invitation-loader.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script src="/assets/rsvp-widget.js" defer></script>
   <link rel="stylesheet" href="/tema/assets/audio-player.css">
   <script src="/tema/assets/audio-player.js" defer></script>
   <script src="/tema/assets/invitation-opener.js"></script>
@@ -1330,7 +1332,7 @@ LoadingOverlay.init({
   </section>
 
   <!-- ---- LOVE STORY ---- -->
-  <section class="section">
+  <section class="section ani-container">
     <div class="arabesque-divider fadeIn-Up">
       <div class="line"></div>
       <svg viewBox="0 0 40 40" fill="none">
@@ -1353,22 +1355,22 @@ LoadingOverlay.init({
     <div class="gold-line"></div>
 
     <div class="timeline">
-      <div class="timeline-item fadeIn-Up">
+      <div class="timeline-item fade-in-up-dreamy">
         <p class="timeline-date">Maret 2021</p>
         <h3 class="timeline-title">Pertemuan Pertama</h3>
         <p class="timeline-text">Takdir mempertemukan kami di sebuah kajian ilmu. Sebuah senyum sederhana yang ternyata menjadi awal dari segalanya.</p>
       </div>
-      <div class="timeline-item fadeIn-Up">
+      <div class="timeline-item fade-in-up-dreamy">
         <p class="timeline-date">Agustus 2022</p>
         <h3 class="timeline-title">Saling Mengenal</h3>
         <p class="timeline-text">Dua tahun berbincang, berdiskusi, dan saling mengenal. Kami menemukan kecocokan yang tak kami sangka sebelumnya.</p>
       </div>
-      <div class="timeline-item fadeIn-Up">
+      <div class="timeline-item fade-in-up-dreamy">
         <p class="timeline-date">Desember 2024</p>
         <h3 class="timeline-title">Lamaran</h3>
         <p class="timeline-text">Dengan restu kedua orang tua, sebuah cincin sederhana menjadi tanda kesungguhan hati untuk melangkah lebih jauh.</p>
       </div>
-      <div class="timeline-item fadeIn-Up">
+      <div class="timeline-item fade-in-up-dreamy">
         <p class="timeline-date">September 2026</p>
         <h3 class="timeline-title">Pernikahan ✦</h3>
         <p class="timeline-text">Akhirnya, dengan bismillah dan doa dari orang-orang tercinta, kami melangkah menuju babak baru kehidupan bersama.</p>
@@ -1447,17 +1449,34 @@ LoadingOverlay.init({
     <h2 class="section-title fadeIn-Up">RSVP<br>Kehadiran</h2>
     <div class="gold-line"></div>
 
-    <div class="rsvp-form zoom-in-up">
+    <!-- Loading spinner -->
+    <div id="rsvpLoading" style="display:none;text-align:center;padding:20px">
+      <div class="rsvp-spinner" style="width:18px;height:18px;border:2px solid rgba(201,169,110,.3);border-top-color:#C9A96E;border-radius:50%;animation:rsvpSpin .8s linear infinite;display:inline-block"></div>
+      <style>@keyframes rsvpSpin{to{transform:rotate(360deg)}}</style>
+    </div>
+
+    <!-- Kepada banner -->
+    <div id="kepadaBanner" style="display:none;background:#C9A96E;padding:8px 20px;text-align:center;margin-bottom:16px;border-radius:4px">
+      <span style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.8)">Kepada Yth.</span>
+      <span id="kepadaNama" style="display:block;font-weight:600;color:#fff;font-style:italic;margin-top:2px">—</span>
+    </div>
+
+    <!-- Form body -->
+    <div class="rsvp-form zoom-in-up" id="rsvpFormBody">
       <div class="form-group">
         <label class="form-label">Nama Lengkap</label>
         <input type="text" class="form-input" placeholder="Nama kamu..." id="rsvpName">
       </div>
       <div class="form-group">
+        <label class="form-label">Nomor Telpon / WhatsApp</label>
+        <input type="tel" class="form-input" placeholder="08xxxxxxxxx" id="rsvpTelpon">
+      </div>
+      <div class="form-group">
         <label class="form-label">Kehadiran</label>
         <div class="radio-group">
-          <div class="radio-option selected" onclick="selectStatus(this,'Hadir')">✓ Hadir</div>
-          <div class="radio-option" onclick="selectStatus(this,'Tidak Hadir')">✗ Tidak Hadir</div>
-          <div class="radio-option" onclick="selectStatus(this,'Ragu')">? Masih Ragu</div>
+          <div class="radio-option selected" onclick="RsvpWidget.selectStatus(this,'Hadir')">✓ Hadir</div>
+          <div class="radio-option" onclick="RsvpWidget.selectStatus(this,'Tidak Hadir')">✗ Tidak Hadir</div>
+          <div class="radio-option" onclick="RsvpWidget.selectStatus(this,'Ragu')">? Masih Ragu</div>
         </div>
       </div>
       <div class="form-group" id="jumlahGroup">
@@ -1473,7 +1492,69 @@ LoadingOverlay.init({
         <label class="form-label">Ucapan & Doa</label>
         <textarea class="form-textarea" id="rsvpWishes" placeholder="Tulis ucapan dan doa terbaik kamu..."></textarea>
       </div>
-      <button class="btn-submit" onclick="submitRSVP()">✦ &nbsp; Kirim &nbsp; ✦</button>
+      <button class="btn-submit" id="rsvpSubmitBtn" onclick="RsvpWidget.submitRSVP()">✦ &nbsp; Kirim &nbsp; ✦</button>
+      <div id="rsvpError" style="color:#c44;font-size:12px;text-align:center;margin-top:8px"></div>
+    </div>
+
+    <!-- RSVP Done screen -->
+    <div id="rsvpDone" style="display:none;text-align:center;padding:24px 0">
+      <div style="font-size:32px;margin-bottom:10px">✦</div>
+      <p style="font-weight:600;color:#C9A96E;font-size:18px">RSVP Sudah Terkirim</p>
+      <p id="rsvpDoneStatus" style="font-size:13px;opacity:.7;margin-top:6px"></p>
+      <button onclick="RsvpWidget.showQR()" style="margin-top:16px;padding:10px 24px;background:#C9A96E;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;letter-spacing:1px">Lihat QR Code Saya →</button>
+    </div>
+
+    <!-- QR Screen -->
+    <div id="qrScreen" style="display:none;text-align:center;padding:24px 0">
+      <div style="font-size:28px;color:#C9A96E;margin-bottom:8px">✦</div>
+      <p style="font-weight:600;font-size:16px;margin-bottom:4px">Tiket Kehadiran Anda</p>
+      <p style="font-size:12px;opacity:.6;margin-bottom:12px">Tunjukkan QR ini kepada penerima tamu</p>
+      <p id="qrNamaVal" style="font-style:italic;color:#C9A96E;margin-bottom:14px;font-size:15px">—</p>
+      <div style="display:inline-block;padding:12px;border:1px solid rgba(201,169,110,.3);background:#fff;margin-bottom:10px">
+        <div id="qrCode"></div>
+      </div>
+      <p id="qrTokenVal" style="font-family:monospace;font-size:12px;letter-spacing:3px;opacity:.5;margin-bottom:12px"></p>
+      <p style="font-size:11px;opacity:.5;margin-bottom:14px">📱 Screenshot atau simpan QR Code ini sebagai tiket masuk</p>
+      <button onclick="RsvpWidget.saveQR()" style="width:100%;padding:12px;background:#C9A96E;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;letter-spacing:1px">↓ Simpan QR Code</button>
+    </div>
+  </section>
+
+  <!-- ---- GALERI ---- -->
+  <section class="section ani-container" id="sectionGallery">
+    <div class="arabesque-divider fadeIn-Up">
+      <div class="line"></div>
+      <svg viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="8" stroke="rgba(201,169,110,.7)" stroke-width=".8"/>
+        <circle cx="20" cy="20" r="14" stroke="rgba(201,169,110,.35)" stroke-width=".5"/>
+        <line x1="20" y1="0" x2="20" y2="8" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="20" y1="32" x2="20" y2="40" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="0" y1="20" x2="8" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <line x1="32" y1="20" x2="40" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
+        <circle cx="20" cy="5" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="20" cy="35" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="5" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+        <circle cx="35" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
+      </svg>
+      <div class="line r"></div>
+    </div>
+
+    <p class="section-eyebrow swingDropSoft">Momen Kami</p>
+    <h2 class="section-title fadeIn-Up">Galeri<br>Pre-Wedding</h2>
+    <div class="gold-line"></div>
+
+    <div class="gallery-grid" id="galleryContainer">
+      <div class="tall fade-in-up-dreamy">
+        <img class="gallery-img tall" src="https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=400&h=600&fit=crop&q=80" alt="">
+      </div>
+      <div class="fade-in-up-dreamy">
+        <img class="gallery-img" src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&h=300&fit=crop&q=80" alt="">
+      </div>
+      <div class="fade-in-up-dreamy">
+        <img class="gallery-img" src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=300&fit=crop&q=80" alt="">
+      </div>
+      <div class="fade-in-up-dreamy" style="grid-column:span 2">
+        <img class="gallery-img" style="aspect-ratio:2;height:auto;width:100%" src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&h=300&fit=crop&q=80" alt="">
+      </div>
     </div>
   </section>
 
@@ -1528,45 +1609,6 @@ LoadingOverlay.init({
     </div>
   </section>
 
-  <!-- ---- GALERI ---- -->
-  <section class="section" id="sectionGallery">
-    <div class="arabesque-divider fadeIn-Up">
-      <div class="line"></div>
-      <svg viewBox="0 0 40 40" fill="none">
-        <circle cx="20" cy="20" r="8" stroke="rgba(201,169,110,.7)" stroke-width=".8"/>
-        <circle cx="20" cy="20" r="14" stroke="rgba(201,169,110,.35)" stroke-width=".5"/>
-        <line x1="20" y1="0" x2="20" y2="8" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
-        <line x1="20" y1="32" x2="20" y2="40" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
-        <line x1="0" y1="20" x2="8" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
-        <line x1="32" y1="20" x2="40" y2="20" stroke="rgba(201,169,110,.5)" stroke-width=".5"/>
-        <circle cx="20" cy="5" r="1.5" fill="rgba(201,169,110,.5)"/>
-        <circle cx="20" cy="35" r="1.5" fill="rgba(201,169,110,.5)"/>
-        <circle cx="5" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
-        <circle cx="35" cy="20" r="1.5" fill="rgba(201,169,110,.5)"/>
-      </svg>
-      <div class="line r"></div>
-    </div>
-
-    <p class="section-eyebrow swingDropSoft">Momen Kami</p>
-    <h2 class="section-title fadeIn-Up">Galeri<br>Pre-Wedding</h2>
-    <div class="gold-line"></div>
-
-    <div class="gallery-grid" id="galleryContainer">
-      <div class="tall reveal-up">
-        <img class="gallery-img tall" src="https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=400&h=600&fit=crop&q=80" alt="">
-      </div>
-      <div>
-        <img class="gallery-img reveal" src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&h=300&fit=crop&q=80" alt="">
-      </div>
-      <div>
-        <img class="gallery-img reveal" src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&h=300&fit=crop&q=80" alt="">
-      </div>
-      <div style="grid-column:span 2">
-        <img class="gallery-img reveal" style="aspect-ratio:2;height:auto;width:100%" src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&h=300&fit=crop&q=80" alt="">
-      </div>
-    </div>
-  </section>
-
   <!-- ---- WISH / UCAPAN ---- -->
   <section class="section" id="sectionWish">
     <div class="arabesque-divider fadeIn-Up">
@@ -1590,22 +1632,22 @@ LoadingOverlay.init({
     <h2 class="section-title fadeIn-Up">Ucapan<br>Tamu</h2>
     <div class="gold-line"></div>
 
+    <!-- Komentar form -->
+    <div class="rsvp-form zoom-in-up" style="margin-bottom:20px">
+      <div class="form-group">
+        <label class="form-label">Nama</label>
+        <input type="text" class="form-input" placeholder="Nama Anda" id="komentarNama">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ucapan & Doa</label>
+        <textarea class="form-textarea" id="komentarIsi" placeholder="Tuliskan ucapan dan doa terbaik..."></textarea>
+      </div>
+      <button class="btn-submit" id="komentarBtn" onclick="RsvpWidget.submitKomentar()">✦ &nbsp; Kirim Ucapan &nbsp; ✦</button>
+      <div id="komentarError" style="color:#c44;font-size:12px;text-align:center;margin-top:8px"></div>
+    </div>
+
     <div class="ucapan-list" id="ucapanList">
-      <div class="ucapan-item">
-        <p class="ucapan-name">Randi Pratama</p>
-        <p class="ucapan-status">Hadir · 2 orang</p>
-        <p class="ucapan-text">Barakallahu laka wa baraka alaika wa jama'a bainakuma fi khair. Semoga menjadi keluarga yang sakinah, mawaddah, warahmah. 🤍</p>
-      </div>
-      <div class="ucapan-item">
-        <p class="ucapan-name">Siti Nurhaliza</p>
-        <p class="ucapan-status">Hadir · 3 orang</p>
-        <p class="ucapan-text">Selamat menempuh hidup baru! Semoga Allah senantiasa memberkahi keluarga kecil kalian.</p>
-      </div>
-      <div class="ucapan-item">
-        <p class="ucapan-name">Ahmad Fauzi</p>
-        <p class="ucapan-status">Tidak Hadir</p>
-        <p class="ucapan-text">Tidak bisa hadir tapi doa selalu menyertai. Semoga langgeng hingga akhir hayat, Aamiin.</p>
-      </div>
+      <p style="text-align:center;opacity:.5;font-size:13px">Memuat ucapan...</p>
     </div>
   </section>
 
@@ -1902,42 +1944,8 @@ function initStickyNav() {
    ---------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------
-   RSVP
+   RSVP — handled by shared rsvp-widget.js
    ---------------------------------------------------------------- */
-let selectedStatus = 'Hadir';
-function selectStatus(el, status) {
-  document.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedStatus = status;
-  document.getElementById('jumlahGroup').style.display =
-    status === 'Tidak Hadir' ? 'none' : 'block';
-}
-
-function submitRSVP() {
-  const name = document.getElementById('rsvpName').value.trim();
-  const wishes = document.getElementById('rsvpWishes').value.trim();
-  const jumlah = document.getElementById('rsvpJumlah').value;
-  if (!name) { alert('Nama tidak boleh kosong.'); return; }
-
-  const list = document.getElementById('ucapanList');
-  const item = document.createElement('div');
-  item.className = 'ucapan-item';
-  item.style.animation = 'fadeInUp .5s ease both';
-  item.innerHTML = `
-    <p class="ucapan-name">${escHtml(name)}</p>
-    <p class="ucapan-status">${escHtml(selectedStatus)}${selectedStatus==='Hadir'?' · '+jumlah:''}</p>
-    ${wishes ? `<p class="ucapan-text">${escHtml(wishes)}</p>` : ''}
-  `;
-  list.prepend(item);
-
-  document.getElementById('rsvpName').value = '';
-  document.getElementById('rsvpWishes').value = '';
-  list.scrollTop = 0;
-}
-
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
 
 /* ----------------------------------------------------------------
    COPY REKENING
