@@ -22,6 +22,11 @@ class RootHandler(http.server.SimpleHTTPRequestHandler):
             self.path = '/rsvp-client/client-adm.html'
             return super().do_GET()
 
+        # /scanner -> scanner.html
+        if path in ('scanner', 'scanner/'):
+            self.path = '/scanner.html'
+            return super().do_GET()
+
         return super().do_GET()
 
     def log_message(self, format, *args):

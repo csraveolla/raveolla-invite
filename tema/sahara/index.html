@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wedding Invitation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Great+Vibes&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/tema/assets/audio-player.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#B8860B',
+        'primary-dark': '#9A7209',
+        cream: '#FFFDF5',
+        dark: '#1A1A1A',
+        muted: '#6B7280',
+      },
+      fontFamily: {
+        script: ['"Great Vibes"', 'cursive'],
+        heading: ['"Playfair Display"', 'serif'],
+        body: ['"Inter"', 'sans-serif'],
+      },
+    }
+  }
+}
+</script>
+<style>
+  #main-content { opacity: 0; transition: opacity 0.8s ease; }
+  #main-content.open { opacity: 1; }
+  .cover-hide { transform: translateY(-100%); opacity: 0; pointer-events: none; transition: all 0.8s ease; }
+  .radio-option.selected { background-color: #B8860B; color: white; border-color: #B8860B; }
+  .mini-gallery-item { scroll-snap-align: start; flex-shrink: 0; }
+  .gift-card { scroll-snap-align: start; flex-shrink: 0; }
+</style>
+</head>
+<body class="bg-cream font-body text-dark">
+
+<!-- ============================================================
+     COVER
+     ============================================================ -->
+<section id="cover" class="relative w-full h-screen flex flex-col items-center justify-center bg-dark text-white overflow-hidden">
+  <div class="absolute inset-0 bg-cover bg-center opacity-40" id="coverBg"></div>
+  <div class="relative z-10 text-center px-6">
+    <p class="text-xs tracking-[0.3em] uppercase text-white/60 mb-4">The Wedding Of</p>
+    <h1 class="font-script text-5xl md:text-7xl mb-2">
+      <span class="name-bride">&mdash;</span>
+    </h1>
+    <p class="text-2xl font-heading italic text-white/80 my-2">&amp;</p>
+    <h1 class="font-script text-5xl md:text-7xl mb-6">
+      <span class="name-groom">&mdash;</span>
+    </h1>
+    <div class="flex items-center gap-3 justify-center mb-6">
+      <span class="h-px w-12 bg-white/30"></span>
+      <span class="text-xs tracking-widest text-white/50">SAVE THE DATE</span>
+      <span class="h-px w-12 bg-white/30"></span>
+    </div>
+    <p id="coverDate" class="text-sm text-white/60 tracking-wide"></p>
+  </div>
+  <div class="absolute bottom-20 z-10 text-center">
+    <p class="text-xs text-white/40 mb-2">Kepada Yth.</p>
+    <p id="guestNameDisplay" class="font-heading italic text-lg text-white/80">Tamu Undangan</p>
+  </div>
+  <button class="btn-open absolute bottom-6 z-10 bg-primary hover:bg-primary-dark text-white text-xs tracking-[0.2em] uppercase px-8 py-3 rounded-full transition-all">
+    Buka Undangan
+  </button>
+</section>
+
+<!-- MAIN CONTENT -->
+<div id="main-content">
+
+<!-- SECTION 2: HOME / MINI GALLERY + COUNTDOWN -->
+<section id="sectionHome" class="py-20 px-6 bg-cream">
+  <div class="max-w-lg mx-auto text-center">
+    <p class="text-xs tracking-[0.3em] uppercase text-primary mb-3">Save The Date</p>
+    <h2 class="font-heading text-2xl text-dark mb-6">Moment Bahagia</h2>
+    <div id="miniGalleryInitials" class="font-script text-6xl text-primary mb-8"></div>
+    <div id="miniGalleryTrack" class="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory"></div>
+    <div id="countdown" class="flex justify-center gap-6 mt-10">
+      <div class="text-center">
+        <span id="cd-h" class="block text-3xl font-heading text-primary">0</span>
+        <span class="text-[10px] tracking-widest uppercase text-muted">Hari</span>
+      </div>
+      <div class="text-center">
+        <span id="cd-j" class="block text-3xl font-heading text-primary">0</span>
+        <span class="text-[10px] tracking-widest uppercase text-muted">Jam</span>
+      </div>
+      <div class="text-center">
+        <span id="cd-m" class="block text-3xl font-heading text-primary">0</span>
+        <span class="text-[10px] tracking-widest uppercase text-muted">Menit</span>
+      </div>
+      <div class="text-center">
+        <span id="cd-s" class="block text-3xl font-heading text-primary">0</span>
+        <span class="text-[10px] tracking-widest uppercase text-muted">Detik</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: COUPLE PROFILE -->
+<section id="sectionCouple" class="py-20 px-6 bg-white">
+  <div class="max-w-lg mx-auto">
+    <p class="text-xs tracking-[0.3em] uppercase text-primary text-center mb-3">Mempelai</p>
+    <h2 class="font-heading text-2xl text-dark text-center mb-10">Insya Allah yang berbahagia</h2>
+    <div class="profile-card bg-cream border border-primary/20 rounded-[2rem] px-8 py-10 space-y-6">
+      <div class="text-center">
+        <div class="w-28 h-28 mx-auto rounded-full overflow-hidden border-4 border-primary/20 mb-3">
+          <img class="profile-bride-photo w-full h-full object-cover" src="" alt="">
+        </div>
+        <p class="profile-bride-nickname font-script text-3xl text-primary mb-1"></p>
+        <p class="profile-bride-name font-heading text-sm text-dark mb-1"></p>
+        <p class="profile-bride-parents text-xs text-muted leading-relaxed mb-2"></p>
+        <a class="profile-bride-ig inline-flex items-center gap-1 text-[10px] tracking-widest uppercase text-primary hover:text-primary-dark transition-colors" href="#" target="_blank">
+          <span class="profile-bride-ig-text"></span>
+        </a>
+      </div>
+      <p class="text-center text-3xl font-script text-primary">&amp;</p>
+      <div class="text-center">
+        <div class="w-28 h-28 mx-auto rounded-full overflow-hidden border-4 border-primary/20 mb-3">
+          <img class="profile-groom-photo w-full h-full object-cover" src="" alt="">
+        </div>
+        <p class="profile-groom-nickname font-script text-3xl text-primary mb-1"></p>
+        <p class="profile-groom-name font-heading text-sm text-dark mb-1"></p>
+        <p class="profile-groom-parents text-xs text-muted leading-relaxed mb-2"></p>
+        <a class="profile-groom-ig inline-flex items-center gap-1 text-[10px] tracking-widest uppercase text-primary hover:text-primary-dark transition-colors" href="#" target="_blank">
+          <span class="profile-groom-ig-text"></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: QUOTES -->
+<section class="py-16 px-6 bg-cream">
+  <div class="max-w-md mx-auto text-center">
+    <p class="footer-quote font-heading italic text-lg text-dark/80 leading-relaxed"></p>
+  </div>
+</section>
+
+<!-- SECTION 5: LOVE STORY -->
+<section class="py-20 px-6 bg-white">
+  <div class="max-w-lg mx-auto">
+    <p class="text-xs tracking-[0.3em] uppercase text-primary text-center mb-3">Love Story</p>
+    <h2 class="font-heading text-2xl text-dark text-center mb-10">Perjalanan Cinta</h2>
+    <div class="timeline relative border-l-2 border-primary/20 ml-4">
+      <div class="timeline-item pl-8 pb-8 relative">
+        <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary"></div>
+        <p class="timeline-date text-xs tracking-widest uppercase text-primary mb-1"></p>
+        <h3 class="timeline-title font-heading text-base text-dark mb-1"></h3>
+        <p class="timeline-text text-sm text-muted leading-relaxed"></p>
+        <img class="timeline-photo mt-3 rounded-xl w-full max-w-xs" src="" alt="" style="display:none">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: EVENTS -->
+<section id="sectionEvent" class="py-20 px-6 bg-cream">
+  <div class="max-w-lg mx-auto">
+    <p class="text-xs tracking-[0.3em] uppercase text-primary text-center mb-3">Acara</p>
+    <h2 class="font-heading text-2xl text-dark text-center mb-10">Waktu &amp; Tempat</h2>
+    <div id="eventCardsContainer" class="space-y-6"></div>
+  </div>
+</section>
+
+<!-- SECTION 7: RSVP -->
+<section id="sectionRsvp" class="py-20 px-6 bg-white">
+  <div class="max-w-lg mx-auto">
+    <p class="text-xs tracking-[0.3em] uppercase text-primary text-center mb-3">Konfirmasi</p>
+    <h2 class="font-heading text-2xl text-dark text-center mb-10">RSVP Kehadiran</h2>
+
+    <div id="rsvpLoading" class="text-center py-10" style="display:none">
+      <div class="inline-block w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+    </div>
+
+    <div id="kepadaBanner" class="bg-primary text-white text-center py-3 px-6 rounded-t-xl" style="display:none">
+      <span class="text-[10px] tracking-[0.3em] uppercase">Kepada</span>
+      <span id="kepadaNama" class="block font-heading italic text-lg"></span>
+    </div>
+
+    <div id="rsvpFormBody" class="bg-cream rounded-xl p-6 space-y-5">
+      <div>
+        <label class="block text-[10px] tracking-[0.2em] uppercase text-muted mb-2">Nama Lengkap</label>
+        <input type="text" id="rsvpName" class="w-full px-4 py-3 bg-white border border-primary/20 rounded-lg text-sm focus:outline-none focus:border-primary transition-colors" placeholder="Nama Anda">
+      </div>
+      <div>
+        <label class="block text-[10px] tracking-[0.2em] uppercase text-muted mb-2">Nomor WhatsApp</label>
+        <input type="tel" id="rsvpTelpon" class="w-full px-4 py-3 bg-white border border-primary/20 rounded-lg text-sm focus:outline-none focus:border-primary transition-colors" placeholder="08xxxxxxxxx">
+      </div>
+      <div>
+        <label class="block text-[10px] tracking-[0.2em] uppercase text-muted mb-2">Konfirmasi Kehadiran</label>
+        <div class="grid grid-cols-2 gap-3">
+          <button type="button" class="radio-option selected border border-primary/20 bg-primary text-white rounded-lg py-3 text-xs tracking-wider uppercase transition-all" onclick="RsvpWidget.selectStatus(this,'Hadir')">Hadir</button>
+          <button type="button" class="radio-option border border-primary/20 bg-white text-dark rounded-lg py-3 text-xs tracking-wider uppercase transition-all" onclick="RsvpWidget.selectStatus(this,'Tidak Hadir')">Tidak Hadir</button>
+        </div>
+      </div>
+      <div id="jumlahGroup">
+        <label class="block text-[10px] tracking-[0.2em] uppercase text-muted mb-2">Jumlah Tamu</label>
+        <select id="rsvpJumlah" class="w-full px-4 py-3 bg-white border border-primary/20 rounded-lg text-sm focus:outline-none focus:border-primary transition-colors">
+          <option value="1">1 Orang</option>
+          <option value="2">2 Orang</option>
+          <option value="3">3 Orang</option>
+          <option value="4">4 Orang</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-[10px] tracking-[0.2em] uppercase text-muted mb-2">Pesan &amp; Ucapan</label>
+        <textarea id="rsvpWishes" class="w-full px-4 py-3 bg-white border border-primary/20 rounded-lg text-sm focus:outline-none focus:border-primary transition-colors resize-none" rows="3" placeholder="Tulis ucapan dan doa terbaik..." maxlength="500"></textarea>
+      </div>
+      <button id="rsvpSubmitBtn" onclick="RsvpWidget.submitRSVP()" class="w-full bg-primary hover:bg-primary-dark text-white text-xs tracking-[0.2em] uppercase py-3 rounded-lg transition-all">Kirim</button>
+      <div id="rsvpError" class="text-red-500 text-xs text-center" style="display:none"></div>
+    </div>
+
+    <div id="rsvpDone" class="bg-cream rounded-xl p-8 text-center" style="display:none">
+      <p class="text-3xl text-primary mb-3">&#10003;</p>
+      <p id="rsvpDoneStatus" class="font-heading text-lg text-dark mb-2"></p>
+      <p class="text-xs text-muted mb-6">Terima kasih atas konfirmasi Anda</p>
+      <button onclick="RsvpWidget.showQR()" class="bg-primary hover:bg-primary-dark text-white text-xs tracking-[0.2em] uppercase px-6 py-3 rounded-lg transition-all">Lihat QR Code</button>
+    </div>
+
+    <div id="qrScreen" class="bg-cream rounded-xl p-8 text-center" style="display:none">
+      <p class="text-3xl text-primary mb-3">&#9733;</p>
+      <p class="font-heading text-xl text-dark mb-2">Tiket Kehadiran</p>
+      <p class="text-xs text-muted mb-4">Tunjukkan QR ini saat tiba di lokasi</p>
+      <p id="qrNamaVal" class="font-heading italic text-lg text-primary mb-4"></p>
+      <div class="inline-block p-4 bg-white border border-primary/20 rounded-xl mb-3"><div id="qrCode"></div></div>
+      <p id="qrTokenVal" class="font-mono text-xs tracking-[0.3em] text-muted mb-4"></p>
+      <p class="text-[10px] text-muted mb-4">Screenshot QR ini sebagai tiket masuk</p>
+      <button onclick="RsvpWidget.saveQR()" class="w-full bg-primary hover:bg-primary-dark text-white text-xs tracking-[0.2em] uppercase py-3 rounded-lg transition-all">Simpan QR Code</button>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 8: KOMENTAR / UCAPAN -->
+<section class="py-20 px-6 bg-cream">
+  <div class="max-w-lg mx-auto">
+    <p class="text-xs tracking-[0.3em] uppercase text-primary text-center mb-3">Doa &amp; Restu</p>
+    <h2 class="font-heading text-2xl text-dark text-center mb-10">Ucapan Tamu</h2>
+
+    <div class="bg-white rounded-xl p-6 mb-6 space-y-4">
+      <div>
+        <label class="block text-[10px] tracking-[0.2em] uppercase text-muted mb-2">Nama</label>
+        <input type="text" id="komentarNama" class="w-full px-4 py-3 bg-cream border border-primary/20 rounded-lg text-sm focus:outline-none focus:border-primary transition-colors" placeholder="Nama Anda">
+      </div>
+      <div>
+        <label class="block text-[10px] tracking-[0.2em] uppercase text-muted mb-2">Ucapan &amp; Doa</label>
+        <textarea id="komentarIsi" class="w-full px-4 py-3 bg-cream border border-primary/20 rounded-lg text-sm focus:outline-none focus:border-primary transition-colors resize-none" rows="3" placeholder="Tuliskan ucapan dan doa terbaik..." maxlength="500"></textarea>
+      </div>
+      <button id="komentarBtn" onclick="RsvpWidget.submitKomentar()" class="w-full bg-primary hover:bg-primary-dark text-white text-xs tracking-[0.2em] uppercase py-3 rounded-lg transition-all">Kirim Ucapan</button>
+      <div id="komentarError" class="text-red-500 text-xs text-center" style="display:none"></div>
+    </div>
+
+    <div id="ucapanList" class="space-y-3">
+      <p class="text-center text-sm text-muted">Memuat ucapan...</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 9: GALLERY -->
+<section id="sectionGallery" class="py-20 px-6 bg-white">
+  <div class="max-w-lg mx-auto">
+    <p class="text-xs tracking-[0.3em] uppercase text-primary text-center mb-3">Galeri</p>
+    <h2 class="font-heading text-2xl text-dark text-center mb-10">Momen Bahagia</h2>
+    <div id="galleryContainer" class="grid grid-cols-2 gap-3"></div>
+  </div>
+</section>
+
+<!-- SECTION 10: KADO / GIFT -->
+<section class="py-20 px-6 bg-cream">
+  <div class="max-w-lg mx-auto">
+    <p class="text-xs tracking-[0.3em] uppercase text-primary text-center mb-3">Hadiah</p>
+    <h2 class="font-heading text-2xl text-dark text-center mb-10">Kado Digital</h2>
+    <div id="kadoContainer" class="space-y-4"></div>
+  </div>
+</section>
+
+<!-- SECTION 11: BACK COVER -->
+<section class="py-20 px-6 bg-dark text-white text-center">
+  <p class="text-xs tracking-[0.3em] uppercase text-white/40 mb-6">Thank You</p>
+  <h2 class="font-script text-4xl md:text-5xl mb-3">
+    <span class="backcover-bride">&mdash;</span>
+    <span class="text-white/60 mx-3">&amp;</span>
+    <span class="backcover-groom">&mdash;</span>
+  </h2>
+  <p class="text-sm text-white/50 mt-6">Merupakan suatu kehormatan dan kebahagiaan<br>apabila Bapak/Ibu/Saudara/i berkenan hadir<br>untuk memberikan doa restu</p>
+</section>
+
+</div><!-- /main-content -->
+
+<!-- FOOTER -->
+<footer class="footer-section py-10 px-6 bg-dark text-center border-t border-white/10">
+  <p class="footer-quote font-heading italic text-sm text-white/60 mb-3"></p>
+  <p class="footer-hashtag text-xs text-primary tracking-wider">#</p>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="/env.js"></script>
+<script src="/assets/motion-plus.js" defer></script>
+<script src="/assets/invitation-loader.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script src="/assets/rsvp-widget.js" defer></script>
+
+<!-- INVITATION OPENER -->
+<script src="/tema/assets/audio-player.js" defer></script>
+<script src="/tema/assets/invitation-opener.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  InvitationOpener.init({
+    coverSelector: '#cover',
+    mainSelector: '#main-content',
+    revealDelay: 600,
+    onReveal: function(cover) {
+      cover.classList.add('cover-hide');
+      setTimeout(function() { cover.style.display = 'none'; }, 800);
+    },
+    onReady: function() {
+      document.getElementById('main-content').classList.add('open');
+      window.scrollTo(0, 0);
+    }
+  });
+});
+</script>
+
+<!-- SCROLL ANIMATION -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var sections = document.querySelectorAll('#main-content > section');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+  sections.forEach(function(s) {
+    s.style.opacity = '0';
+    s.style.transform = 'translateY(30px)';
+    s.style.transition = 'all 0.8s ease';
+    observer.observe(s);
+  });
+});
+</script>
+
+</body>
+</html>

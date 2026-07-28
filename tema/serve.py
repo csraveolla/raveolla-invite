@@ -106,6 +106,13 @@ class SPAHandler(http.server.SimpleHTTPRequestHandler):
                 self.path = '/rsvp-admin/super-adm.html'
                 return super().do_GET()
 
+        # Handle /scanner
+        if slug.lower() == 'scanner':
+            scanner_path = os.path.join(ROOT, 'scanner.html')
+            if os.path.exists(scanner_path):
+                self.path = '/scanner.html'
+                return super().do_GET()
+
         # Query Supabase for theme
         theme = get_theme_for_slug(slug)
         theme_path = os.path.join(TEMA, theme, 'index.html')

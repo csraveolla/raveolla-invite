@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scanner Tamu</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="/env.js"></script>
+<style>
+  :root {
+    --gold: #C9A96E; --gold-l: #E8D5B0; --gold-d: #9A7A45;
+    --cream: #FAF7F2; --dark: #1A1614; --dark-2: #2C2420;
+    --muted: #6B5E52; --muted-l: #9C8E84; --border: rgba(201,169,110,0.25);
+    --green: #2D6A2D; --green-bg: #F0F7F0; --green-b: #C3E0C3;
+    --red: #8B2020; --red-bg: #FDF0F0; --red-b: #F0C0C0;
+    --yellow: #856404; --yellow-bg: #FFFBEB; --yellow-b: #FFE08A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Jost', sans-serif; background: var(--dark); color: white; min-height: 100vh; display: flex; flex-direction: column; }
+  a { color: var(--gold); text-decoration: none; }
+
+  .topbar { background: rgba(0,0,0,0.6); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; border-bottom: 1px solid rgba(201,169,110,0.1); }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-dot { width: 6px; height: 6px; background: var(--gold); border-radius: 50%; }
+  .brand-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; letter-spacing: 1px; color: white; }
+  .brand-sub { font-size: 8px; color: var(--gold-l); letter-spacing: 3px; text-transform: uppercase; font-weight: 300; }
+  .counter { text-align: right; }
+  .counter-val { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; color: var(--gold); line-height: 1.3; }
+  .counter-lbl { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-l); font-weight: 300; }
+
+  .pin-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; }
+  .pin-card { background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 36px 28px; width: 100%; max-width: 320px; text-align: center; position: relative; }
+  .pin-card::before, .pin-card::after { content:''; position:absolute; width:28px; height:28px; border-color:var(--gold); border-style:solid; }
+  .pin-card::before { top:-1px; left:-1px; border-width:2px 0 0 2px; }
+  .pin-card::after  { bottom:-1px; right:-1px; border-width:0 2px 2px 0; }
+  .pin-icon { font-size: 28px; margin-bottom: 12px; }
+  .pin-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .pin-sub { font-size: 11px; color: var(--muted-l); letter-spacing: 1px; margin-bottom: 24px; font-weight: 300; }
+  .pin-client { font-size: 10px; color: var(--gold-l); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; padding: 6px 12px; border: 1px solid rgba(201,169,110,0.2); display: inline-block; }
+  .pin-input { width: 100%; padding: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(201,169,110,0.2); color: white; font-family: 'Jost', sans-serif; font-size: 22px; text-align: center; letter-spacing: 8px; outline: none; transition: border-color 0.2s; margin-bottom: 14px; }
+  .pin-input:focus { border-color: var(--gold); }
+  .pin-btn { width: 100%; padding: 13px; background: var(--gold); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+  .pin-btn:hover { background: var(--gold-d); }
+  .pin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .pin-error { font-size: 12px; color: #F0A0A0; margin-top: 10px; display: none; }
+  .pin-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
+
+  .scanner-area { flex: 1; display: none; flex-direction: column; align-items: center; padding: 20px; gap: 16px; }
+  .scanner-area.active { display: flex; }
+  .video-wrap { position: relative; width: 100%; max-width: 360px; display: none; }
+  .scan-overlay { position: absolute; inset: 0; pointer-events: none; }
+  .corner { position: absolute; width: 28px; height: 28px; border-color: var(--gold); border-style: solid; }
+  .corner.tl { top:8px; left:8px; border-width:2px 0 0 2px; }
+  .corner.tr { top:8px; right:8px; border-width:2px 2px 0 0; }
+  .corner.bl { bottom:8px; left:8px; border-width:0 0 2px 2px; }
+  .corner.br { bottom:8px; right:8px; border-width:0 2px 2px 0; }
+  .scan-line { position:absolute; left:8px; right:8px; height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent); animation:scanLine 2s ease-in-out infinite; }
+  @keyframes scanLine { 0%{top:8px;opacity:1} 100%{top:calc(100% - 10px);opacity:0.3} }
+  .hint { font-size: 12px; color: var(--gold-l); letter-spacing: 1px; text-align: center; font-weight: 300; }
+  .btn-start { padding: 14px 32px; background: var(--gold); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+  .btn-start:hover { background: var(--gold-d); }
+
+  .manual-wrap { width: 100%; max-width: 360px; }
+  .manual-toggle { width: 100%; padding: 10px; background: transparent; border: 1px solid rgba(201,169,110,0.3); color: var(--gold-l); font-family: 'Jost', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; margin-top: 4px; }
+  .manual-toggle:hover { border-color: var(--gold); color: var(--gold); }
+  .manual-form { display: none; margin-top: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(201,169,110,0.2); padding: 14px; }
+  .manual-form.show { display: block; }
+  .manual-form label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted-l); display: block; margin-bottom: 6px; }
+  .manual-form input { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(201,169,110,0.2); color: white; font-family: 'Jost', sans-serif; font-size: 14px; outline: none; text-transform: uppercase; letter-spacing: 2px; transition: border-color 0.2s; }
+  .manual-form input:focus { border-color: var(--gold); }
+  .manual-form .btn-manual { width: 100%; padding: 10px; background: var(--gold); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
+  .manual-form .btn-manual:hover { background: var(--gold-d); }
+  .nama-item { padding:8px 10px; cursor:pointer; border-bottom:1px solid rgba(201,169,110,0.1); display:flex; justify-content:space-between; align-items:center; }
+  .nama-item:last-child { border-bottom:none; }
+  .nama-item:hover { background: rgba(201,169,110,0.1); }
+  .nama-item-name { font-size:13px; color:white; }
+  .nama-item-sub { font-size:10px; color:var(--muted-l); margin-top:1px; }
+  .tambah-barang { display:flex; align-items:center; gap:6px; padding:8px 10px; cursor:pointer; border-top:1px solid rgba(201,169,110,0.15); font-size:11px; color:var(--gold-l); transition:background 0.2s; }
+  .tambah-barang:hover { background: rgba(201,169,110,0.1); }
+  .form-add { margin-top:6px; padding:10px; background: rgba(255,255,255,0.05); border:1px solid rgba(201,169,110,0.2); }
+  .form-add label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted-l); display:block; margin-bottom:4px; }
+  .form-add input { width:100%; padding:8px 10px; background:rgba(255,255,255,0.06); border:1px solid rgba(201,169,110,0.2); color:white; font-family:'Jost',sans-serif; font-size:13px; outline:none; margin-bottom:8px; transition:border-color 0.2s; }
+  .form-add input:focus { border-color:var(--gold); }
+  .form-add .btn-row { display:flex; gap:8px; margin-top:4px; }
+  .form-add .btn-simpan { flex:1; padding:10px; background:var(--green); color:white; border:none; font-size:10px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; font-family:'Jost',sans-serif; }
+  .form-add .btn-simpan:hover { background:#1E4D1E; }
+  .form-add .btn-batal { padding:10px 14px; background:transparent; border:1px solid rgba(201,169,110,0.3); color:var(--muted-l); font-size:10px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; font-family:'Jost',sans-serif; }
+  .form-add .btn-batal:hover { border-color:var(--gold); color:var(--gold-l); }
+
+  .log-wrap { background: rgba(0,0,0,0.4); padding: 10px 16px; max-height: 150px; overflow-y: auto; border-top: 1px solid rgba(201,169,110,0.1); }
+  .log-title { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-l); margin-bottom: 8px; font-weight: 300; }
+  .log-item { display: flex; gap: 10px; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 12px; }
+  .log-item:last-child { border-bottom: none; }
+  .log-time { color: var(--gold-l); font-size: 10px; white-space: nowrap; font-weight: 300; }
+  .log-name { flex: 1; }
+  .log-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dot-ok  { background: #5CB85C; }
+  .dot-dup { background: #F0AD4E; }
+  .dot-err { background: #D9534F; }
+
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 200; backdrop-filter: blur(4px); }
+  .modal.show { display: flex; }
+  .modal-inner { background: white; color: var(--dark); width: 100%; max-width: 380px; position: relative; animation: popUp 0.3s ease both; }
+  @keyframes popUp { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+  .modal-inner::before, .modal-inner::after { content:''; position:absolute; width:36px; height:36px; border-color:var(--gold); border-style:solid; }
+  .modal-inner::before { top:-1px; left:-1px; border-width:2px 0 0 2px; }
+  .modal-inner::after  { bottom:-1px; right:-1px; border-width:0 2px 2px 0; }
+  .modal-head { padding: 20px 22px 16px; text-align: center; border-bottom: 1px solid var(--border); }
+  .modal-icon { font-size: 32px; margin-bottom: 8px; }
+  .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; }
+  .modal-title.ok  { color: var(--green); }
+  .modal-title.dup { color: var(--yellow); }
+  .modal-title.err { color: var(--red); }
+  .modal-body { padding: 18px 22px; }
+  .info-row { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+  .info-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted-l); min-width: 70px; padding-top: 2px; font-weight: 500; }
+  .info-val { font-size: 14px; font-weight: 500; flex: 1; line-height: 1.4; }
+  .badge { display: inline-block; padding: 2px 8px; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; font-weight: 500; border-radius: 2px; }
+  .b-green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-b); }
+  .b-red   { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-b); }
+  .b-yellow{ background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-b); }
+  .b-grey  { background: #F3F4F6; color: #6B7280; border: 1px solid #E5E7EB; }
+  .err-msg { font-size: 13px; color: var(--muted); font-weight: 300; line-height: 1.6; }
+  .modal-foot { padding: 0 22px 20px; display: flex; gap: 10px; }
+  .btn-close { flex: 1; padding: 12px; background: var(--dark); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+  .btn-close:hover { background: var(--muted); }
+  .btn-confirm { flex: 1; padding: 12px; background: var(--green); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; display: none; }
+  .btn-confirm:hover { background: #1E4D1E; }
+  .btn-add-tamu { flex: 1; padding: 12px; background: var(--gold); color: white; border: none; font-family: 'Jost', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; display: none; }
+  .btn-add-tamu:hover { background: var(--gold-d); }
+  .btn-back { padding: 6px 14px; background: transparent; border: 1px solid rgba(201,169,110,0.3); color: var(--gold-l); font-family: 'Jost', sans-serif; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .btn-back:hover { border-color: var(--gold); color: var(--gold); }
+
+  #qr-reader { width: 100%; border: 2px solid var(--gold) !important; background: #000; }
+  #qr-reader video { width: 100% !important; }
+  #qr-reader__dashboard { display: none !important; }
+
+  .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 300; }
+  .loading-overlay.show { display: flex; }
+  .spinner { width: 30px; height: 30px; border: 3px solid rgba(201,169,110,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .qr-helper { max-width: 360px; width: 100%; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-dot"></div>
+    <div>
+      <div class="brand-name">Scanner Tamu</div>
+      <div class="brand-sub" id="topbar-event">Check-in Hari H</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="counter">
+      <div class="counter-val" id="counter">0</div>
+      <div class="counter-lbl">Tamu Hadir</div>
+    </div>
+    <button class="btn-back" id="btn-logout" onclick="logout()" style="display:none">Keluar</button>
+  </div>
+</div>
+
+<div class="pin-screen" id="pin-screen">
+  <div class="pin-card">
+    <div class="pin-icon">🔐</div>
+    <div class="pin-title">Masukkan PIN</div>
+    <div class="pin-sub">Akses scanner memerlukan PIN operator</div>
+    <div class="pin-client" id="pin-client-label">Memuat...</div>
+    <input type="password" inputmode="numeric" maxlength="6" class="pin-input" id="pin-input"
+      placeholder="• • • •" onkeydown="if(event.key==='Enter') submitPin()">
+    <button class="pin-btn" id="pin-btn" onclick="submitPin()">Masuk →</button>
+    <div class="pin-error" id="pin-error">PIN salah. Coba lagi.</div>
+  </div>
+</div>
+
+<div class="scanner-area" id="scanner-area">
+  <div class="video-wrap" id="video-wrap"></div>
+  <p class="hint" id="hint">Siapkan QR Code tamu untuk di-scan</p>
+  <button class="btn-start" id="btn-start" onclick="startScanner()">📷 Mulai Scanner</button>
+
+  <div class="manual-wrap" id="manual-wrap" style="display:none">
+    <button class="manual-toggle" onclick="toggleManual('token')">✎ Input Token Manual</button>
+    <div class="manual-form" id="manual-form-token">
+      <label>Token QR Tamu</label>
+      <input type="text" id="manual-token" placeholder="TOKEN QR" maxlength="12"
+        oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter') cariManual()">
+      <button class="btn-manual" onclick="cariManual()">Cari Tamu →</button>
+    </div>
+
+    <button class="manual-toggle" style="margin-top:6px" onclick="toggleManual('nama')">👤 Cari Nama Tamu</button>
+    <div class="manual-form" id="manual-form-nama">
+      <label>Nama Tamu</label>
+      <input type="text" id="manual-nama" placeholder="Ketik nama tamu..."
+        oninput="namaSearch()" autocomplete="off">
+      <div id="nama-results" style="margin-top:6px;display:none"></div>
+      <p id="nama-status" style="font-size:10px;color:var(--muted-l);margin-top:4px;display:none"></p>
+    </div>
+  </div>
+</div>
+
+<div class="log-wrap" id="log-wrap" style="display:none">
+  <div class="log-title">Riwayat Scan</div>
+  <div id="log-list"></div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-inner">
+    <div class="modal-head">
+      <div class="modal-icon" id="m-icon">✓</div>
+      <div class="modal-title" id="m-title">—</div>
+    </div>
+    <div class="modal-body" id="m-body"></div>
+    <div class="modal-foot">
+      <button class="btn-close" onclick="tutupModal()">Tutup & Lanjut</button>
+      <button class="btn-confirm" id="btn-confirm" onclick="konfirmasiHadir()">✓ Konfirmasi Hadir</button>
+      <button class="btn-add-tamu" id="btn-add-tamu" onclick="tambahDariModal()" style="display:none">+ Tambah Tamu Baru</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+  const SB  = window.__ENV.SUPABASE_URL
+  const KEY = window.__ENV.SUPABASE_KEY
+  const H   = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' }
+
+  let clientId = null, clientData = null
+  let scanning = false, lastToken = '', lastTime = 0
+  let scanCount = 0, currentTamu = null
+  let html5QrCode = null
+
+  // ================================================================
+  // INIT
+  // ================================================================
+  function init() {
+    document.getElementById('pin-client-label').textContent = 'Masukkan PIN acara Anda'
+    document.getElementById('pin-input').focus()
+  }
+
+  // ================================================================
+  // PIN AUTH
+  // ================================================================
+  window.submitPin = async function() {
+    const pin = document.getElementById('pin-input').value.trim()
+    const btn = document.getElementById('pin-btn')
+    const err = document.getElementById('pin-error')
+    err.style.display = 'none'
+    if (!pin) return
+
+    btn.disabled = true
+    btn.innerHTML = '<span class="pin-spinner"></span>'
+
+    try {
+      const res  = await fetch(
+        `${SB}/rest/v1/clients?pin_scanner=eq.${encodeURIComponent(pin)}&select=id,nama_acara`,
+        { headers: H }
+      )
+      const data = await res.json()
+
+      if (!Array.isArray(data) || !data.length) {
+        err.textContent = 'PIN salah. Coba lagi.'
+        err.style.display = 'block'
+        btn.disabled = false
+        btn.textContent = 'Masuk →'
+        document.getElementById('pin-input').value = ''
+        document.getElementById('pin-input').focus()
+        return
+      }
+
+      clientData = data[0]
+      clientId   = clientData.id
+      document.getElementById('topbar-event').textContent = clientData.nama_acara || 'Check-in Hari H'
+      document.getElementById('pin-screen').style.display = 'none'
+      document.getElementById('scanner-area').classList.add('active')
+      document.getElementById('btn-logout').style.display = 'inline-block'
+      loadCounter()
+    } catch(e) {
+      err.textContent = 'Koneksi error. Coba lagi.'
+      err.style.display = 'block'
+      btn.disabled = false
+      btn.textContent = 'Masuk →'
+    }
+  }
+
+  window.logout = function() {
+    if (html5QrCode) { try { html5QrCode.stop() } catch(e) {} html5QrCode = null }
+    scanning = false
+    clientId = null; clientData = null
+    document.getElementById('pin-screen').style.display = 'flex'
+    document.getElementById('scanner-area').classList.remove('active')
+    document.getElementById('log-wrap').style.display = 'none'
+    document.getElementById('btn-logout').style.display = 'none'
+    document.getElementById('pin-input').value = ''
+    document.getElementById('pin-input').focus()
+    document.getElementById('pin-btn').disabled = false
+    document.getElementById('pin-btn').textContent = 'Masuk →'
+    document.getElementById('video-wrap').innerHTML = ''
+    document.getElementById('video-wrap').style.display = 'none'
+    document.getElementById('btn-start').style.display = 'inline-block'
+    document.getElementById('manual-wrap').style.display = 'none'
+    document.getElementById('hint').textContent = 'Siapkan QR Code tamu untuk di-scan'
+    scanCount = 0
+    document.getElementById('counter').textContent = '0'
+    document.getElementById('log-list').innerHTML = ''
+  }
+
+  // ================================================================
+  // SCANNER
+  // ================================================================
+  window.startScanner = async function() {
+    try {
+      const videoWrap = document.getElementById('video-wrap')
+      videoWrap.innerHTML = '<div id="qr-reader"></div>'
+      videoWrap.style.display = 'block'
+      document.getElementById('btn-start').style.display   = 'none'
+      document.getElementById('manual-wrap').style.display = 'block'
+      document.getElementById('log-wrap').style.display    = 'block'
+      document.getElementById('hint').textContent          = 'Arahkan kamera ke QR Code tamu'
+
+      html5QrCode = new Html5Qrcode('qr-reader')
+      await html5QrCode.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+        (decodedText) => {
+          if (!scanning) return
+          const token = decodedText.trim().toUpperCase()
+          const now   = Date.now()
+          if (token === lastToken && now - lastTime < 3000) return
+          lastToken = token; lastTime = now
+          scanning  = false
+          cariToken(token)
+        }
+      )
+      scanning = true
+    } catch(e) {
+      alert('Tidak bisa mengakses kamera: ' + e.message)
+    }
+  }
+
+  window.cariManual = function() {
+    const token = document.getElementById('manual-token').value.trim().toUpperCase()
+    if (!token) return
+    cariToken(token)
+    document.getElementById('manual-token').value = ''
+  }
+
+  window.toggleManual = function(section) {
+    document.getElementById('manual-form-' + section).classList.toggle('show')
+  }
+
+  let namaTimer = null
+
+  window.namaSearch = function() {
+    clearTimeout(namaTimer)
+    namaTimer = setTimeout(() => cariNama(), 300)
+  }
+
+  window.cariNama = async function() {
+    const q = document.getElementById('manual-nama').value.trim()
+    const resultsEl = document.getElementById('nama-results')
+    const statusEl  = document.getElementById('nama-status')
+
+    if (q.length < 2) {
+      resultsEl.style.display = 'none'
+      resultsEl.innerHTML = ''
+      statusEl.style.display = 'none'
+      return
+    }
+
+    statusEl.textContent = 'Mencari...'
+    statusEl.style.display = 'block'
+
+    try {
+      const res = await fetch(
+        `${SB}/rest/v1/rsvp_tamu?client_id=eq.${clientId}&nama=ilike.*${encodeURIComponent(q)}*&select=id,nama,telpon,pos_id,kehadiran,status_hadir,waktu_hadir,qr_token&order=nama.asc&limit=15`,
+        { headers: H }
+      )
+      const data = await res.json()
+      statusEl.style.display = 'none'
+
+      if (!Array.isArray(data) || !data.length) {
+        resultsEl.innerHTML = `
+          <p style="font-size:11px;color:var(--muted-l);padding:6px 0">Tidak ditemukan</p>
+          <div class="tambah-barang" onclick="tambahBaru()">
+            <span style="font-size:16px;line-height:1">+</span>
+            <span>Tambah <strong>${escapeHtml(q)}</strong> sebagai tamu baru</span>
+          </div>`
+        resultsEl.style.display = 'block'
+        return
+      }
+
+      let html = ''
+      data.forEach(t => {
+        const badge = t.status_hadir
+          ? '<span style="color:var(--yellow);font-size:10px">⚠</span>'
+          : t.kehadiran === 'Hadir'
+            ? '<span style="color:var(--green-b);font-size:10px">✓</span>'
+            : '<span style="color:var(--muted-l);font-size:10px">—</span>'
+        html += `<div class="nama-item" onclick="pilihTamu('${t.id}')">
+          <div>
+            <div class="nama-item-name">${escapeHtml(t.nama)}</div>
+            <div class="nama-item-sub">${escapeHtml(t.pesan || t.pos_id) || '—'}${t.telpon ? ' · ' + escapeHtml(t.telpon) : ''}</div>
+          </div>
+          <div>${badge}</div>
+        </div>`
+      })
+      resultsEl.innerHTML = html
+      resultsEl.style.display = 'block'
+    } catch(e) {
+      statusEl.style.display = 'none'
+      resultsEl.innerHTML = '<p style="font-size:11px;color:#F0A0A0;padding:6px 0">Error</p>'
+      resultsEl.style.display = 'block'
+    }
+  }
+
+  window.tambahBaru = function() {
+    const nama = document.getElementById('manual-nama').value.trim()
+    const resultsEl = document.getElementById('nama-results')
+    resultsEl.innerHTML = `
+      <div class="form-add" id="form-add-tamu">
+        <label>Nama Tamu</label>
+        <input type="text" id="add-nama" value="${escapeHtml(nama)}" placeholder="Nama lengkap">
+        <label>Telpon (opsional)</label>
+        <input type="text" id="add-telpon" placeholder="Contoh: 6281234567890">
+        <label>Kategori</label>
+        <select id="add-kategori" style="width:100%;padding:8px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(201,169,110,0.2);color:white;font-family:'Jost',sans-serif;font-size:13px;outline:none;margin-bottom:8px">
+          <option value="Tamu Pihak Wanita">Tamu Pihak Wanita</option>
+          <option value="Tamu Pihak Pria">Tamu Pihak Pria</option>
+          <option value="Tamu Pihak Orang Tua">Tamu Pihak Orang Tua</option>
+        </select>
+        <div class="btn-row">
+          <button class="btn-batal" onclick="batalTambah()">Batal</button>
+          <button class="btn-simpan" onclick="simpanTamuBaru()">✓ Simpan & Check-in</button>
+        </div>
+      </div>`
+    document.getElementById('add-nama').focus()
+  }
+
+  window.batalTambah = function() {
+    const q = document.getElementById('manual-nama').value.trim()
+    if (q.length >= 2) { namaSearch() } else {
+      document.getElementById('nama-results').style.display = 'none'
+    }
+  }
+
+  window.simpanTamuBaru = async function() {
+    const nama   = document.getElementById('add-nama').value.trim()
+    if (!nama) { alert('Nama wajib diisi'); return }
+
+    const telpon = document.getElementById('add-telpon').value.trim()
+    const kategori = document.getElementById('add-kategori').value
+    const qrTok  = Math.random().toString(36).substring(2,8).toUpperCase()
+
+    setLoading(true)
+    try {
+      const res = await fetch(`${SB}/rest/v1/rsvp_tamu`, {
+        method: 'POST',
+        headers: { ...H, 'Prefer': 'return=representation' },
+        body: JSON.stringify({
+          client_id: clientId,
+          nama: nama,
+          telpon: telpon || null,
+          pesan: kategori,
+          kehadiran: 'Hadir',
+          qr_token: qrTok,
+          status_hadir: true,
+          waktu_hadir: new Date().toISOString()
+        })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Gagal menyimpan')
+
+      const tamu = Array.isArray(data) ? data[0] : data
+      scanCount++
+      document.getElementById('counter').textContent = scanCount
+
+      const tamuInfo = {
+        nama: tamu.nama,
+        telpon: tamu.telpon,
+        kategori: tamu.pesan,
+        kehadiran: 'Hadir',
+        status_hadir: true
+      }
+      tampilModal('ok', '✓', 'Tamu Baru Tersimpan', tamuInfo,
+        `QR Token: <strong>${qrTok}</strong><br>Beritahu tamu untuk scan ulang lain kali.`)
+      addLog(nama + ' (baru)', 'ok')
+
+      document.getElementById('nama-results').style.display = 'none'
+      document.getElementById('manual-nama').value = ''
+      document.getElementById('manual-form-nama').classList.remove('show')
+    } catch(e) {
+      alert('Error: ' + e.message)
+    }
+    setLoading(false)
+  }
+
+  window.pilihTamu = async function(id) {
+    setLoading(true)
+    try {
+      const res = await fetch(
+        `${SB}/rest/v1/rsvp_tamu?id=eq.${id}&client_id=eq.${clientId}&select=*`,
+        { headers: H }
+      )
+      const data = await res.json()
+      if (Array.isArray(data) && data.length) {
+        currentTamu = data[0]
+        if (currentTamu.status_hadir) {
+          const waktu = currentTamu.waktu_hadir
+            ? new Date(currentTamu.waktu_hadir).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})
+            : '—'
+          tampilModal('dup', '⚠', 'Sudah Check-in', currentTamu, `Tamu ini sudah check-in pukul ${waktu}`)
+          addLog(currentTamu.nama + ' (nama)', 'dup')
+        } else {
+          tampilModal('ok', '✓', 'Tamu Ditemukan', currentTamu, null, true)
+          addLog(currentTamu.nama + ' (nama)', 'ok')
+        }
+        document.getElementById('nama-results').style.display = 'none'
+        document.getElementById('manual-nama').value = ''
+      }
+    } catch(e) {
+      tampilModal('err', '✗', 'Koneksi Error', null, e.message)
+    }
+    setLoading(false)
+  }
+
+  // ================================================================
+  // LOOKUP TOKEN
+  // ================================================================
+  async function cariToken(token) {
+    setLoading(true)
+    try {
+      const res  = await fetch(
+        `${SB}/rest/v1/rsvp_tamu?qr_token=eq.${encodeURIComponent(token)}&client_id=eq.${clientId}&select=*`,
+        { headers: H }
+      )
+      const data = await res.json()
+
+      if (!Array.isArray(data) || !data.length) {
+        tampilModal('err', '✗', 'QR Tidak Dikenali', null, 'Token tidak ditemukan atau bukan tamu event ini.', false, 'Tambah Tamu Baru')
+        addLog('QR tidak dikenali', 'err')
+      } else {
+        currentTamu = data[0]
+        if (currentTamu.status_hadir) {
+          const waktu = currentTamu.waktu_hadir
+            ? new Date(currentTamu.waktu_hadir).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})
+            : '—'
+          tampilModal('dup', '⚠', 'Sudah Check-in', currentTamu, `Tamu ini sudah check-in pukul ${waktu}`)
+          addLog(currentTamu.nama + ' (duplikat)', 'dup')
+        } else {
+          tampilModal('ok', '✓', 'Tamu Ditemukan', currentTamu, null, true)
+          addLog(currentTamu.nama, 'ok')
+        }
+      }
+    } catch(e) {
+      tampilModal('err', '✗', 'Koneksi Error', null, e.message)
+    }
+    setLoading(false)
+  }
+
+  // ================================================================
+  // KONFIRMASI HADIR
+  // ================================================================
+  window.konfirmasiHadir = async function() {
+    if (!currentTamu) return
+    setLoading(true)
+    try {
+      const res = await fetch(
+        `${SB}/rest/v1/rsvp_tamu?id=eq.${currentTamu.id}&client_id=eq.${clientId}`,
+        {
+          method: 'PATCH',
+          headers: { ...H, 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ status_hadir: true, waktu_hadir: new Date().toISOString() })
+        }
+      )
+      if (res.ok) {
+        scanCount++
+        document.getElementById('counter').textContent = scanCount
+        tutupModal()
+      } else {
+        alert('Gagal update. Coba lagi.')
+      }
+    } catch(e) { alert('Error: ' + e.message) }
+    setLoading(false)
+  }
+
+  // ================================================================
+  // UI HELPERS
+  // ================================================================
+  function tampilModal(type, icon, title, tamu, note, showConfirm = false, addBtnLabel = '') {
+    document.getElementById('m-icon').textContent  = icon
+    document.getElementById('m-title').className  = `modal-title ${type}`
+    document.getElementById('m-title').textContent = title
+
+    let body = ''
+    if (tamu) {
+      const rsvpBadge    = tamu.kehadiran === 'Hadir'
+        ? `<span class="badge b-green">Hadir</span>`
+        : `<span class="badge b-red">Tidak Hadir</span>`
+      const checkinBadge = tamu.status_hadir
+        ? `<span class="badge b-yellow">⚠ Sudah Check-in</span>`
+        : `<span class="badge b-grey">Belum</span>`
+      body = `
+        <div class="info-row"><span class="info-label">Nama</span><span class="info-val">${escapeHtml(tamu.nama) || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Telpon</span><span class="info-val" style="font-family:monospace;font-size:13px">${escapeHtml(tamu.telpon) || '—'}</span></div>
+        <div class="info-row"><span class="info-label">Kategori</span><span class="info-val">${escapeHtml(tamu.kategori || tamu.pesan || tamu.pos_id) || '—'}</span></div>
+        <div class="info-row"><span class="info-label">RSVP</span><span class="info-val">${rsvpBadge}</span></div>
+        <div class="info-row"><span class="info-label">Status</span><span class="info-val">${checkinBadge}</span></div>`
+    }
+    if (note) body += `<p class="err-msg" style="margin-top:${tamu?'8px':'0'}">${note}</p>`
+    document.getElementById('m-body').innerHTML = body
+    document.getElementById('btn-confirm').style.display = showConfirm ? 'block' : 'none'
+    const addBtn = document.getElementById('btn-add-tamu')
+    if (addBtnLabel) {
+      addBtn.textContent = addBtnLabel
+      addBtn.style.display = 'block'
+    } else {
+      addBtn.style.display = 'none'
+    }
+    document.getElementById('modal').classList.add('show')
+  }
+
+  window.tambahDariModal = function() {
+    tutupModal()
+    document.getElementById('manual-form-nama').classList.add('show')
+    document.getElementById('manual-nama').focus()
+  }
+
+  window.tutupModal = function() {
+    document.getElementById('modal').classList.remove('show')
+    currentTamu = null
+    setTimeout(() => { scanning = true; }, 600)
+  }
+
+  function addLog(name, type) {
+    const list = document.getElementById('log-list')
+    const time = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'})
+    const el   = document.createElement('div')
+    el.className = 'log-item'
+    el.innerHTML = `<div class="log-dot dot-${type}"></div><span class="log-name">${escapeHtml(name)}</span><span class="log-time">${time}</span>`
+    list.insertBefore(el, list.firstChild)
+    while (list.children.length > 50) list.removeChild(list.lastChild)
+  }
+
+  function setLoading(show) {
+    document.getElementById('loading').classList.toggle('show', show)
+  }
+
+  async function loadCounter() {
+    try {
+      const res  = await fetch(
+        `${SB}/rest/v1/rsvp_tamu?status_hadir=eq.true&client_id=eq.${clientId}&select=id`,
+        { headers: H }
+      )
+      const data = await res.json()
+      if (Array.isArray(data)) {
+        scanCount = data.length
+        document.getElementById('counter').textContent = scanCount
+      }
+    } catch(e) {}
+  }
+
+  function escapeHtml(str) {
+    if (!str) return str
+    const div = document.createElement('div')
+    div.textContent = str
+    return div.innerHTML
+  }
+
+  init()
+</script>
+</body>
+</html>
