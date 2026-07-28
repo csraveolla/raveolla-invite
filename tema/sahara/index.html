@@ -183,7 +183,6 @@
 
   /* ── Button ── */
   .btn-open {
-    position:absolute; bottom:24px; z-index:10;
     background-color:var(--primary); color:#fff;
     font-size:12px; letter-spacing:.2em; text-transform:uppercase;
     padding:12px 32px; border-radius:9999px; border:none; cursor:pointer;
@@ -266,13 +265,13 @@
     </div>
     <p id="coverDate" class="text-sm text-white/60 tracking-wide"></p>
   </div>
-  <div class="absolute bottom-20 z-10 text-center">
+  <div class="absolute bottom-6 z-10 text-center" style="left:0;right:0;">
     <p class="text-xs text-white/40 mb-2">Kepada Yth.</p>
-    <p id="guestNameDisplay" class="font-heading italic text-lg text-white/80">Tamu Undangan</p>
+    <p id="guestNameDisplay" class="font-heading italic text-lg text-white/80 mb-4">Tamu Undangan</p>
+    <button class="btn-open bg-primary hover:bg-primary-dark text-white text-xs tracking-[0.2em] uppercase px-8 py-3 rounded-full transition-all">
+      Buka Undangan
+    </button>
   </div>
-  <button class="btn-open absolute bottom-6 z-10 bg-primary hover:bg-primary-dark text-white text-xs tracking-[0.2em] uppercase px-8 py-3 rounded-full transition-all">
-    Buka Undangan
-  </button>
 </section>
 
 <!-- MAIN CONTENT -->
