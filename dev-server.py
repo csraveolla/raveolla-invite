@@ -27,6 +27,11 @@ class RootHandler(http.server.SimpleHTTPRequestHandler):
             self.path = '/scanner.html'
             return super().do_GET()
 
+        # /layar-sapa -> layar-sapa.html
+        if path in ('layar-sapa', 'layar-sapa/'):
+            self.path = '/layar-sapa.html'
+            return super().do_GET()
+
         return super().do_GET()
 
     def log_message(self, format, *args):

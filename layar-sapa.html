@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layar Sapa Tamu</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<script src="/env.js"></script>
+<style>
+  :root {
+    --gold: #C9A96E; --gold-l: #E8D5B0; --gold-d: #9A7A45;
+    --dark: #1A1614; --dark-2: #2C2420; --muted: rgba(255,255,255,0.5);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body {
+    overflow: hidden; height: 100%; width: 100%;
+    background: var(--dark);
+    font-family: 'Jost', sans-serif;
+    color: white;
+    user-select: none;
+  }
+
+  .bg-gradient {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, rgba(201,169,110,0.08) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  #main {
+    position: relative; z-index: 1;
+    height: 100vh; width: 100vw;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px;
+  }
+
+  #event-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(24px, 4vw, 52px);
+    color: var(--gold); letter-spacing: 4px;
+    font-weight: 300; margin-bottom: 60px;
+    text-align: center;
+    opacity: 0.6;
+  }
+
+  #sapa-label {
+    font-weight: 300;
+    font-size: clamp(18px, 2.5vw, 36px);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  #sapa-label.show { opacity: 1; }
+
+  #nama-container {
+    position: relative;
+    min-height: 160px;
+    display: flex; align-items: center; justify-content: center;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  #nama-wrapper {
+    text-align: center;
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1),
+                transform 0.7s cubic-bezier(0.16,1,0.3,1);
+  }
+  #nama-wrapper.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  #nama-wrapper.exit {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  #nama-tamu {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(48px, 8vw, 120px);
+    font-weight: 300;
+    color: white;
+    letter-spacing: 2px;
+    line-height: 1.2;
+  }
+  #nama-sub {
+    font-size: clamp(14px, 1.8vw, 24px);
+    font-weight: 200;
+    color: var(--muted);
+    letter-spacing: 3px;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  #progress-wrap {
+    width: 200px; height: 1px;
+    background: rgba(201,169,110,0.15);
+    border-radius: 2px; overflow: hidden;
+    opacity: 0; transition: opacity 0.5s ease;
+    margin-top: 10px;
+  }
+  #progress-wrap.show { opacity: 1; }
+  #progress-bar {
+    height: 100%; width: 100%;
+    background: var(--gold);
+    transform-origin: left;
+  }
+  #progress-bar.animate {
+    animation: sapaProgress linear forwards;
+  }
+  @keyframes sapaProgress {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+  }
+
+  #placeholder {
+    text-align: center;
+    opacity: 0.3;
+  }
+  #placeholder-icon { font-size: 48px; margin-bottom: 12px; }
+  #placeholder-text {
+    font-weight: 200; font-size: 16px;
+    letter-spacing: 3px; color: var(--muted);
+  }
+
+  #toggle-wrap {
+    position: fixed; bottom: 24px; right: 24px;
+    z-index: 100; display: flex; align-items: center; gap: 10px;
+  }
+  #toggle-label {
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: rgba(255,255,255,0.35); font-weight: 300;
+  }
+
+  .switch { position:relative; width:48px; height:24px; cursor:pointer; }
+  .switch input { opacity:0; width:0; height:0; }
+  .switch .slider {
+    position:absolute; inset:0; background: rgba(255,255,255,0.1);
+    border-radius:24px; transition:0.3s; border:1px solid rgba(255,255,255,0.1);
+  }
+  .switch .slider::before {
+    content:''; position:absolute; height:18px; width:18px;
+    left:2px; bottom:2px; background: white; border-radius:50%;
+    transition:0.3s;
+  }
+  .switch input:checked + .slider { background: var(--gold); border-color: var(--gold); }
+  .switch input:checked + .slider::before { transform:translateX(24px); }
+
+  #status-dot {
+    position: fixed; bottom: 24px; left: 24px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.2);
+  }
+  #status-dot .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #5CB85C; animation: pulse 2s ease infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  @media (max-width: 600px) {
+    #nama-tamu { font-size: 32px; }
+    #main { padding: 20px; }
+    #event-name { font-size: 18px; margin-bottom: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+
+<div id="main">
+  <div id="event-name"></div>
+
+  <div id="sapa-label">✦ &nbsp; Selamat Datang &nbsp; ✦</div>
+
+  <div id="nama-container">
+    <div id="placeholder">
+      <div id="placeholder-icon">👋</div>
+      <div id="placeholder-text">Menunggu tamu yang akan hadir...</div>
+    </div>
+    <div id="nama-wrapper">
+      <div id="nama-tamu"></div>
+      <div id="nama-sub">Telah Hadir</div>
+    </div>
+  </div>
+
+  <div id="progress-wrap">
+    <div id="progress-bar"></div>
+  </div>
+</div>
+
+<div id="toggle-wrap">
+  <span id="toggle-label">Tampilkan Nama</span>
+  <label class="switch">
+    <input type="checkbox" id="nama-switch" checked onchange="toggleNama(this.checked)">
+    <span class="slider"></span>
+  </label>
+</div>
+
+<div id="status-dot">
+  <span class="dot"></span>
+  <span>Live</span>
+</div>
+
+<script>
+  const SB  = window.__ENV.SUPABASE_URL
+  const KEY = window.__ENV.SUPABASE_KEY
+  const H   = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}` }
+
+  const params       = new URLSearchParams(window.location.search)
+  const CLIENT_ID    = params.get('client') || ''
+  const DURASI_MS    = 10000
+  const INTERVAL_MS  = 3000
+
+  let lastId       = null
+  let timer        = null
+  let sedangTampil = false
+  let namaEnabled  = true
+
+  window.toggleNama = function(checked) {
+    namaEnabled = checked
+    document.getElementById('toggle-label').textContent = checked ? 'Tampilkan Nama' : 'Sembunyikan'
+    if (!checked && sedangTampil) sembunyikan()
+  }
+
+  function tampilNama(nama) {
+    const wrapper = document.getElementById('nama-wrapper')
+    const namaEl  = document.getElementById('nama-tamu')
+    const placeholder = document.getElementById('placeholder')
+
+    if (timer) clearTimeout(timer)
+
+    if (sedangTampil) {
+      wrapper.classList.remove('visible')
+      wrapper.classList.add('exit')
+      setTimeout(() => {
+        wrapper.classList.remove('exit')
+        namaEl.textContent = nama
+        void wrapper.offsetWidth
+        wrapper.classList.add('visible')
+      }, 420)
+    } else {
+      placeholder.style.display = 'none'
+      namaEl.textContent = nama
+      void wrapper.offsetWidth
+      wrapper.classList.add('visible')
+    }
+
+    sedangTampil = true
+    tampilProgress()
+    timer = setTimeout(sembunyikan, DURASI_MS)
+  }
+
+  function tampilProgress() {
+    const pw = document.getElementById('progress-wrap')
+    const pb = document.getElementById('progress-bar')
+    pw.classList.add('show')
+    pb.classList.remove('animate')
+    pb.style.animationDuration = ''
+    void pb.offsetWidth
+    pb.style.animationDuration = `${DURASI_MS}ms`
+    pb.classList.add('animate')
+  }
+
+  function sembunyikan() {
+    const wrapper = document.getElementById('nama-wrapper')
+    const pw      = document.getElementById('progress-wrap')
+    const pb      = document.getElementById('progress-bar')
+
+    wrapper.classList.remove('visible')
+    wrapper.classList.add('exit')
+    pw.classList.remove('show')
+    pb.classList.remove('animate')
+
+    setTimeout(() => {
+      wrapper.classList.remove('exit')
+    }, 420)
+
+    sedangTampil = false
+  }
+
+  async function cekCheckin() {
+    if (!CLIENT_ID) return
+    try {
+      const res  = await fetch(
+        `${SB}/rest/v1/rsvp_tamu?client_id=eq.${CLIENT_ID}&status_hadir=eq.true&select=id,nama,waktu_hadir&order=waktu_hadir.desc&limit=1`,
+        { headers: H }
+      )
+      const data = await res.json()
+      if (!Array.isArray(data) || !data.length) return
+      const terbaru = data[0]
+      if (terbaru.id === lastId) return
+      lastId = terbaru.id
+      if (namaEnabled) tampilNama(terbaru.nama)
+    } catch(e) {}
+  }
+
+  function init() {
+    const clientParam = document.getElementById('event-name')
+    if (!CLIENT_ID) {
+      clientParam.textContent = 'Parameter ?client= tidak ditemukan'
+      return
+    }
+    fetch(`${SB}/rest/v1/clients?id=eq.${CLIENT_ID}&select=nama_acara`, { headers: H })
+      .then(r => r.json())
+      .then(d => {
+        if (Array.isArray(d) && d.length) {
+          clientParam.textContent = (d[0].nama_acara || '').toUpperCase()
+        }
+      })
+      .catch(() => {})
+    cekCheckin()
+    setInterval(cekCheckin, INTERVAL_MS)
+  }
+
+  document.addEventListener('DOMContentLoaded', init)
+</script>
+</body>
+</html>

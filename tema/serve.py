@@ -113,6 +113,13 @@ class SPAHandler(http.server.SimpleHTTPRequestHandler):
                 self.path = '/scanner.html'
                 return super().do_GET()
 
+        # Handle /layar-sapa
+        if slug.lower() == 'layar-sapa':
+            ls_path = os.path.join(ROOT, 'layar-sapa.html')
+            if os.path.exists(ls_path):
+                self.path = '/layar-sapa.html'
+                return super().do_GET()
+
         # Query Supabase for theme
         theme = get_theme_for_slug(slug)
         theme_path = os.path.join(TEMA, theme, 'index.html')
