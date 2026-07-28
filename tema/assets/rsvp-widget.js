@@ -73,12 +73,15 @@
 
   // ── PRE-FILL FORM ──────────────────────────────────────────────
   function prefillForm(nama) {
-    const input = $('rsvpName')
-    if (!input) return
-    input.value = nama
-    input.readOnly = true
-    input.style.opacity = '0.7'
-    input.style.cursor = 'default'
+    const fields = ['rsvpName', 'komentarNama']
+    fields.forEach(id => {
+      const el = $(id)
+      if (!el) return
+      el.value = nama
+      el.readOnly = true
+      el.style.opacity = '0.7'
+      el.style.cursor = 'default'
+    })
   }
 
   // ── SHOW FORM / DONE / QR ─────────────────────────────────────
@@ -272,7 +275,6 @@
     try {
       await sbPost('komentar', {
         client_id: _clientId,
-        tamu_id:   _guestId,
         nama:      nama,
         isi:       isi,
       })
