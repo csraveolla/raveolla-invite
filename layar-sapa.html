@@ -26,17 +26,36 @@
     pointer-events: none; z-index: 0;
   }
   #bg-photo {
-    position: fixed; inset: 0; z-index: -1;
-    background-size: cover; background-position: center;
+    position: fixed; inset: 0; z-index: 0;
     background-color: var(--dark);
   }
   #bg-photo::after {
     content: ''; position: absolute; inset: 0;
-    background: rgba(0,0,0,0.55);
+    background: rgba(0,0,0,0.35);
+    z-index: 2;
+  }
+  .bg-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+    z-index: 1;
+  }
+  .bg-img.active {
+    opacity: 1;
+  }
+  @keyframes kenburns {
+    0%   { transform: scale(1); }
+    100% { transform: scale(1.08); }
+  }
+  .bg-img {
+    animation: kenburns 10s ease-in-out forwards;
+    animation-delay: 1.5s;
   }
 
   #main {
-    position: relative; z-index: 1;
+    position: relative; z-index: 3;
     height: 100vh; width: 100vw;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -98,7 +117,7 @@
 
   #nama-tamu {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(48px, 8vw, 120px);
+    font-size: clamp(48px, 6vw, 120px);
     font-weight: 300;
     color: white;
     letter-spacing: 2px;
@@ -318,6 +337,43 @@
     } catch(e) {}
   }
 
+  const PHOTO_INTERVAL = 10000
+  let bgPhotos = []
+  let bgIndex = 0
+  let bgTimer = null
+  let bgEl = null
+  const ORIGINS = ['center center', 'center 30%', '30% center', '70% center', 'center 70%']
+
+  function showBgPhoto(index) {
+    if (!bgPhotos.length) return
+    const url = bgPhotos[index % bgPhotos.length].file_url
+    const img = document.createElement('img')
+    img.className = 'bg-img'
+    img.src = url
+    img.alt = ''
+    img.style.transformOrigin = ORIGINS[index % ORIGINS.length]
+    img.onerror = () => console.warn('[sapa] bg img error:', url)
+    const prev = bgEl.querySelector('.bg-img')
+    bgEl.appendChild(img)
+    void img.offsetWidth
+    img.classList.add('active')
+    if (prev) {
+      setTimeout(() => { if (prev.parentNode) prev.parentNode.removeChild(prev) }, 1600)
+    }
+  }
+
+  function startBgSlideshow(photos) {
+    bgPhotos = photos
+    if (!bgPhotos.length) return
+    showBgPhoto(0)
+    bgIndex = 1
+    if (bgTimer) clearInterval(bgTimer)
+    bgTimer = setInterval(() => {
+      showBgPhoto(bgIndex % bgPhotos.length)
+      bgIndex++
+    }, PHOTO_INTERVAL)
+  }
+
   function init() {
     const clientParam = document.getElementById('event-name')
     if (!CLIENT_ID) {
@@ -325,7 +381,7 @@
       return
     }
 
-    const bgEl = document.getElementById('bg-photo')
+    bgEl = document.getElementById('bg-photo')
 
     fetch(`${SB}/rest/v1/clients?id=eq.${CLIENT_ID}&select=nama_acara`, { headers: H })
       .then(r => r.json())
@@ -342,17 +398,17 @@
     fetch(`${SB}/rest/v1/invitations?client_id=eq.${CLIENT_ID}&select=id&limit=1`, { headers: H })
       .then(r => r.json())
       .then(inv => {
-        if (!Array.isArray(inv) || !inv.length) return
+        if (!Array.isArray(inv) || !inv.length) { console.warn('[sapa] no invitation for client'); return }
         const invId = inv[0].id
-        return fetch(`${SB}/rest/v1/galleries?invitation_id=eq.${invId}&is_cover=eq.true&select=file_url&limit=1`, { headers: H })
+        return fetch(`${SB}/rest/v1/galleries?invitation_id=eq.${invId}&select=file_url,is_cover&limit=5`, { headers: H })
       })
-      .then(r => r ? r.json() : null)
-      .then(d => {
-        if (d && Array.isArray(d) && d.length && d[0].file_url) {
-          bgEl.style.backgroundImage = `url(${d[0].file_url})`
-        }
+      .then(r => r ? r.json() : [])
+      .then(rows => {
+        if (!rows.length) { console.warn('[sapa] no gallery photos'); return }
+        const photos = rows.slice(0, 3)
+        startBgSlideshow(photos)
       })
-      .catch(() => {})
+      .catch(e => console.warn('[sapa] bg error:', e))
 
     cekCheckin()
     setInterval(cekCheckin, INTERVAL_MS)

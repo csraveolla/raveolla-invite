@@ -68,7 +68,8 @@ class SPAHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=ROOT, **kwargs)
 
     def do_GET(self):
-        path = os.path.join(ROOT, self.path.lstrip('/'))
+        clean_path = urllib.parse.urlparse(self.path).path
+        path = os.path.join(ROOT, clean_path.lstrip('/'))
 
         # Map /assets/* → /tema/assets/* (same as .htaccess)
         if self.path.startswith('/assets/'):
@@ -82,7 +83,7 @@ class SPAHandler(http.server.SimpleHTTPRequestHandler):
             return super().do_GET()
 
         # Extract slug from path (last segment)
-        parts = [p for p in self.path.strip('/').split('/') if p]
+        parts = [p for p in clean_path.strip('/').split('/') if p]
         slug = parts[-1] if parts else ''
 
         # Skip admin paths
