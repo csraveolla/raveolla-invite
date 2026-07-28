@@ -25,6 +25,15 @@
     background: radial-gradient(ellipse at 50% 40%, rgba(201,169,110,0.08) 0%, transparent 70%);
     pointer-events: none; z-index: 0;
   }
+  #bg-photo {
+    position: fixed; inset: 0; z-index: -1;
+    background-size: cover; background-position: center;
+    background-color: var(--dark);
+  }
+  #bg-photo::after {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(0,0,0,0.55);
+  }
 
   #main {
     position: relative; z-index: 1;
@@ -36,11 +45,18 @@
 
   #event-name {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(24px, 4vw, 52px);
+    font-size: clamp(24px, 6vw, 52px);
     color: var(--gold); letter-spacing: 4px;
     font-weight: 300; margin-bottom: 60px;
     text-align: center;
-    opacity: 0.6;
+  }
+  #event-name .el {
+    display: inline-block;
+    animation: zoomLetter 2s ease-in-out infinite;
+  }
+  @keyframes zoomLetter {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.15); opacity: 1; }
   }
 
   #sapa-label {
@@ -171,9 +187,11 @@
 </head>
 <body>
 
+<div id="bg-photo"></div>
 <div class="bg-gradient"></div>
 
 <div id="main">
+  <div style="font-size:clamp(10px,1.2vw,16px);letter-spacing:6px;text-transform:uppercase;color:var(--gold);opacity:0.4;font-weight:300;margin-bottom:8px">The Wedding Of</div>
   <div id="event-name"></div>
 
   <div id="sapa-label">✦ &nbsp; Selamat Datang &nbsp; ✦</div>
@@ -185,7 +203,7 @@
     </div>
     <div id="nama-wrapper">
       <div id="nama-tamu"></div>
-      <div id="nama-sub">Telah Hadir</div>
+      <div id="nama-sub">Selamat Datang</div>
     </div>
   </div>
 
@@ -306,14 +324,36 @@
       clientParam.textContent = 'Parameter ?client= tidak ditemukan'
       return
     }
+
+    const bgEl = document.getElementById('bg-photo')
+
     fetch(`${SB}/rest/v1/clients?id=eq.${CLIENT_ID}&select=nama_acara`, { headers: H })
       .then(r => r.json())
       .then(d => {
         if (Array.isArray(d) && d.length) {
-          clientParam.textContent = (d[0].nama_acara || '').toUpperCase()
+          const txt = (d[0].nama_acara || '').toUpperCase()
+          clientParam.innerHTML = txt.split('').map((c, i) =>
+            `<span class="el" style="animation-delay:${i * 0.12}s">${c === ' ' ? '&nbsp;' : c}</span>`
+          ).join('')
         }
       })
       .catch(() => {})
+
+    fetch(`${SB}/rest/v1/invitations?client_id=eq.${CLIENT_ID}&select=id&limit=1`, { headers: H })
+      .then(r => r.json())
+      .then(inv => {
+        if (!Array.isArray(inv) || !inv.length) return
+        const invId = inv[0].id
+        return fetch(`${SB}/rest/v1/galleries?invitation_id=eq.${invId}&is_cover=eq.true&select=file_url&limit=1`, { headers: H })
+      })
+      .then(r => r ? r.json() : null)
+      .then(d => {
+        if (d && Array.isArray(d) && d.length && d[0].file_url) {
+          bgEl.style.backgroundImage = `url(${d[0].file_url})`
+        }
+      })
+      .catch(() => {})
+
     cekCheckin()
     setInterval(cekCheckin, INTERVAL_MS)
   }
