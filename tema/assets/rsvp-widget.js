@@ -15,6 +15,13 @@
     'Content-Type': 'application/json',
   }
 
+  // ── ANTI-SPAM CONFIG ──────────────────────────────────────────
+  const KOMENTAR_COOLDOWN   = 30   // detik antar komentar
+  const RSVP_COOLDOWN       = 60   // detik antar RSVP
+  const MAX_PANJANG_PESAN   = 500  // karakter max ucapan/pesan
+  const ERROR_HIDE_DELAY    = 5000 // detik error auto-hide
+  const DUPLICATE_CHECK_N   = 10   // cek N komentar terakhir
+
   // ── STATE ──────────────────────────────────────────────────────
   let _clientId      = null
   let _invitationId  = null
@@ -23,6 +30,7 @@
   let _rsvpData      = null
   let _qrToken       = null
   let _selectedStatus = 'Hadir'
+  let _errorTimers   = {}
 
   // ── HELPERS ────────────────────────────────────────────────────
   function escHtml(s) {
@@ -59,6 +67,87 @@
   function hideEl(id) { const el = $(id); if (el) el.style.display = 'none' }
   function showBlock(id) { const el = $(id); if (el) el.style.display = 'block' }
   function showFlex(id) { const el = $(id); if (el) el.style.display = 'flex' }
+
+  // ── ANTI-SPAM: ERROR AUTO-HIDE ───────────────────────────────
+  function showError(errEl, msg) {
+    if (!errEl) return
+    errEl.textContent = msg
+    errEl.style.display = 'block'
+    const key = errEl.id || 'err'
+    if (_errorTimers[key]) clearTimeout(_errorTimers[key])
+    _errorTimers[key] = setTimeout(() => {
+      errEl.textContent = ''
+      errEl.style.display = 'none'
+    }, ERROR_HIDE_DELAY)
+  }
+
+  // ── ANTI-SPAM: COOLDOWN CHECK ────────────────────────────────
+  function getCooldownKey(type) {
+    const scope = _clientId || 'global'
+    const guest = _guestId || 'anon'
+    return `nikahin_${type}_${scope}_${guest}`
+  }
+
+  function checkCooldown(type, seconds) {
+    try {
+      const key = getCooldownKey(type)
+      const last = parseInt(localStorage.getItem(key) || '0', 10)
+      const now  = Math.floor(Date.now() / 1000)
+      const diff = now - last
+      if (diff < seconds) {
+        return { ok: false, wait: seconds - diff }
+      }
+      return { ok: true }
+    } catch(e) {
+      return { ok: true }
+    }
+  }
+
+  function setCooldown(type) {
+    try {
+      const key = getCooldownKey(type)
+      localStorage.setItem(key, Math.floor(Date.now() / 1000))
+    } catch(e) {}
+  }
+
+  // ── ANTI-SPAM: SPAM CONTENT FILTER ───────────────────────────
+  const SPAM_URL_RE   = /https?:\/\/|www\.\S+|\.com|\.co\.|\.id\b|\.org\b|\.net\b/i
+  const SPAM_PHONE_RE = /\b08\d{8,}|\b62\d{9,}|\b62\s?\d{4}\s?\d{4}\s?\d{4}/
+
+  function isSpamContent(text) {
+    if (!text) return false
+    const trimmed = text.trim()
+    if (SPAM_URL_RE.test(trimmed)) return true
+    if (SPAM_PHONE_RE.test(trimmed)) return true
+    return false
+  }
+
+  // ── ANTI-SPAM: DUPLICATE CHECK ───────────────────────────────
+  async function isDuplicateKomentar(nama, isi) {
+    if (!_clientId) return false
+    try {
+      const data = await sbFetch('komentar',
+        `?client_id=eq.${_clientId}&order=created_at.desc&limit=${DUPLICATE_CHECK_N}&select=nama,isi`)
+      if (!data || !data.length) return false
+      const normNama = nama.toLowerCase().trim()
+      const normIsi  = isi.toLowerCase().trim()
+      return data.some(k =>
+        k.nama && k.isi &&
+        k.nama.toLowerCase().trim() === normNama &&
+        k.isi.toLowerCase().trim() === normIsi
+      )
+    } catch(e) {
+      return false
+    }
+  }
+
+  // ── ANTI-SPAM: VALIDATE MESSAGE LENGTH ───────────────────────
+  function validateLength(text, max, fieldName) {
+    if (text && text.length > max) {
+      return `${fieldName} maksimal ${max} karakter (saat ini: ${text.length})`
+    }
+    return null
+  }
 
   // ── LOADING ────────────────────────────────────────────────────
   function showLoading() { showBlock('rsvpLoading'); hideEl('rsvpFormBody'); hideEl('rsvpDone'); hideEl('qrScreen') }
@@ -191,10 +280,24 @@
     const errEl  = $('rsvpError')
     const btn    = $('rsvpSubmitBtn')
 
-    if (!name)   { if (errEl) errEl.textContent = 'Nama wajib diisi.'; return }
-    if (!status) { if (errEl) errEl.textContent = 'Pilih status kehadiran.'; return }
-    if (errEl)   errEl.textContent = ''
+    if (!name)   { showError(errEl, 'Nama wajib diisi.'); return }
+    if (!status) { showError(errEl, 'Pilih status kehadiran.'); return }
 
+    const lenErr = validateLength(wishes, MAX_PANJANG_PESAN, 'Pesan')
+    if (lenErr) { showError(errEl, lenErr); return }
+
+    if (isSpamContent(wishes)) {
+      showError(errEl, 'Pesan tidak boleh hanya berisi link atau nomor telepon.')
+      return
+    }
+
+    const cd = checkCooldown('rsvp', RSVP_COOLDOWN)
+    if (!cd.ok) {
+      showError(errEl, `Tunggu ${cd.wait} detik sebelum mengirim lagi.`)
+      return
+    }
+
+    if (errEl) { errEl.textContent = ''; errEl.style.display = 'none' }
     if (btn) { btn.disabled = true; btn.textContent = 'Mengirim...' }
 
     _qrToken = generateToken()
@@ -214,10 +317,11 @@
       const data = await sbPost('rsvp_tamu', payload, true)
       _rsvpData = Array.isArray(data) ? data[0] : data
 
+      setCooldown('rsvp')
       showRsvpDone(status)
       RsvpWidget.showQR()
     } catch(e) {
-      if (errEl) errEl.textContent = 'Gagal mengirim, coba lagi.'
+      showError(errEl, 'Gagal mengirim, coba lagi.')
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'Kirim' }
     }
@@ -265,26 +369,47 @@
     const errEl = $('komentarError')
 
     if (!nama || !isi) {
-      if (errEl) errEl.textContent = 'Nama dan ucapan wajib diisi.'
+      showError(errEl, 'Nama dan ucapan wajib diisi.')
       return
     }
-    if (errEl) errEl.textContent = ''
+
+    const lenErr = validateLength(isi, MAX_PANJANG_PESAN, 'Ucapan')
+    if (lenErr) { showError(errEl, lenErr); return }
+
+    if (isSpamContent(isi)) {
+      showError(errEl, 'Ucapan tidak boleh hanya berisi link atau nomor telepon.')
+      return
+    }
+
+    const cd = checkCooldown('komentar', KOMENTAR_COOLDOWN)
+    if (!cd.ok) {
+      showError(errEl, `Tunggu ${cd.wait} detik sebelum mengirim lagi.`)
+      return
+    }
 
     if (btn) { btn.disabled = true; btn.textContent = 'Mengirim...' }
 
     try {
+      const dup = await isDuplicateKomentar(nama, isi)
+      if (dup) {
+        showError(errEl, 'Ucapan serupa baru saja dikirim.')
+        if (btn) { btn.disabled = false; btn.textContent = 'Kirim Ucapan' }
+        return
+      }
+
       await sbPost('komentar', {
         client_id: _clientId,
         nama:      nama,
         isi:       isi,
       })
 
+      setCooldown('komentar')
       $('komentarIsi').value = ''
       if (btn) btn.textContent = '✓ Terkirim!'
       loadKomentar()
-      setTimeout(() => { if (btn) { btn.disabled = false; btn.textContent = 'Kirim Ucapan' } }, 2000)
+      setTimeout(() => { if (btn) { btn.disabled = false; btn.textContent = 'Kirim Ucapan' } }, 3000)
     } catch(e) {
-      if (errEl) errEl.textContent = 'Gagal mengirim.'
+      showError(errEl, 'Gagal mengirim.')
       if (btn) { btn.disabled = false; btn.textContent = 'Kirim Ucapan' }
     }
   }
@@ -312,11 +437,9 @@
           showKepadaBanner(_guestName)
           prefillForm(_guestName)
 
-          // Broadcast nama ke elemen lain
           document.dispatchEvent(new CustomEvent('tamuLoaded', { detail: { nama: _guestName } }))
         }
 
-        // Cek sudah RSVP
         if (rsvpRows?.length) {
           _rsvpData = rsvpRows[0]
           _qrToken  = _rsvpData.qr_token
