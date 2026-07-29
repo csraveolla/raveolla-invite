@@ -1,0 +1,377 @@
+<!-- Toggle tampil/sembunyi nama -->
+<div id="sapa-toggle-wrap">
+  <div id="sapa-toggle-label-text" id="sapa-toggle-txt">Tampilkan Nama</div>
+  <label class="switch-button" for="sapa-switch" title="Toggle tampil/sembunyi nama tamu">
+    <div class="switch-outer">
+      <input id="sapa-switch" type="checkbox" checked onchange="sapaToggleNama(this.checked)"/>
+      <div class="button">
+        <span class="button-toggle"></span>
+        <span class="button-indicator"></span>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- 
+  ============================================================
+  LAYAR SAPA TAMU - Widget HTML Elementor
+  ============================================================
+  CARA PAKAI:
+  1. Paste kode ini di Widget HTML Elementor
+  2. Di Widget Tajuk Elementor → tab Advanced → CSS Classes
+     tambahkan class: sapa-nama
+  3. Ganti CLIENT_ID dan NAMA_ACARA di bawah
+  ============================================================
+-->
+
+<style>
+  html, body { overflow: hidden !important; margin: 0; padding: 0; }
+  /* ===== WRAPPER .sapa-nama - hidden by default ===== */
+  .sapa-nama {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    transform: translateY(18px) !important;
+    transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1),
+                transform 0.65s cubic-bezier(0.16,1,0.3,1),
+                visibility 0s linear 0.65s !important;
+  }
+  .sapa-nama.sapa-visible {
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1),
+                transform 0.65s cubic-bezier(0.16,1,0.3,1),
+                visibility 0s linear 0s !important;
+  }
+  .sapa-nama.sapa-exit {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    transform: translateY(-12px) !important;
+    transition: opacity 0.4s ease,
+                transform 0.4s ease,
+                visibility 0s linear 0.4s !important;
+  }
+
+  /* ===== KONTAINER LABEL ===== */
+  @keyframes sapaKontainerMasuk {
+    0%   { opacity:0; transform:translateY(14px) scale(0.96); }
+    65%  { opacity:1; transform:translateY(-2px) scale(1.01); }
+    100% { opacity:1; transform:translateY(0) scale(1); }
+  }
+  @keyframes sapaKontainerKeluar {
+    from { opacity:1; transform:translateY(0) scale(1); }
+    to   { opacity:0; transform:translateY(8px) scale(0.97); }
+  }
+
+  #sapa-kontainer {
+    display: none;
+    background: rgba(0,0,0,0.6);
+    padding: 12px 28px 10px;
+    text-align: center;
+    margin-bottom: 14px;
+    border-radius: 25px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  #sapa-kontainer.sapa-tampil {
+    display: block;
+    animation: sapaKontainerMasuk 0.7s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  #sapa-kontainer.sapa-keluar {
+    animation: sapaKontainerKeluar 0.4s ease both;
+  }
+
+  #sapa-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 40px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: #C9A96E;
+    font-weight: 300;
+    margin: 0;
+  }
+  #sapa-sub {
+    font-family: 'Jost', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.65);
+    font-weight: 300;
+    font-style: italic;
+    margin-top: 5px;
+  }
+
+  /* ===== PROGRESS BAR ===== */
+  #sapa-progress-wrap {
+    width: 80%; height: 2px;
+    background: rgba(201,169,110,0.2);
+    margin: 10px auto 0;
+    border-radius: 2px;
+    display: none; overflow: hidden;
+  }
+  #sapa-progress-bar {
+    height: 100%; background: #C9A96E;
+    width: 100%; transform-origin: left; border-radius: 2px;
+  }
+  #sapa-progress-bar.sapa-hitung { animation: sapaProgress linear both; }
+  @keyframes sapaProgress {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+  }
+
+  /* ===== TOGGLE TAMPIL/SEMBUNYI ===== */
+  #sapa-toggle-wrap {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 9999;
+    max-width: calc(100vw - 32px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  #sapa-toggle-label-text {
+    font-family: 'Jost', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    font-weight: 300;
+    text-align: center;
+  }
+
+  .switch-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    height: 28px;
+  }
+  .switch-button .switch-outer {
+    height: 100%;
+    width: 58px;
+    background: linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%);
+    border-radius: 165px;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow:
+      0px 10px 22px rgba(0,0,0,0.15),
+      0px 2px 6px rgba(0,0,0,0.1),
+      inset 0px 2px 2px rgba(255,255,255,0.95),
+      inset 0px -5px 10px rgba(0,0,0,0.06);
+    padding: 5px;
+    box-sizing: border-box;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+  }
+  .switch-button .switch-outer input[type="checkbox"] {
+    opacity: 0;
+    appearance: none;
+    position: absolute;
+  }
+  .switch-button .switch-outer .button {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    position: relative;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .switch-button .switch-outer .button-toggle {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 25%, #ffffff 0%, #f2f3f5 45%, #e3e5e8 100%);
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow:
+      inset 0px 2px 3px rgba(255,255,255,0.95),
+      inset 0px -6px 10px rgba(0,0,0,0.08),
+      0px 10px 18px rgba(0,0,0,0.16),
+      0px 2px 5px rgba(0,0,0,0.12);
+    position: relative;
+    z-index: 2;
+    transition: left 0.28s ease-in-out;
+    left: 0;
+  }
+  .switch-button .switch-outer input[type="checkbox"]:checked + .button .button-toggle {
+    left: 58%;
+  }
+  .switch-button .switch-outer .button-indicator {
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    border: 2px solid #ff5b61;
+    background: rgba(255,255,255,0.9);
+    box-shadow:
+      0px 1px 2px rgba(0,0,0,0.12),
+      inset 0px 1px 1px rgba(255,255,255,0.7);
+    position: relative;
+    right: 3px;
+  }
+  .switch-button .switch-outer input[type="checkbox"]:checked + .button .button-indicator {
+    animation: sapaSwitchIndicator 0.9s forwards;
+  }
+  @keyframes sapaSwitchIndicator {
+    0%   { opacity:1; }
+    30%  { opacity:0; }
+    100% { opacity:1; border:3px solid #35c759; left:-68%; }
+  }
+</style>
+
+<!-- Kontainer label dengan background gelap -->
+<div id="sapa-kontainer">
+  <div id="sapa-label">✦ &nbsp; Selamat Datang &nbsp; ✦</div>
+  <div id="sapa-sub">Kami dengan tulus menyambut kehadiran Anda</div>
+  <div id="sapa-progress-wrap">
+    <div id="sapa-progress-bar"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // Ambil CLIENT_ID dari URL parameter
+  // Contoh URL: halaman-sapa.com?client=UUID-CLIENT
+  const params       = new URLSearchParams(window.location.search);
+  const CLIENT_ID    = params.get('client') || '';
+  const TEKS_DEFAULT = 'Nama Tamu';
+  const DURASI_MS    = 10000;
+  const INTERVAL_MS  = 3000;
+
+  if (!CLIENT_ID) {
+    console.warn('Layar Sapa: parameter ?client= tidak ditemukan di URL');
+  }
+
+  const SB  = 'https://eyeyxsguibypmpwrnzav.supabase.co';
+  const KEY = 'sb_publishable_Bqb0LVCKXHoAkTU0M8RfFA_EP0kOAqz';
+  const H   = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}` };
+
+  let lastId       = null;
+  let timer        = null;
+  let sedangTampil = false;
+  let namaEnabled  = true; // toggle on by default
+
+  // Toggle tampil/sembunyi nama
+  window.sapaToggleNama = function(checked) {
+    namaEnabled = checked;
+    const txt = document.getElementById('sapa-toggle-label-text');
+    if (txt) txt.textContent = checked ? 'Tampilkan Nama' : 'Sembunyikan';
+    if (!checked) {
+      // Sembunyikan nama sekarang kalau sedang tampil
+      if (sedangTampil) sembunyikan();
+    }
+  };
+
+  // Cari heading di dalam .sapa-nama (wrapper Elementor)
+  function getWrapper() {
+    return document.querySelector('.sapa-nama');
+  }
+  function getHeading() {
+    const wrap = getWrapper();
+    if (!wrap) return null;
+    return wrap.querySelector('.elementor-heading-title') ||
+           wrap.querySelector('h1,h2,h3,h4,h5,h6') ||
+           wrap;
+  }
+
+  function tampilNama(nama) {
+    const wrap    = getWrapper();
+    const heading = getHeading();
+    if (!wrap || !heading) return;
+
+    // Clear timer sebelumnya
+    if (timer) clearTimeout(timer);
+
+    // Kalau sedang tampil → exit dulu lalu ganti
+    if (sedangTampil) {
+      wrap.classList.remove('sapa-visible');
+      wrap.classList.add('sapa-exit');
+      setTimeout(() => {
+        wrap.classList.remove('sapa-exit');
+        heading.textContent = nama;
+        void wrap.offsetWidth;
+        wrap.classList.add('sapa-visible');
+      }, 420);
+    } else {
+      heading.textContent = nama;
+      void wrap.offsetWidth;
+      wrap.classList.remove('sapa-exit');
+      wrap.classList.add('sapa-visible');
+    }
+
+    sedangTampil = true;
+
+    // Tampilkan kontainer label
+    tampilKontainer();
+
+    // Kembali ke hidden setelah durasi
+    timer = setTimeout(sembunyikan, DURASI_MS);
+  }
+
+  function tampilKontainer() {
+    const k = document.getElementById('sapa-kontainer');
+    const pb = document.getElementById('sapa-progress-bar');
+    const pw = document.getElementById('sapa-progress-wrap');
+    if (!k) return;
+
+    k.classList.remove('sapa-keluar');
+    void k.offsetWidth;
+    k.classList.add('sapa-tampil');
+
+    pw.style.display = 'block';
+    pb.classList.remove('sapa-hitung');
+    pb.style.animationDuration = '';
+    void pb.offsetWidth;
+    pb.style.animationDuration = `${DURASI_MS}ms`;
+    pb.classList.add('sapa-hitung');
+  }
+
+  function sembunyikan() {
+    const wrap = getWrapper();
+    const k    = document.getElementById('sapa-kontainer');
+    const pw   = document.getElementById('sapa-progress-wrap');
+    const pb   = document.getElementById('sapa-progress-bar');
+
+    // Sembunyikan nama
+    if (wrap) {
+      wrap.classList.remove('sapa-visible');
+      wrap.classList.add('sapa-exit');
+    }
+
+    // Sembunyikan kontainer label
+    if (k && k.classList.contains('sapa-tampil')) {
+      k.classList.add('sapa-keluar');
+      setTimeout(() => {
+        k.classList.remove('sapa-tampil', 'sapa-keluar');
+        pw.style.display = 'none';
+        pb.classList.remove('sapa-hitung');
+      }, 420);
+    }
+
+    sedangTampil = false;
+  }
+
+  // Cek check-in terbaru
+  async function cekCheckin() {
+    if (!CLIENT_ID) return;
+    try {
+      const res  = await fetch(
+        `${SB}/rest/v1/rsvp_tamu?client_id=eq.${CLIENT_ID}&status_hadir=eq.true&select=id,nama,waktu_hadir&order=waktu_hadir.desc&limit=1`,
+        { headers: H }
+      );
+      const data = await res.json();
+      if (!Array.isArray(data) || !data.length) return;
+      const terbaru = data[0];
+      if (terbaru.id === lastId) return;
+      lastId = terbaru.id;
+      if (namaEnabled) tampilNama(terbaru.nama);
+    } catch(e) {}
+  }
+
+  // Init
+  window.addEventListener('DOMContentLoaded', () => {
+    cekCheckin();
+    setInterval(cekCheckin, INTERVAL_MS);
+  });
+
+})();
+</script>
