@@ -254,10 +254,11 @@ export async function saveInvMempelai() {
     })
     if (!res.ok) throw new Error(await res.text())
 
-    await fetch(`${SB_URL}/rest/v1/clients?id=eq.${INV.clientId}`, {
+    const cliRes = await fetch(`${SB_URL}/rest/v1/clients?id=eq.${INV.clientId}`, {
       method: 'PATCH', headers: authHeaders(),
       body: JSON.stringify({ tanggal_acara: tglEl.value || null })
     })
+    if (!cliRes.ok) throw new Error('Gagal simpan tanggal acara: ' + await cliRes.text())
 
     invMsg(msg, 'success', '✓ Data mempelai tersimpan.')
   } catch (e) {

@@ -223,11 +223,18 @@ export async function saveInvitationMain() {
       .eq('id', invitationId);
     if (error) throw new Error(error.message);
 
-    await supabaseClient
+    const { error: cliErr } = await supabaseClient
       .from('clients')
       .update({ tanggal_acara: tglVal })
       .eq('id', clientData.id);
+    if (cliErr) throw new Error(cliErr.message);
     clientData.tanggal_acara = tglVal;
+
+    const tglAcaraEl = document.getElementById('inv-info-tanggal-acara');
+    if (tglAcaraEl) {
+      const d = new Date(tglVal + 'T00:00:00');
+      tglAcaraEl.textContent = d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+    }
 
     const { data: evRows } = await supabaseClient
       .from('events')
