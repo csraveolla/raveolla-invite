@@ -8,7 +8,7 @@ export function bukaModalTemplate(fieldId) {
   targetFieldId = fieldId;
   const modal  = document.getElementById('modal-template-pesan');
   const iframe = document.getElementById('iframe-template-pesan');
-  iframe.src = 'template-pesan.html'; // sesuaikan path halaman katalog template kamu
+  iframe.src = 'https://nikahinkita.my.id/template-pesan/';
   modal.classList.add('show');
 }
 

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pilih Template</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Jost', sans-serif;
+    background: #faf6f0;
+    padding: 16px;
+    color: #3a2a1a;
+  }
+  .kategori { margin-bottom: 20px; }
+  .kategori-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #b8946e;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .template-card {
+    background: white;
+    border: 1px solid #e8ddd0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+  .template-card:hover {
+    border-color: #b8946e;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .template-card:active { background: #f5ede4; }
+</style>
+</head>
+<body>
+
+<div class="kategori">
+  <div class="kategori-title">📨 Undangan</div>
+  <div class="template-card" onclick="pilih(`*_Assalamualaikum warahmatullahi wabarakatuh._*\n\nDengan rahmat dan rida Allah SWT, kami bermaksud mengundang Bapak/Ibu/Saudara/i *{nama}* di acara pernikahan kami, yang InsyaAllah akan berlangsung pada:\n\n*Hari : Sabtu*\nTanggal : *15 Juni 2025*\nPukul : 09.00 WIB s.d Selesai\nTempat : Jl. Tamanharapan III, Surabaya\n\nMerupakan suatu kehormatan bagi kami apabila Bapak/Ibu/Saudara/i *{nama}* berkenan hadir untuk memberikan doa restu kepada kami\n\n*_Wassalamu'alaikum Warahmatullahi Wabarakatuh_*\n\n_kami yang berbahagia_ \n*nama kedua mempelai*`)">Template Undangan Standar</div>
+</div>
+
+<div class="kategori">
+  <div class="kategori-title">⏰ Reminder RSVP</div>
+  <div class="template-card" onclick="pilih(`Halo {nama} 👋\n\nKami mengundang Anda untuk hadir di acara *{acara}*. Mohon konfirmasi kehadiran melalui link berikut:\n{link}\n\nTerima kasih 🙏`)">Reminder RSVP — Standar</div>
+  <div class="template-card" onclick="pilih(`Assalamualaikum {nama},\n\nKami tunggu konfirmasi kehadiran Anda di acara *{acara}*. Silakan klik link berikut:\n{link}\n\nWassalamu'alaikum 🙏`)">Reminder RSVP — Islami</div>
+</div>
+
+<div class="kategori">
+  <div class="kategori-title">🙏 Ucapan Terima Kasih</div>
+  <div class="template-card" onclick="pilih(`Terima kasih {nama} atas kehadiran dan doa restu yang telah diberikan di acara *{acara}*. Semoga silaturahmi kita selalu terjaga. Salam hangat 🙏`)">Ucapan — Standar</div>
+  <div class="template-card" onclick="pilih(`Assalamualaikum {nama},\n\nTerima kasih banyak telah hadir dan memberikan doa restu di acara *{acara}*. Semoga Allah SWT membalas kebaikan Bapak/Ibu. Sampai jumpa kembali 🙏`)">Ucapan — Islami</div>
+</div>
+
+<div class="kategori">
+  <div class="kategori-title">📅 Reminder H-3 / H-1</div>
+  <div class="template-card" onclick="pilih(`Assalamualaikum {nama},\n\n*{hari}* ini adalah H-{h} acara *{acara}*. Kami tunggu kehadiran Anda ya 🙏\n\nWaktu: {jam}\nTempat: {tempat}\nLink: {link}\n\nTerima kasih`)">Reminder H-3/H-1 — Standar</div>
+</div>
+
+<script>
+  function pilih(text) {
+    window.parent.postMessage({ type: 'template-selected', text }, '*');
+  }
+</script>
+</body>
+</html>

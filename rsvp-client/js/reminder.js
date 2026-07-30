@@ -121,7 +121,7 @@ export function loadReminderUcapanSettings() {
   if (jadwal) {
     document.getElementById('rem-ucapan-jadwal').value = jadwal;
     const info = document.getElementById('rem-ucapan-jadwal-info');
-    if (info) { info.textContent = `✓ Terjadwal: ${new Date(jadwal + 'T00:00:00').toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' })} jam 08.00 WIB`; info.style.color = 'var(--green)'; }
+    if (info) { info.textContent = `✓ Terjadwal: ${new Date(jadwal + 'T00:00:00').toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' })} jam 10.00 WIB`; info.style.color = 'var(--green)'; }
   }
 }
 
@@ -254,7 +254,7 @@ export async function simpanJadwalUcapan() {
     await fetch(`${SB}/rest/v1/clients?id=eq.${clientData.id}`, { method: 'PATCH', headers: { ...H, 'Prefer': 'return=minimal' }, body: JSON.stringify({ reminder_ucapan_aktif: true, reminder_ucapan_jadwal: jadwal, reminder_ucapan_template: template }) });
     clientData.reminder_ucapan_aktif = true; clientData.reminder_ucapan_jadwal = jadwal; clientData.reminder_ucapan_template = template;
     const info = document.getElementById('rem-ucapan-jadwal-info');
-    if (info) { info.textContent = `✓ Terjadwal: ${new Date(jadwal + 'T00:00:00').toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' })} jam 08.00 WIB`; info.style.color = 'var(--green)'; }
+    if (info) { info.textContent = `✓ Terjadwal: ${new Date(jadwal + 'T00:00:00').toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' })} jam 10.00 WIB`; info.style.color = 'var(--green)'; }
     showMsg(msg, 'success', '✓ Jadwal ucapan tersimpan.');
   } catch (e) { showMsg(msg, 'error', 'Gagal menyimpan: ' + e.message); }
 }
