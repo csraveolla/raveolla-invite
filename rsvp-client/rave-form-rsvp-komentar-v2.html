@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  #rsvp-widget {
+    --gold: #382b29; --gold-light: #6a524e; --cream: #fffff;
+    --dark: #382b29; --muted: #6B5E52; --border: rgba(201,169,110,0.3);
+    --green: #2D6A2D; --green-bg: #F0F7F0;
+    --red: #8B2020; --red-bg: #FDF0F0;
+    font-family: 'Jost', sans-serif; max-width: 520px; margin: 0 auto; padding: 20px;
+  }
+  #rsvp-widget * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* CARD */
+  #rsvp-widget .card {
+    background: white; width: 100%; border: 1px solid var(--border);
+    position: relative; animation: rsvpFadeUp 0.8s ease both; margin-bottom: 20px;
+       border-radius: 30px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  }
+  @keyframes rsvpFadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  #rsvp-widget .card::before, #rsvp-widget .card::after {
+    content: ''; position: absolute; width: 50px; height: 50px;
+    border-color: var(--gold); border-style: solid;
+    border-radius: 30px 0px;
+  }
+  #rsvp-widget .card::before { top:-1px; left:-1px; border-width:2px 0 0 2px; }
+  #rsvp-widget .card::after  { bottom:-1px; right:-1px; border-width:0 2px 2px 0; }
+
+  /* HEADER */
+  #rsvp-widget .header { padding:32px 36px 24px; text-align:center; border-bottom:1px solid var(--border); }
+  #rsvp-widget .header-label { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+  #rsvp-widget .header h2 { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:600; color:var(--dark); line-height:1.1; border:none; padding:0; margin:0; background:none; }
+  #rsvp-widget .header p { font-size:12px; color:var(--muted); margin-top:6px; font-weight:300; }
+  #rsvp-widget .divider { display:flex; align-items:center; gap:12px; margin:14px auto 0; max-width:180px; }
+  #rsvp-widget .divider span { flex:1; height:1px; background:var(--border); }
+
+  /* LOADING TAMU */
+  #rsvp-widget .tamu-loading { padding:20px; text-align:center; }
+  #rsvp-widget .mini-spinner { width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:rsvpSpin 0.8s linear infinite; display:inline-block; }
+  @keyframes rsvpSpin { to { transform:rotate(360deg); } }
+
+  /* KEPADA BANNER */
+  #rsvp-widget .kepada-banner { background:var(--gold); padding:10px 36px; display:flex; align-items:center; justify-content:center; gap:10px; }
+  #rsvp-widget .kepada-label { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:white; font-weight:400; }
+  #rsvp-widget .kepada-nama { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:600; color:white; font-style:italic; }
+
+  /* BODY FORM */
+  #rsvp-widget .body { padding:28px 36px; }
+  #rsvp-widget .form-group { margin-bottom:20px; }
+  #rsvp-widget .form-group label { display:block; font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; font-weight:500; }
+  #rsvp-widget .form-group input,
+  #rsvp-widget .form-group select,
+  #rsvp-widget .form-group textarea {
+    width:100%; padding:11px 14px; border:1px solid var(--border); background:var(--cream);
+    font-family:'Jost',sans-serif; font-size:14px; color:var(--dark); outline:none;
+    transition:border-color 0.3s,box-shadow 0.3s; appearance:none; border-radius:0;
+  }
+  #rsvp-widget .form-group input:focus,
+  #rsvp-widget .form-group select:focus,
+  #rsvp-widget .form-group textarea:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,169,110,0.1); background:white; }
+  #rsvp-widget .form-group textarea { resize:vertical; min-height:80px; line-height:1.6; }
+  #rsvp-widget .select-wrap { position:relative; }
+  #rsvp-widget .select-wrap::after { content:'▾'; position:absolute; right:14px; top:50%; transform:translateY(-50%); color:var(--gold); pointer-events:none; font-size:12px; }
+
+  /* BUTTONS */
+  #rsvp-widget .btn { width:50%; padding:8px; background:var(--dark); color:white; border:none; font-family:'Jost',sans-serif; font-size:11px; letter-spacing:3px; text-transform:uppercase; cursor:pointer; transition:background 0.3s; margin-top:6px; border-radius:0;
+  border-radius: .5rem;
+  box-shadow: rgba(0, 0, 0, .2) 0 3px 5px -1px,rgba(0, 0, 0, .14) 0 6px 10px 0,rgba(0, 0, 0, .12) 0 1px 18px 0;
+  }
+  #rsvp-widget .btn:hover { background:var(--gold); }
+  #rsvp-widget .btn:disabled { opacity:0.55; cursor:not-allowed; }
+
+  /* MESSAGES */
+  #rsvp-widget .msg { margin-top:14px; padding:12px 14px; font-size:13px; text-align:center; display:none; line-height:1.5; }
+  #rsvp-widget .msg.error   { background:var(--red-bg); color:var(--red); border:1px solid #F0C0C0; }
+  #rsvp-widget .msg.success { background:var(--green-bg); color:var(--green); border:1px solid #C3E0C3; }
+
+  /* RSVP DONE */
+  #rsvp-widget .rsvp-done { padding:28px 36px; text-align:center; }
+  #rsvp-widget .rsvp-done-icon { font-size:28px; color:var(--gold); margin-bottom:10px; }
+  #rsvp-widget .rsvp-done-title { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:600; color:var(--green); margin-bottom:6px; }
+  #rsvp-widget .rsvp-done-sub { font-size:12px; color:var(--muted); font-weight:300; margin-bottom:16px; line-height:1.6; }
+  #rsvp-widget .btn-lihat-qr { padding:10px 24px; background:var(--gold); color:white; border:none; font-family:'Jost',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:background 0.2s; }
+  #rsvp-widget .btn-lihat-qr:hover { background:#B8955A; }
+
+  /* QR SCREEN */
+  #rsvp-widget .qr-screen { display:none; padding:32px 36px; text-align:center; animation:rsvpFadeUp 0.5s ease both; }
+  #rsvp-widget .qr-icon { font-size:28px; color:var(--gold); margin-bottom:10px; }
+  #rsvp-widget .qr-title { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:600; color:var(--dark); margin-bottom:4px; }
+  #rsvp-widget .qr-sub { font-size:12px; color:var(--muted); font-weight:300; margin-bottom:6px; line-height:1.6; }
+  #rsvp-widget .qr-nama-val { font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; color:var(--gold); margin-bottom:18px; }
+  #rsvp-widget .qr-box { display:inline-block; padding:14px; border:1px solid var(--border); background:white; margin-bottom:12px; }
+  #rsvp-widget .qr-token { font-family:monospace; font-size:12px; letter-spacing:3px; color:var(--muted); margin-bottom:14px; }
+  #rsvp-widget .qr-note { font-size:11px; color:var(--muted); padding:10px 14px; background:var(--cream); border:1px solid var(--border); line-height:1.7; margin-bottom:14px; text-align:left; }
+  #rsvp-widget .btn-save { width:100%; padding:13px; background:var(--gold); color:white; border:none; font-family:'Jost',sans-serif; font-size:11px; letter-spacing:3px; text-transform:uppercase; cursor:pointer; transition:background 0.2s; }
+  #rsvp-widget .btn-save:hover { background:#B8955A; }
+
+  /* FOOTER */
+  #rsvp-widget .footer { padding:14px 36px 22px; text-align:center; border-top:1px solid var(--border); }
+  #rsvp-widget .footer p { font-size:11px; color:var(--muted); letter-spacing:0.5px; font-weight:300; }
+
+  /* KOMENTAR */
+  #rsvp-widget .komentar-header { padding:24px 36px 0; }
+  #rsvp-widget .komentar-label { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--gold); margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+  #rsvp-widget .komentar-label::after { content:''; flex:1; height:1px; background:var(--border); }
+  #rsvp-widget .komentar-body { padding:0 36px 28px; }
+  #rsvp-widget .komentar-list { margin-top:20px; display:flex; flex-direction:column; gap:10px; max-height:300px; overflow-y:auto; padding-right:6px; scroll-behavior:smooth; }
+  #rsvp-widget .komentar-list::-webkit-scrollbar { width:3px; }
+  #rsvp-widget .komentar-list::-webkit-scrollbar-track { background:transparent; }
+  #rsvp-widget .komentar-list::-webkit-scrollbar-thumb { background:rgba(56,43,41,0.25); border-radius:2px; }
+  #rsvp-widget .komentar-item { padding:12px 14px; background:var(--cream); border:0px solid var(--border); animation:rsvpFadeUp 0.3s ease both;
+  box-shadow:rgb(204, 219, 232) 3px 3px 3px 0px inset, rgb(255 255 255 / 50%) -3px -3px 3px 2px inset;
+  border-radius:15px; }
+  #rsvp-widget .komentar-nama { font-weight:500; font-size:13px; margin-bottom:3px; }
+  #rsvp-widget .komentar-isi { font-family:'Cormorant Garamond',serif; font-size:15px; font-style:italic; color:var(--muted); line-height:1.6; }
+  #rsvp-widget .komentar-time { font-size:10px; color:#9C8E84; margin-top:5px; }
+  #rsvp-widget .komentar-empty { text-align:center; color:var(--muted); font-size:13px; font-weight:300; padding:20px 0; }
+
+  @media (max-width:480px) {
+    #rsvp-widget .header, #rsvp-widget .body, #rsvp-widget .rsvp-done,
+    #rsvp-widget .qr-screen, #rsvp-widget .footer,
+    #rsvp-widget .komentar-header, #rsvp-widget .komentar-body { padding-left:20px; padding-right:20px; }
+    #rsvp-widget .kepada-banner { padding:10px 20px; }
+  }
+</style>
+</head>
+<body>
+<div id="rsvp-widget">
+
+  <!-- ===== CARD RSVP ===== -->
+  <div class="card" id="rsvp-card">
+    <div class="header">
+      <div class="header-label">Konfirmasi Kehadiran</div>
+      <h2>RSVP Pernikahan</h2>
+      <p>Mohon konfirmasi kehadiran Anda</p>
+      <div class="divider"><span></span><span style="color:#C9A96E">✦</span><span></span></div>
+    </div>
+
+    <!-- Kepada banner -->
+    <div class="kepada-banner" id="kepada-banner" style="display:none">
+      <span class="kepada-label">Kepada</span>
+      <span class="kepada-nama" id="kepada-nama-val">—</span>
+    </div>
+
+    <!-- Loading state -->
+    <div class="tamu-loading" id="tamu-loading" style="display:none">
+      <div class="mini-spinner"></div>
+    </div>
+
+    <!-- FORM RSVP -->
+    <div class="body" id="rsvp-form-body">
+      <div class="form-group">
+        <label>Nama Lengkap</label>
+        <input type="text" id="rsvp-nama" placeholder="Masukkan nama lengkap">
+      </div>
+      <div class="form-group">
+        <label>Nomor Telpon / WhatsApp</label>
+        <input type="tel" id="rsvp-telpon" placeholder="08xxxxxxxxx">
+      </div>
+      <div class="form-group">
+        <label>Konfirmasi Kehadiran</label>
+        <div class="select-wrap">
+          <select id="rsvp-kehadiran">
+            <option value="">— Pilih —</option>
+            <option value="Hadir">Hadir</option>
+            <option value="Tidak Hadir">Tidak Hadir</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>Pesan &amp; Ucapan</label>
+        <textarea id="rsvp-pesan" placeholder="Berikan ucapan atau doa restu..."></textarea>
+      </div>
+      <button class="btn" id="rsvp-btn" onclick="submitRsvp()">Kirim RSVP</button>
+      <div class="msg error" id="rsvp-msg"></div>
+    </div>
+
+    <!-- RSVP SUDAH TERKIRIM -->
+    <div class="rsvp-done" id="rsvp-done" style="display:none">
+      <div class="rsvp-done-icon">✦</div>
+      <div class="rsvp-done-title">RSVP Sudah Terkirim</div>
+      <div class="rsvp-done-sub" id="rsvp-done-sub">Terima kasih atas konfirmasi Anda</div>
+      <button class="btn-lihat-qr" onclick="tampilkanQR()">Lihat QR Code Saya →</button>
+    </div>
+
+    <!-- QR SCREEN -->
+    <div class="qr-screen" id="qr-screen">
+      <div class="qr-icon">✦</div>
+      <div class="qr-title">Tiket Kehadiran Anda</div>
+      <div class="qr-sub">Tunjukkan QR ini kepada penerima tamu saat tiba di lokasi</div>
+      <div class="qr-nama-val" id="qr-nama-val">—</div>
+      <div class="qr-box"><div id="qr-code"></div></div>
+      <div class="qr-token" id="qr-token-val"></div>
+      <div class="qr-note">📱 Screenshot atau simpan QR Code ini sebagai tiket masuk pada hari H.</div>
+      <button class="btn-save" onclick="saveQR()">↓ Simpan QR Code</button>
+    </div>
+
+    <div class="footer">
+      <p>Data Anda tersimpan dengan aman &nbsp;✦&nbsp; Terima kasih</p>
+    </div>
+  </div>
+
+  <!-- ===== CARD KOMENTAR ===== -->
+  <div class="card" id="komentar-card">
+      <div class="header">
+      <div class="header-label">Berikan Doa Terbaik</div>
+      <h2>Doa & Ucapan</h2>
+      <p>Mohon doa restu Anda</p>
+      <div class="divider"><span></span><span style="color:#C9A96E">✦</span><span></span></div>
+    </div>
+    <div class="komentar-header">
+      <div class="komentar-label">Ucapan &amp; Doa ✦</div>
+    </div>
+    <div class="komentar-body">
+      <div class="form-group">
+        <label>Nama</label>
+        <input type="text" id="k-nama" placeholder="Nama Anda">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>Ucapan &amp; Doa</label>
+        <textarea id="k-isi" placeholder="Tuliskan ucapan dan doa terbaik Anda..."></textarea>
+      </div>
+      <button class="btn" id="k-btn" onclick="submitKomentar()">Kirim Ucapan</button>
+      <div class="msg error" id="k-msg"></div>
+
+      <div class="komentar-list" id="komentar-list">
+        <div class="komentar-empty">Memuat ucapan...</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ============================================================
+  // ✏️ GANTI 2 BARIS INI untuk setiap halaman/pos di Elementor
+  const posId    = '14246';
+  const clientId = '078881db-bcd5-43a1-9cd9-ce48db1c034a';
+  // ============================================================
+
+  const SB  = 'https://eyeyxsguibypmpwrnzav.supabase.co';
+  const KEY = 'sb_publishable_Bqb0LVCKXHoAkTU0M8RfFA_EP0kOAqz';
+  const H   = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' };
+
+  let tamuData = null, rsvpData = null, qrToken = null;
+
+  // ===== INIT: Baca UUID tamu dari URL =====
+  async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const tamuId = params.get('tamu');
+
+    if (tamuId) {
+      // Ada UUID tamu → fetch nama dari database
+      document.getElementById('tamu-loading').style.display = 'block';
+      try {
+        const [r1, r2] = await Promise.all([
+          fetch(`${SB}/rest/v1/tamu_undangan?id=eq.${tamuId}&select=*`, { headers: H }),
+          fetch(`${SB}/rest/v1/rsvp_tamu?tamu_id=eq.${tamuId}&select=*`, { headers: H })
+        ]);
+        const d1 = await r1.json();
+        const d2 = await r2.json();
+        document.getElementById('tamu-loading').style.display = 'none';
+
+        if (d1.length) {
+          tamuData = d1[0];
+          // Isi nama otomatis
+          document.getElementById('rsvp-nama').value = tamuData.nama;
+          document.getElementById('k-nama').value    = tamuData.nama;
+          // Tampilkan banner kepada
+          document.getElementById('kepada-nama-val').textContent = tamuData.nama;
+          document.getElementById('kepada-banner').style.display = 'flex';
+          // Broadcast nama ke elemen lain di halaman (misal: Tajuk Elementor)
+          document.dispatchEvent(new CustomEvent('tamuLoaded', { detail: { nama: tamuData.nama } }));
+          // Tandai sudah dibuka
+          if (!tamuData.status_buka) {
+            fetch(`${SB}/rest/v1/tamu_undangan?id=eq.${tamuId}`, {
+              method: 'PATCH', headers: H,
+              body: JSON.stringify({ status_buka: true, waktu_buka: new Date().toISOString() })
+            });
+          }
+        }
+
+        // Cek sudah RSVP sebelumnya
+        if (d2.length) {
+          rsvpData = d2[0];
+          qrToken  = rsvpData.qr_token;
+          showRsvpDone();
+        }
+      } catch(e) {
+        document.getElementById('tamu-loading').style.display = 'none';
+      }
+    }
+
+    loadKomentar();
+  }
+
+  // ===== SUBMIT RSVP =====
+  async function submitRsvp() {
+    const nama      = document.getElementById('rsvp-nama').value.trim();
+    const telpon    = document.getElementById('rsvp-telpon').value.trim();
+    const kehadiran = document.getElementById('rsvp-kehadiran').value;
+    const pesan     = document.getElementById('rsvp-pesan').value.trim();
+    const btn       = document.getElementById('rsvp-btn');
+    const msg       = document.getElementById('rsvp-msg');
+
+    if (!nama || !kehadiran) {
+      showMsg(msg, 'Nama dan konfirmasi kehadiran wajib diisi!');
+      return;
+    }
+    btn.disabled = true; btn.textContent = 'Mengirim...';
+    msg.style.display = 'none';
+    qrToken = generateToken();
+
+    const payload = {
+      client_id:    clientId,
+      tamu_id:      tamuData ? tamuData.id : null,
+      pos_id:       posId,
+      nama, telpon, kehadiran, pesan,
+      qr_token:     qrToken,
+      status_hadir: false
+    };
+
+    try {
+      const res = await fetch(`${SB}/rest/v1/rsvp_tamu`, {
+        method: 'POST',
+        headers: { ...H, 'Prefer': 'return=representation' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok || res.status === 201) {
+        const data = await res.json();
+        rsvpData = Array.isArray(data) ? data[0] : data;
+        showRsvpDone();
+        tampilkanQR();
+      } else {
+        const err = await res.json();
+        throw new Error(err.message || 'Gagal menyimpan');
+      }
+    } catch(e) {
+      showMsg(msg, '✗ ' + e.message);
+      btn.disabled = false; btn.textContent = 'Kirim RSVP';
+    }
+  }
+
+  function showRsvpDone() {
+    document.getElementById('rsvp-form-body').style.display = 'none';
+    document.getElementById('rsvp-done').style.display      = 'block';
+    document.getElementById('rsvp-done-sub').textContent    =
+      rsvpData?.kehadiran === 'Hadir'
+        ? '✓ Anda konfirmasi akan hadir'
+        : '✓ Anda konfirmasi tidak hadir';
+  }
+
+  function tampilkanQR() {
+    const token = qrToken || rsvpData?.qr_token;
+    const nama  = document.getElementById('rsvp-nama').value || tamuData?.nama || '—';
+    if (!token) return;
+
+    document.getElementById('rsvp-done').style.display  = 'none';
+    document.getElementById('qr-screen').style.display  = 'block';
+    document.getElementById('qr-nama-val').textContent  = nama;
+    document.getElementById('qr-token-val').textContent = token;
+
+    const qrEl = document.getElementById('qr-code');
+    if (!qrEl.innerHTML) {
+      new QRCode(qrEl, {
+        text: token, width: 200, height: 200,
+        colorDark: '#1A1614', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+  }
+
+  function saveQR() {
+    const canvas = document.querySelector('#qr-code canvas');
+    if (!canvas) { alert('QR belum siap, coba lagi.'); return; }
+    const nama  = document.getElementById('qr-nama-val').textContent;
+    const token = document.getElementById('qr-token-val').textContent;
+    const pad = 20, nc = document.createElement('canvas');
+    nc.width  = canvas.width  + pad * 2;
+    nc.height = canvas.height + pad * 2 + 56;
+    const ctx = nc.getContext('2d');
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, nc.width, nc.height);
+    ctx.drawImage(canvas, pad, pad);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#C9A96E'; ctx.font = '11px serif';
+    ctx.fillText('✦ Tiket Kehadiran ✦', nc.width/2, canvas.height + pad + 18);
+    ctx.fillStyle = '#1A1614'; ctx.font = 'bold 14px sans-serif';
+    ctx.fillText(nama, nc.width/2, canvas.height + pad + 36);
+    ctx.fillStyle = '#6B5E52'; ctx.font = '11px monospace';
+    ctx.fillText(token, nc.width/2, canvas.height + pad + 52);
+    const a = document.createElement('a');
+    a.href     = nc.toDataURL('image/png');
+    a.download = `QR_RSVP_${nama.replace(/\s+/g,'_')}.png`;
+    a.click();
+  }
+
+  // ===== KOMENTAR =====
+  async function loadKomentar() {
+    try {
+      const res  = await fetch(
+        `${SB}/rest/v1/komentar?client_id=eq.${clientId}&select=*&order=created_at.desc&limit=30`,
+        { headers: H }
+      );
+      const data = await res.json();
+      renderKomentar(Array.isArray(data) ? data : []);
+    } catch(e) {
+      document.getElementById('komentar-list').innerHTML =
+        '<div class="komentar-empty">Gagal memuat ucapan.</div>';
+    }
+  }
+
+  function renderKomentar(list) {
+    const el = document.getElementById('komentar-list');
+    if (!list.length) {
+      el.innerHTML = '<div class="komentar-empty">Belum ada ucapan. Jadilah yang pertama!</div>';
+      return;
+    }
+    el.innerHTML = list.map(k => {
+      const time = new Date(k.created_at).toLocaleDateString('id-ID',
+        { day:'2-digit', month:'long', year:'numeric' });
+      return `<div class="komentar-item">
+        <div class="komentar-nama">${k.nama}</div>
+        <div class="komentar-isi">"${k.isi}"</div>
+        <div class="komentar-time">${time}</div>
+      </div>`;
+    }).join('');
+  }
+
+  async function submitKomentar() {
+    const nama = document.getElementById('k-nama').value.trim();
+    const isi  = document.getElementById('k-isi').value.trim();
+    const btn  = document.getElementById('k-btn');
+    const msg  = document.getElementById('k-msg');
+    if (!nama || !isi) { showMsg(msg, 'Nama dan ucapan wajib diisi!'); return; }
+    btn.disabled = true; btn.textContent = 'Mengirim...';
+    msg.style.display = 'none';
+    try {
+      const res = await fetch(`${SB}/rest/v1/komentar`, {
+        method: 'POST',
+        headers: { ...H, 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          client_id: clientId,
+          tamu_id:   tamuData ? tamuData.id : null,
+          nama, isi
+        })
+      });
+      if (res.ok || res.status === 201) {
+        document.getElementById('k-isi').value = '';
+        btn.textContent = '✓ Terkirim!';
+        loadKomentar();
+        setTimeout(() => { btn.disabled = false; btn.textContent = 'Kirim Ucapan'; }, 3000);
+      } else throw new Error('Gagal');
+    } catch(e) {
+      showMsg(msg, '✗ ' + e.message);
+      btn.disabled = false; btn.textContent = 'Kirim Ucapan';
+    }
+  }
+
+  function generateToken() {
+    const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    return Array.from({length:10}, () => c[Math.floor(Math.random()*c.length)]).join('');
+  }
+
+  function showMsg(el, text) {
+    el.textContent = text; el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+  }
+
+  init();
+</script>
+</body>
+</html>
