@@ -303,8 +303,9 @@
     const slideIds = ['slide0', 'slide1', 'slide2']
     coverPhotos.forEach((g, i) => {
       const slide = document.getElementById(slideIds[i])
-      if (slide && g.file_url) {
-        slide.style.backgroundImage = `${gradient}, url('${g.file_url}')`
+      const src = g.file_url
+      if (slide && src) {
+        slide.style.backgroundImage = `${gradient}, url('${src}')`
         slide.style.backgroundSize = 'cover'
         slide.style.backgroundPosition = 'center top'
       }

@@ -6,6 +6,7 @@
 import { state, INV, INV_MONTHS, INV_FIELDS } from './state.js'
 import { SB_URL, SB_KEY, authHeaders } from './api.js'
 import { showToast, invMsg, esc, escH } from './utils.js'
+import { prepareWebImage } from '../../tema/assets/image-compressor.js'
 
 // ── Navigation ────────────────────────────────────────────────
 
@@ -213,16 +214,18 @@ export async function uploadInvPhoto(person, file) {
   const lbl = document.getElementById('inv-' + person + '-lbl')
   if (lbl) lbl.textContent = 'Mengupload...'
   try {
-    const ext   = file.name.split('.').pop()
-    const path  = `${INV.invId}/${person}-${Date.now()}.${ext}`
+    const ext  = file.name.split('.').pop()
+    const path = `${INV.invId}/${person}-${Date.now()}.${ext}`
+
+    const webFile = await prepareWebImage(file, 800, 800, 0.85)
     const upRes = await fetch(`${SB_URL}/storage/v1/object/profile-photos/${path}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${state.accessToken}`,
         'apikey': SB_KEY,
-        'Content-Type': file.type
+        'Content-Type': webFile.type || file.type
       },
-      body: file
+      body: webFile
     })
     if (!upRes.ok) throw new Error('Upload gagal')
     const url = `${SB_URL}/storage/v1/object/public/profile-photos/${path}`
@@ -551,14 +554,17 @@ export async function uploadInvGallery(files) {
   for (const file of files) {
     try {
       const path = `${INV.invId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${file.name.split('.').pop()}`
+
+      // Kompres dulu (resize ≤ 3000x2000, kualitas 0.95) baru upload
+      const webFile = await prepareWebImage(file)
       const res  = await fetch(`${SB_URL}/storage/v1/object/gallery-photos/${path}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${state.accessToken}`,
           'apikey': SB_KEY,
-          'Content-Type': file.type
+          'Content-Type': webFile.type || file.type
         },
-        body: file
+        body: webFile
       })
       if (!res.ok) { console.error('Upload gagal:', file.name); continue }
       INV.gallery.push({
@@ -567,7 +573,8 @@ export async function uploadInvGallery(files) {
         is_cover: INV.gallery.length === 0
       })
     } catch (e) {
-      console.error(e)
+      console.error('Gagal upload:', file.name, e.message)
+      invMsg(msg, 'error', `Gagal upload "${file.name}": ${e.message}`)
     }
   }
   renderInvGallery()

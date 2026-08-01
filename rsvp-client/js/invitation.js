@@ -7,6 +7,7 @@ import { showMsg, showToast } from './utils.js';
 import { DOMAIN } from './config.js';
 import { clientData } from './auth.js';
 import { initSupabaseClient, supabaseClient } from './realtime.js';
+import { prepareWebImage } from '../../tema/assets/image-compressor.js';
 
 const MEMPELAI_FIELDS = [
   'bride_name', 'bride_nickname', 'bride_father', 'bride_mother',
@@ -285,30 +286,33 @@ export async function uploadProfilePhoto(person, file) {
   const lbl = document.getElementById(person + '_photo_label');
   if (lbl) lbl.textContent = 'Mengupload...';
 
-  const ext  = file.name.split('.').pop();
-  const path = `${invitationId}/${person}-${Date.now()}.${ext}`;
+  try {
+    const ext  = file.name.split('.').pop();
+    const path = `${invitationId}/${person}-${Date.now()}.${ext}`;
 
-  const { error } = await supabaseClient.storage
-    .from('profile-photos')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    const webFile = await prepareWebImage(file, 800, 800, 0.85);
+    const { error } = await supabaseClient.storage
+      .from('profile-photos')
+      .upload(path, webFile, { upsert: true, contentType: webFile.type || file.type });
 
-  if (error) {
-    showToast('Upload gagal: ' + error.message);
+    if (error) throw new Error(error.message);
+
+    const { data: urlData } = supabaseClient.storage.from('profile-photos').getPublicUrl(path);
+    const publicUrl = urlData.publicUrl;
+    setPhotoPreview(person, publicUrl);
+
+    const { error: updateErr } = await supabaseClient
+      .from('invitations')
+      .update({ [person + '_photo_url']: publicUrl })
+      .eq('id', invitationId);
+
+    if (updateErr) showToast('Gagal simpan foto ke database: ' + updateErr.message);
+    else showToast(`✓ Foto ${person === 'bride' ? 'mempelai wanita' : 'mempelai pria'} diperbarui`);
+  } catch (e) {
+    showToast('Upload gagal: ' + e.message);
+  } finally {
     if (lbl) lbl.textContent = 'Ganti Foto';
-    return;
   }
-
-  const { data: urlData } = supabaseClient.storage.from('profile-photos').getPublicUrl(path);
-  const publicUrl = urlData.publicUrl;
-  setPhotoPreview(person, publicUrl);
-
-  const { error: updateErr } = await supabaseClient
-    .from('invitations')
-    .update({ [person + '_photo_url']: publicUrl })
-    .eq('id', invitationId);
-
-  if (updateErr) showToast('Gagal simpan foto ke database: ' + updateErr.message);
-  else showToast(`✓ Foto ${person === 'bride' ? 'mempelai wanita' : 'mempelai pria'} diperbarui`);
 }
 
 // ── ACARA (events) ────────────────────────────────────────────
@@ -665,18 +669,27 @@ export async function uploadGalleryPhotos(files) {
   }
 
   for (const file of files) {
-    const ext  = file.name.split('.').pop();
-    const path = `${invitationId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabaseClient.storage
-      .from('gallery-photos')
-      .upload(path, file, { upsert: false, contentType: file.type });
-    if (error) { console.error('Gagal upload:', file.name, error.message); continue; }
-    const { data: urlData } = supabaseClient.storage.from('gallery-photos').getPublicUrl(path);
-    galleryState.push({
-      url: urlData.publicUrl, caption: '',
-      is_cover: galleryState.length === 0,
-      sort_order: galleryState.length
-    });
+    try {
+      const ext  = file.name.split('.').pop();
+      const path = `${invitationId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+      // Kompres dulu (resize ≤ 3000x2000, kualitas 0.95) baru upload
+      const webFile = await prepareWebImage(file);
+      const { error } = await supabaseClient.storage
+        .from('gallery-photos')
+        .upload(path, webFile, { upsert: false, contentType: webFile.type || file.type });
+      if (error) { console.error('Gagal upload:', file.name, error.message); showMsg(msg, 'error', `Gagal upload "${file.name}": ${error.message}`); continue; }
+
+      const { data: urlData } = supabaseClient.storage.from('gallery-photos').getPublicUrl(path);
+      galleryState.push({
+        url: urlData.publicUrl, caption: '',
+        is_cover: galleryState.length === 0,
+        sort_order: galleryState.length
+      });
+    } catch (e) {
+      console.error('Gagal upload:', file.name, e.message);
+      showMsg(msg, 'error', `Gagal upload "${file.name}": ${e.message}`);
+    }
   }
 
   renderGallery();
