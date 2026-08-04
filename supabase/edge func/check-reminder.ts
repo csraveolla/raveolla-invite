@@ -30,6 +30,14 @@ Deno.serve(async () => {
 
     console.log(`[check-reminder] WIB: ${today} | H-3: ${h3} | H-1: ${h1}`)
 
+    if (wib.getUTCHours() !== 8) {
+      console.log(`[check-reminder] Di luar jam eksekusi (08.00 WIB) — sekarang ${pad(wib.getUTCHours())}:00 WIB, skip.`)
+      return new Response(
+        JSON.stringify({ ok: true, pesan: `Di luar jam eksekusi H-3/H-1 — jam ${pad(wib.getUTCHours())}:00 WIB` }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
     const { data: clients, error: errClients } = await supabase
       .from('clients')
       .select('id, nama_acara, tanggal_acara, wa_mode, wa_api_key, base_url, reminder_h3, reminder_h1, reminder_template_h3, reminder_template_h1, wa_terkirim, max_wa')
@@ -80,9 +88,7 @@ async function prosesClientReminder({ supabase, client, h3, h1 }: {
   const sisa = Math.max(0, (client.max_wa || 500) - (client.wa_terkirim || 0))
   if (sisa <= 0) { log('Kuota paket habis — skip.'); return 0 }
 
-  const apiKey = client.wa_mode === 'client'
-    ? client.wa_api_key
-    : Deno.env.get('ADMIN_API_KEY')
+  const apiKey = await resolveApiKey({ supabase, client, log })
   if (!apiKey) { log('Tidak ada API key — skip.'); return 0 }
 
   const DEFAULT_H3 = 'Halo {nama}, mengingatkan bahwa acara *{acara}* tinggal 3 hari lagi! Jangan lupa membawa QR Code undangan Anda 🙏'
@@ -160,12 +166,7 @@ async function prosesClientReminder({ supabase, client, h3, h1 }: {
 
   if (!payloads.length) return 0
 
-  await supabase.from('reminder_log').insert(logs)
-  await supabase.from('wa_log').insert(waLogs)
-
-  await incrKuota(supabase, client.id, payloads.length)
-
-  await Promise.all(
+  const results = await Promise.all(
     payloads.map(p =>
       fetch('https://api.fonnte.com/send', {
         method:  'POST',
@@ -175,15 +176,54 @@ async function prosesClientReminder({ supabase, client, h3, h1 }: {
           countryCode: '62', typing: 'true',
           duration: String(3 + Math.floor(Math.random() * 5))
         })
-      }).catch(err => {
-        console.error(`${logPrefix || ''} Gagal kirim ke ${p.nomor}:`, err)
-        return null
       })
+        .then(async res => {
+          const data = await res.json().catch(() => ({}))
+          return data?.status === true
+        })
+        .catch(err => {
+          console.error(`[check-reminder][${client.nama_acara}] Gagal kirim ke ${p.nomor}:`, err)
+          return false
+        })
     )
   )
 
-  log(`✓ ${payloads.length} pesan terkirim ke Fonnte.`)
-  return payloads.length
+  const indexSukses = results
+    .map((ok, i) => (ok ? i : -1))
+    .filter(i => i >= 0)
+
+  if (!indexSukses.length) {
+    log('Semua kiriman gagal di Fonnte — tidak ada log/kuota ditambah.')
+    return 0
+  }
+
+  await supabase.from('reminder_log').insert(indexSukses.map(i => logs[i]))
+  await supabase.from('wa_log').insert(indexSukses.map(i => waLogs[i]))
+  await incrKuota(supabase, client.id, indexSukses.length)
+
+  const gagal = payloads.length - indexSukses.length
+  log(`✓ ${indexSukses.length} pesan terkirim ke Fonnte${gagal ? `, ${gagal} gagal` : ''}.`)
+  return indexSukses.length
+}
+
+async function resolveApiKey({ supabase, client, log }: {
+  supabase: any; client: any; log?: (msg: string) => void
+}): Promise<string | null> {
+  if (client.wa_mode === 'client') return client.wa_api_key || null
+  const envKey = Deno.env.get('ADMIN_API_KEY')
+  if (envKey) return envKey
+  try {
+    const { data, error } = await supabase
+      .from('admin_settings')
+      .select('value')
+      .eq('id', 'admin_apikey')
+      .single()
+    if (error) throw error
+    if (data?.value) return data.value
+  } catch (e: any) {
+    log?.(`Gagal baca admin_settings (admin_apikey): ${e?.message || e}`)
+  }
+  return null
 }
 
 async function incrKuota(supabase: any, clientId: string, jumlah: number) {

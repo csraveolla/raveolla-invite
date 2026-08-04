@@ -159,9 +159,7 @@ async function prosesJadwal({ supabase, jadwal, client }: {
 
   console.log(`${logPrefix} Batch ${batchIds.length} tamu — kirim: ${tamuFinal.length}, skip (sudah dikirim langsung): ${sudahKirimIds.size}.`)
 
-  const apiKey = client.wa_mode === 'client'
-    ? client.wa_api_key
-    : Deno.env.get('ADMIN_API_KEY')
+  const apiKey = await resolveApiKey({ supabase, client })
 
   if (!apiKey) {
     console.error(`${logPrefix} API key tidak ditemukan — abort.`)
@@ -198,48 +196,59 @@ async function prosesJadwal({ supabase, jadwal, client }: {
     fonnteParams.url = client.wa_media_url
   }
 
-  await Promise.all(
+  const results = await Promise.all(
     payloads.map(p =>
       fetch('https://api.fonnte.com/send', {
         method:  'POST',
         headers: { Authorization: apiKey },
         body:    new URLSearchParams({ target: p.nomor, message: p.pesan, ...fonnteParams })
-      }).catch(err => {
-        console.error(`${logPrefix} Gagal kirim ke ${p.nomor}:`, err)
-        return null
       })
+        .then(async res => {
+          const data = await res.json().catch(() => ({}))
+          return data?.status === true
+        })
+        .catch(err => {
+          console.error(`${logPrefix} Gagal kirim ke ${p.nomor}:`, err)
+          return false
+        })
     )
   )
 
-  const { error: errIncr } = await supabase.rpc('increment_wa_terkirim', {
-    p_client_id: client.id,
-    p_jumlah:    payloads.length
-  })
-  if (errIncr) {
-    const { data: cur } = await supabase.from('clients').select('wa_terkirim').eq('id', client.id).single()
-    await supabase.from('clients')
-      .update({ wa_terkirim: (cur?.wa_terkirim || client.wa_terkirim || 0) + payloads.length })
-      .eq('id', client.id)
-  }
+  const payloadSukses = payloads.filter((_, i) => results[i])
+  const gagalFonnte  = payloads.length - payloadSukses.length
+  if (gagalFonnte) console.warn(`${logPrefix} ${gagalFonnte} pesan gagal di Fonnte — tidak dicatat & tidak dihitung kuota.`)
 
-  const logs = payloads.map(p => ({
-    client_id: client.id,
-    tamu_id:   p.id,
-    nomor:     p.nomor,
-    pesan:     p.pesan,
-    status:    'sent',
-    tipe:      'massal'
-  }))
-  const { error: errLog } = await supabase.from('wa_log').insert(logs)
-  if (errLog) console.error(`${logPrefix} Gagal insert wa_log:`, errLog.message)
+  if (payloadSukses.length) {
+    const { error: errIncr } = await supabase.rpc('increment_wa_terkirim', {
+      p_client_id: client.id,
+      p_jumlah:    payloadSukses.length
+    })
+    if (errIncr) {
+      const { data: cur } = await supabase.from('clients').select('wa_terkirim').eq('id', client.id).single()
+      await supabase.from('clients')
+        .update({ wa_terkirim: (cur?.wa_terkirim || client.wa_terkirim || 0) + payloadSukses.length })
+        .eq('id', client.id)
+    }
 
-  const tamuIdsTerkirim = payloads.map(p => p.id)
-  if (tamuIdsTerkirim.length) {
-    const { error: errKirim } = await supabase
-      .from('tamu_undangan')
-      .update({ status_kirim: true })
-      .in('id', tamuIdsTerkirim)
-    if (errKirim) console.error(`${logPrefix} Gagal update status_kirim:`, errKirim.message)
+    const logs = payloadSukses.map(p => ({
+      client_id: client.id,
+      tamu_id:   p.id,
+      nomor:     p.nomor,
+      pesan:     p.pesan,
+      status:    'sent',
+      tipe:      'massal'
+    }))
+    const { error: errLog } = await supabase.from('wa_log').insert(logs)
+    if (errLog) console.error(`${logPrefix} Gagal insert wa_log:`, errLog.message)
+
+    const tamuIdsTerkirim = payloadSukses.map(p => p.id)
+    if (tamuIdsTerkirim.length) {
+      const { error: errKirim } = await supabase
+        .from('tamu_undangan')
+        .update({ status_kirim: true })
+        .in('id', tamuIdsTerkirim)
+      if (errKirim) console.error(`${logPrefix} Gagal update status_kirim:`, errKirim.message)
+    }
   }
 
   const baru_terkirim = sudahTerkirim + batchIds.length
@@ -263,5 +272,25 @@ async function prosesJadwal({ supabase, jadwal, client }: {
     console.log(`${logPrefix} Semua terkirim.`)
   }
 
-  return payloads.length
+  return payloadSukses.length
+}
+
+async function resolveApiKey({ supabase, client }: {
+  supabase: any; client: any
+}): Promise<string | null> {
+  if (client.wa_mode === 'client') return client.wa_api_key || null
+  const envKey = Deno.env.get('ADMIN_API_KEY')
+  if (envKey) return envKey
+  try {
+    const { data, error } = await supabase
+      .from('admin_settings')
+      .select('value')
+      .eq('id', 'admin_apikey')
+      .single()
+    if (error) throw error
+    if (data?.value) return data.value
+  } catch (e: any) {
+    console.error(`[execute-jadwal] Gagal baca admin_settings (admin_apikey): ${e?.message || e}`)
+  }
+  return null
 }

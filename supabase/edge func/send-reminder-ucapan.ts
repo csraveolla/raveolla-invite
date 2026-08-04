@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
     if (targetClientId) {
       const { data } = await supabase
         .from('clients')
-        .select('id, nama_acara, base_url, wa_mode, wa_api_key, reminder_ucapan_template')
+        .select('id, nama_acara, base_url, wa_mode, wa_api_key, reminder_ucapan_template, reminder_ucapan_target')
         .eq('id', targetClientId)
         .single()
       if (data) clients = [data]
@@ -42,9 +42,15 @@ Deno.serve(async (req) => {
       const pad  = (n: number) => String(n).padStart(2, '0')
       const today = `${wib.getUTCFullYear()}-${pad(wib.getUTCMonth()+1)}-${pad(wib.getUTCDate())}`
 
+      if (wib.getUTCHours() !== 10) {
+        return new Response(JSON.stringify({
+          ok: true, pesan: `Di luar jam eksekusi ucapan (10.00 WIB) — jam ${pad(wib.getUTCHours())}:00 WIB`
+        }), { status: 200, headers: { ...CORS, 'Content-Type': 'application/json' } })
+      }
+
       const { data } = await supabase
         .from('clients')
-        .select('id, nama_acara, base_url, wa_mode, wa_api_key, reminder_ucapan_template')
+        .select('id, nama_acara, base_url, wa_mode, wa_api_key, reminder_ucapan_template, reminder_ucapan_target')
         .eq('reminder_ucapan_jadwal', today)
         .eq('reminder_ucapan_aktif', true)
       clients = data || []
@@ -63,9 +69,7 @@ Deno.serve(async (req) => {
     const waLogs: object[] = []
 
     for (const client of clients) {
-      const apiKey = client.wa_mode === 'client'
-        ? client.wa_api_key
-        : Deno.env.get('ADMIN_API_KEY')
+      const apiKey = await resolveApiKey({ supabase, client })
 
       if (!apiKey) {
         console.warn(`[send-reminder-ucapan] Skip ${client.id} — tidak ada API key.`)
@@ -77,11 +81,14 @@ Deno.serve(async (req) => {
         'Semoga silaturahmi kita selalu terjaga. Salam hangat 🙏'
       const templateRaw = client.reminder_ucapan_template || DEFAULT_TEMPLATE
 
-      const { data: tamuRsvp } = await supabase
+      const target = client.reminder_ucapan_target || 'hadir'
+      const query  = supabase
         .from('rsvp_tamu')
         .select('id, tamu_id, nama, telpon')
         .eq('client_id', client.id)
-        .eq('status_hadir', true)
+      const { data: tamuRsvp } = target === 'semua'
+        ? await query
+        : await query.eq('status_hadir', true)
 
       const tamuIdsBelumTelpon = (tamuRsvp || [])
         .filter((t: any) => !t.telpon)
@@ -164,30 +171,7 @@ Deno.serve(async (req) => {
       }), { status: 200, headers: { ...CORS, 'Content-Type': 'application/json' } })
     }
 
-    await supabase.from('reminder_log').insert(allLogs)
-    await supabase.from('wa_log').insert(waLogs)
-
-    const quotaPerClient = new Map<string, number>()
-    allLogs.forEach((log: any) => {
-      quotaPerClient.set(log.client_id, (quotaPerClient.get(log.client_id) || 0) + 1)
-    })
-    for (const [clientId, jumlah] of quotaPerClient) {
-      try {
-        const { error } = await supabase.rpc('increment_wa_terkirim', {
-          p_client_id: clientId,
-          p_jumlah:    jumlah
-        })
-        if (error) throw error
-      } catch {
-        const { data } = await supabase.from('clients')
-          .select('wa_terkirim').eq('id', clientId).single()
-        await supabase.from('clients')
-          .update({ wa_terkirim: (data?.wa_terkirim || 0) + jumlah })
-          .eq('id', clientId)
-      }
-    }
-
-    await Promise.all(
+    const results = await Promise.all(
       allPayloads.map(p =>
         fetch('https://api.fonnte.com/send', {
           method:  'POST',
@@ -200,17 +184,53 @@ Deno.serve(async (req) => {
             typing:      'true',
             duration:    String(3 + Math.floor(Math.random() * 5))
           })
-        }).catch(err => {
-          console.error(`[send-reminder-ucapan] Gagal kirim ke ${p.nomor}:`, err)
-          return null
         })
+          .then(async res => {
+            const data = await res.json().catch(() => ({}))
+            return data?.status === true
+          })
+          .catch(err => {
+            console.error(`[send-reminder-ucapan] Gagal kirim ke ${p.nomor}:`, err)
+            return false
+          })
       )
     )
 
-    console.log(`[send-reminder-ucapan] ✓ ${allPayloads.length} pesan terkirim ke Fonnte.`)
+    const indexSukses = results
+      .map((ok, i) => (ok ? i : -1))
+      .filter(i => i >= 0)
+
+    if (indexSukses.length) {
+      await supabase.from('reminder_log').insert(indexSukses.map(i => allLogs[i]))
+      await supabase.from('wa_log').insert(indexSukses.map(i => waLogs[i]))
+
+      const quotaPerClient = new Map<string, number>()
+      indexSukses.forEach(i => {
+        const log: any = allLogs[i]
+        quotaPerClient.set(log.client_id, (quotaPerClient.get(log.client_id) || 0) + 1)
+      })
+      for (const [clientId, jumlah] of quotaPerClient) {
+        try {
+          const { error } = await supabase.rpc('increment_wa_terkirim', {
+            p_client_id: clientId,
+            p_jumlah:    jumlah
+          })
+          if (error) throw error
+        } catch {
+          const { data } = await supabase.from('clients')
+            .select('wa_terkirim').eq('id', clientId).single()
+          await supabase.from('clients')
+            .update({ wa_terkirim: (data?.wa_terkirim || 0) + jumlah })
+            .eq('id', clientId)
+        }
+      }
+    }
+
+    const gagal = allPayloads.length - indexSukses.length
+    console.log(`[send-reminder-ucapan] ✓ ${indexSukses.length} pesan terkirim ke Fonnte${gagal ? `, ${gagal} gagal` : ''}.`)
 
     return new Response(
-      JSON.stringify({ ok: true, ditembak: allPayloads.length }),
+      JSON.stringify({ ok: true, ditembak: indexSukses.length, gagal }),
       { status: 200, headers: { ...CORS, 'Content-Type': 'application/json' } }
     )
 
@@ -222,3 +242,23 @@ Deno.serve(async (req) => {
     )
   }
 })
+
+async function resolveApiKey({ supabase, client }: {
+  supabase: any; client: any
+}): Promise<string | null> {
+  if (client.wa_mode === 'client') return client.wa_api_key || null
+  const envKey = Deno.env.get('ADMIN_API_KEY')
+  if (envKey) return envKey
+  try {
+    const { data, error } = await supabase
+      .from('admin_settings')
+      .select('value')
+      .eq('id', 'admin_apikey')
+      .single()
+    if (error) throw error
+    if (data?.value) return data.value
+  } catch (e: any) {
+    console.warn(`[send-reminder-ucapan] Gagal baca admin_settings (admin_apikey): ${e?.message || e}`)
+  }
+  return null
+}
