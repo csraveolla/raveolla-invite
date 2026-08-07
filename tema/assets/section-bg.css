@@ -1,0 +1,104 @@
+/* ================================================================
+   section-bg.css — Section Background System (bg-sec-*)
+   Kelas deklaratif untuk background khusus per section:
+     bg-sec-grad-1 → background gradient
+     bg-sec-anim-1 → slideshow crossfade + Ken Burns (galeri/attr)
+     bg-sec-video  → video background (data-bg-video)
+   Dipakai oleh semua tema undangan.
+   ================================================================ */
+
+/* ── Layout dasar ────────────────────────────────────────────── */
+/* :where() → specificity 0, class tema tetap bisa override position */
+:where([class*="bg-sec-"]) {
+  position: relative;
+  isolation: isolate;
+}
+/* Konten section selalu di atas layer background */
+:where([class*="bg-sec-"] > :not(.section-bg-layer)) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Layer background (di-inject oleh section-bg.js) */
+.section-bg-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Overlay opsional di atas background, di bawah konten */
+.section-bg-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* ================================================================
+   VARIAN 1: GRADIENT — bg-sec-grad-1
+   Warna & sudut bisa di-kustomisasi via CSS variables:
+   --bg-sec-angle, --bg-sec-c1, --bg-sec-c2, --bg-sec-c3
+   ================================================================ */
+
+/* Fallback murni CSS tanpa JS */
+.bg-sec-grad-1 {
+  background: linear-gradient(
+    var(--bg-sec-angle, 160deg),
+    var(--bg-sec-c1, #0f1729) 0%,
+    var(--bg-sec-c2, #a8aa1a) 55%,
+    var(--bg-sec-c3, #c9a96e) 100%
+  );
+}
+
+/* Path JS (layer) — lebih robust terhadap specificity tema */
+.section-bg-layer-grad {
+  background: linear-gradient(
+    var(--bg-sec-angle, 160deg),
+    var(--bg-sec-c1, #0f1729) 0%,
+    var(--bg-sec-c2, #5b7fa5) 55%,
+    var(--bg-sec-c3, #c9a96e) 100%
+  );
+}
+
+/* ================================================================
+   VARIAN 2: SLIDESHOW — bg-sec-anim-1
+   ================================================================ */
+.section-bg-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transform: scale(1);
+  transition: opacity 1.6s ease;
+  will-change: opacity;
+}
+.section-bg-slide.active {
+  opacity: 1;
+  animation: bgSecKenBurns 9s ease-out forwards;
+}
+
+@keyframes bgSecKenBurns {
+  0%   { transform: scale(1); }
+  100% { transform: scale(1.12); }
+}
+
+/* ================================================================
+   VARIAN 3: VIDEO — bg-sec-video
+   ================================================================ */
+.section-bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Reduced motion ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .section-bg-slide {
+    animation: none !important;
+    transition: opacity 1s ease;
+  }
+}

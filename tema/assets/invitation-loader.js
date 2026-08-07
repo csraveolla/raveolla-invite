@@ -298,18 +298,71 @@
     const coverPhotos = galleries.filter(g => g.is_cover).slice(0, 1)
       .concat(galleries.filter(g => !g.is_cover)).slice(0, 3)
 
+    if (!coverPhotos.length) {
+      console.warn('[nikahin] fillSlides: tidak ada gambar gallery untuk slide home')
+    }
+
     const gradient = 'linear-gradient(180deg, rgba(0,0,0,.3) 0%, rgba(10,8,6,.6) 50%, rgba(16,14,10,.85) 100%)'
 
     const slideIds = ['slide0', 'slide1', 'slide2']
+    const homeSlideIds = ['homeSlide0', 'homeSlide1', 'homeSlide2']
+
     coverPhotos.forEach((g, i) => {
       const slide = document.getElementById(slideIds[i])
-      const src = g.file_url
-      if (slide && src) {
+      const homeSlide = document.getElementById(homeSlideIds[i])
+      const src = g.file_url || g.url || g.photo_url || ''
+      if (!src) {
+        console.warn('[nikahin] fillSlides: gallery item tanpa src', g)
+        return
+      }
+      if (slide) {
         slide.style.backgroundImage = `${gradient}, url('${src}')`
         slide.style.backgroundSize = 'cover'
         slide.style.backgroundPosition = 'center top'
       }
+      if (homeSlide) {
+        homeSlide.style.backgroundImage = `url('${src}')`
+        homeSlide.style.backgroundSize = 'cover'
+        homeSlide.style.backgroundPosition = 'center center'
+      }
     })
+
+    const homeSlides = homeSlideIds
+      .map(id => document.getElementById(id))
+      .filter(Boolean)
+
+    homeSlides.forEach((homeSlide, index) => {
+      homeSlide.style.opacity = index === 0 ? '1' : '0'
+      homeSlide.style.zIndex = index === 0 ? '1' : '0'
+      homeSlide.style.animation = 'none'
+    })
+
+    startHomeSlideRotation(homeSlides.length)
+  }
+
+  function startHomeSlideRotation(count) {
+    const homeSlideIds = ['homeSlide0', 'homeSlide1', 'homeSlide2']
+    const slides = homeSlideIds.map(id => document.getElementById(id)).filter(Boolean)
+    if (window._nikahinHomeSlideTimer) {
+      clearInterval(window._nikahinHomeSlideTimer)
+      window._nikahinHomeSlideTimer = null
+    }
+    if (slides.length <= 1) return
+
+    let currentIndex = 0
+    function showSlide(index) {
+      slides.forEach((slide, idx) => {
+        const active = idx === index
+        slide.style.opacity = active ? '1' : '0'
+        slide.style.zIndex = active ? '1' : '0'
+      })
+    }
+
+    showSlide(0)
+    window._nikahinHomeSlideTimer = setInterval(() => {
+      currentIndex = (currentIndex + 1) % Math.min(count, slides.length)
+      showSlide(currentIndex)
+    }, 7000)
   }
 
   // ── FILL MINI GALLERY CAROUSEL (cover) ──────────────────────────
@@ -317,7 +370,7 @@
     const track = document.getElementById('miniGalleryTrack')
     if (!track || !galleries.length) return
 
-    const photos = galleries.slice(0, 4)
+    const photos = galleries.slice(0, 6)
     if (!photos.length) return
 
     const items = photos.map(g => `

@@ -20,6 +20,8 @@ tema/
     nk-design.css       → NK-Design System v4.0 (utility classes)
     motion-plus.css     → 63 animation classes (-dreamy suffix)
     motion-plus.js      → IntersectionObserver scroll-reveal engine
+    section-bg.css      → Section background system (bg-sec-*)
+    section-bg.js       → bg-sec engine (inject gradient/slideshow/video layer)
     invitation-loader.js → Main data loader (Supabase → DOM fill)
     event-presets.js    → Preset metadata + font options
   sakina/index.html     → Dark theme (gold on dark), inline CSS
@@ -58,6 +60,15 @@ Utility-class styling — panggil class → style diterapkan:
 
 ### 4. Theme Inline CSS
 Each theme has ~800-1100 lines of inline `<style>` in index.html with theme-specific tokens and layouts.
+
+### 5. Section Background System (`section-bg.css` + `section-bg.js`)
+Deklaratif: tambah class `bg-sec-*` ke `<section>` → background khusus diterapkan otomatis.
+- `bg-sec-grad-1` → gradient (CSS murni + layer JS). Kustomisasi via `--bg-sec-angle/-c1/-c2/-c3`
+- `bg-sec-anim-1` → slideshow crossfade + Ken Burns. Gambar dari `data-bg-images="u1,u2"` atau otomatis dari galeri (`nikahin:loaded`)
+- `bg-sec-video` → video bg dari `data-bg-video="URL.mp4"`
+- Atribut opsional: `data-bg-image` (poster video), `data-bg-overlay` (rgba/linear-gradient di atas bg)
+- `section-bg.js` meng-inject `.section-bg-layer` (absolute, z-index 0, pointer-events:none) sebagai anak pertama; konten tetap di atasnya. Hormati `prefers-reduced-motion`
+- Include wajib di tema bersama asset shared lain (`section-bg.css` + `section-bg.js defer`)
 
 ## Data Flow
 1. `invitation-loader.js` runs on DOMContentLoaded
